@@ -1,54 +1,54 @@
 # Miscellaneous
 *.class
-*.lock
 *.log
 *.pyc
 *.swp
+.DS_Store
+.atom/
+.build/
 .buildlog/
 .history
+.svn/
+.swiftpm/
+migrate_working_dir/
 
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
 
-
-# Flutter repo-specific
-/bin/cache/
-/bin/internal/bootstrap.bat
-/bin/internal/bootstrap.sh
-/bin/mingit/
-/dev/benchmarks/mega_gallery/
-/dev/bots/.recipe_deps
-/dev/bots/android_tools/
-/dev/devicelab/ABresults*.json
-/dev/docs/doc/
-/dev/docs/flutter.docs.zip
-/dev/docs/lib/
-/dev/docs/pubspec.yaml
-/dev/integration_tests/**/xcuserdata
-/dev/integration_tests/**/Pods
-/packages/flutter/coverage/
-version
-analysis_benchmark.json
-
-# packages file containing multi-root paths
-.packages.generated
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
+**/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-**/generated_plugin_registrant.dart
 .packages
-.pub-preload-cache/
+.pub-cache/
 .pub/
-build/
-flutter_*.png
-linked_*.ds
-unlinked.ds
-unlinked_spec.ds
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
 
 # Android related
 **/android/**/gradle-wrapper.jar
-.gradle/
+**/android/.gradle
 **/android/captures/
 **/android/gradlew
 **/android/gradlew.bat
@@ -56,6 +56,7 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+*.keystore
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -87,33 +88,148 @@ unlinked_spec.ds
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+*.env
+
+# Firebase (if you use Firebase)
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# API keys and secrets
+lib/config/api_keys.dart
+lib/secrets.dart
+lib/config/secrets.dart
+
+# Sensitive files
+*.pem
+*.p12
+*.key
+*.mobileprovision
+*.certSigningRequest
+
 # macOS
-**/Flutter/ephemeral/
-**/Pods/
-**/macos/Flutter/GeneratedPluginRegistrant.swift
-**/macos/Flutter/ephemeral
-**/xcuserdata/
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
 # Windows
-**/windows/flutter/generated_plugin_registrant.cc
-**/windows/flutter/generated_plugin_registrant.h
-**/windows/flutter/generated_plugins.cmake
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
 # Linux
-**/linux/flutter/generated_plugin_registrant.cc
-**/linux/flutter/generated_plugin_registrant.h
-**/linux/flutter/generated_plugins.cmake
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
 
 # Coverage
 coverage/
+*.lcov
+test/.test_coverage.dart
+lcov.info
 
-# Symbols
-app.*.symbols
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
 
-# Exceptions to above rules.
-!**/ios/**/default.mode1v3
-!**/ios/**/default.mode2v3
-!**/ios/**/default.pbxuser
-!**/ios/**/default.perspectivev3
-!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-!/dev/ci/**/Gemfile.lock
+# Localization
+*.arb.cache
+l10n/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# IDE specific
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+
+# FVM (Flutter Version Management)
+.fvm/flutter_sdk
+.fvm/fvm_config.json
+
+# Fastlane (if you use it for CI/CD)
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# Crashlytics
+**/crashlytics-build.properties
+**/com_crashlytics_export_strings.xml
+
+# Node modules (if you have web or use any Node tools)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Built application files
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+release/
