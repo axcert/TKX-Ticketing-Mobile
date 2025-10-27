@@ -43,7 +43,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             left: 0,
             right: 0,
             child: Opacity(
-              opacity: 0.3,
+              opacity: 0.1,
               child: Image.asset(
                 'assets/login_bg.png',
                 fit: BoxFit.contain,

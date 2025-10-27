@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -145,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             left: 0,
             right: 0,
             child: Opacity(
-              opacity: 0.3,
+              opacity: 0.1,
               child: Image.asset(
                 'assets/login_bg.png',
                 fit: BoxFit.contain,
@@ -711,7 +712,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       // Handle send reset code - show verification
                                       _showVerification();
                                     } else {
-                                      // Handle login
+                                      // Handle login - Navigate to Dashboard
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const HomeScreen(),
+                                        ),
+                                      );
                                     }
                                   }
                                 },
