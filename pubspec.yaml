@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   provider: ^6.1.5+1
+  intl: ^0.19.0
+  mobile_scanner: ^5.2.3
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +61,12 @@ flutter:
     - assets/K.png
     - assets/X.png
     - assets/Ticketing.png
+    - assets/event_placeholder.png
+    - assets/No Events container.png
+    - assets/ticket icon.png
+    - assets/round1.png
+    - assets/round2.png
+    - assets/online-ticket 2.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
