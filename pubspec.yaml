@@ -37,6 +37,7 @@ dependencies:
   provider: ^6.1.5+1
   intl: ^0.19.0
   mobile_scanner: ^5.2.3
+  flutter_svg: ^2.0.15
 
 dev_dependencies:
   flutter_test:
@@ -60,7 +61,13 @@ flutter:
     - assets/T.png
     - assets/K.png
     - assets/X.png
+    - assets/T.svg
+    - assets/K.svg
+    - assets/X.svg
     - assets/Ticketing.png
+    - assets/Ticketing.svg
+    - assets/Ticketing (1).svg
+    - assets/Group_39.png
     - assets/event_placeholder.png
     - assets/No Events container.png
     - assets/ticket icon.png

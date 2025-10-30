@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashScreen extends StatefulWidget {
   final Duration duration;
@@ -116,65 +117,78 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
             // Layer 4: Content - TKX Logo with rotating X
             SafeArea(
-              child: Center(
-                child: AnimatedOpacity(
-                  opacity: _hideContent ? 0.0 : 1.0,
-                  duration: const Duration(milliseconds: 500),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // TKX Logo with rotating X
-                      Row(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Responsive sizing based on screen height and width
+                  final screenHeight = constraints.maxHeight;
+                  final screenWidth = constraints.maxWidth;
+                  final isSmallScreen = screenHeight < 600 || screenWidth < 360;
+                  final logoHeight = isSmallScreen ? screenHeight * 0.08 : screenHeight * 0.1;
+                  final ticketingHeight = isSmallScreen ? screenHeight * 0.05 : screenHeight * 0.065;
+                  final spacing = isSmallScreen ? 2.0 : 3.0;
+                  final topPadding = isSmallScreen ? 2.0 : 4.0;
+
+                  return Center(
+                    child: AnimatedOpacity(
+                      opacity: _hideContent ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // T letter
-                          Image.asset(
-                            'assets/T.png',
-                            height: 60,
-                            fit: BoxFit.contain,
+                          // TKX Logo with rotating X
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // T letter
+                              SvgPicture.asset(
+                                'assets/T.svg',
+                                height: logoHeight,
+                                fit: BoxFit.contain,
+                              ),
+                              SizedBox(width: spacing),
+                              // K letter
+                              SvgPicture.asset(
+                                'assets/K.svg',
+                                height: logoHeight,
+                                fit: BoxFit.contain,
+                              ),
+                              SizedBox(width: spacing),
+                              // X letter with rotation animation
+                              RotationTransition(
+                                turns: _rotation,
+                                child: SvgPicture.asset(
+                                  'assets/X.svg',
+                                  height: logoHeight,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 3),
-                          // K letter
-                          Image.asset(
-                            'assets/K.png',
-                            height: 60,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(width: 3),
-                          // X letter with rotation animation
-                          RotationTransition(
-                            turns: _rotation,
-                            child: Image.asset(
-                              'assets/X.png',
-                              height: 60,
-                              fit: BoxFit.contain,
+
+                          // Animated "Ticketing" text that appears after 1 second
+                          AnimatedOpacity(
+                            opacity: _showTicketing ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 500),
+                            child: Padding(
+                              padding: EdgeInsets.only(top: topPadding),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/Ticketing (1).svg',
+                                  height: ticketingHeight,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
-
-                      // Animated "Ticketing" text that appears after 1 second
-                      AnimatedOpacity(
-                        opacity: _showTicketing ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 500),
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Center(
-                            child: Image.asset(
-                              'assets/Ticketing.png',
-                              height: 40,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

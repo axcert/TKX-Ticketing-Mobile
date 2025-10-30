@@ -116,12 +116,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           builder: (context, setState) {
             return Dialog(
               backgroundColor: Colors.transparent,
+              elevation: 0,
               insetPadding: const EdgeInsets.all(16),
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  color: const Color(0xFFEFEFEF),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -148,32 +149,43 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
+
+                    // Horizontal divider
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 1,
+                    ),
+
+                    const SizedBox(height: 16),
 
                     // Vibrate option
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Vibrate',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Vibrate',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Vibrate if scan is successful',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Vibrate if scan is successful',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Switch(
                           value: _vibrateOnScan,
@@ -184,10 +196,21 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               });
                             });
                           },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
+                          activeTrackColor: const Color(0xFF1F5CBF),
+                          inactiveTrackColor: Colors.grey.shade300,
+                          thumbColor: const WidgetStatePropertyAll(Colors.white),
+                          trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Horizontal divider
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 1,
                     ),
 
                     const SizedBox(height: 16),
@@ -196,26 +219,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Beep',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Beep',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Beep if scan is successful',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Beep if scan is successful',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Switch(
                           value: _beepOnScan,
@@ -226,10 +251,21 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               });
                             });
                           },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
+                          activeTrackColor: const Color(0xFF1F5CBF),
+                          inactiveTrackColor: Colors.grey.shade300,
+                          thumbColor: const WidgetStatePropertyAll(Colors.white),
+                          trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Horizontal divider
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 1,
                     ),
 
                     const SizedBox(height: 16),
@@ -238,26 +274,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Auto Check-in',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Auto Check-in',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Scans check in automatically',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Scans check in automatically',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Switch(
                           value: _autoCheckIn,
@@ -268,8 +306,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               });
                             });
                           },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
+                          activeTrackColor: const Color(0xFF1F5CBF),
+                          inactiveTrackColor: Colors.grey.shade300,
+                          thumbColor: const WidgetStatePropertyAll(Colors.white),
+                          trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
                         ),
                       ],
                     ),

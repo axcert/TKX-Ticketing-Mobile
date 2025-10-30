@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -101,15 +102,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _startCountdown();
   }
 
-  void _backToForgotPassword() {
-    setState(() {
-      _animationController.reset();
-      _isVerification = false;
-      _animationController.forward();
-    });
-    _timer?.cancel();
-  }
-
   void _showSetNewPassword() {
     setState(() {
       _animationController.reset();
@@ -118,6 +110,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       _animationController.forward();
     });
     _timer?.cancel();
+  }
+
+  String _maskEmail(String email) {
+    if (email.isEmpty) return 'test@gmail.com';
+
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+
+    final username = parts[0];
+    final domain = parts[1];
+
+    if (username.length <= 2) {
+      return '${username[0]}***@$domain';
+    }
+
+    return '${username.substring(0, 2)}***@$domain';
   }
 
   @override
@@ -135,18 +143,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             height: double.infinity,
           ),
 
-          // Layer 2: Light blue color overlay with high opacity
+          // Layer 2: Light blue color overlay
           Container(
-            color: const Color(0xFFE8F4F8).withValues(alpha: 0.95),
+            color: const Color(0xFFC1E7F7).withValues(alpha: 0.70),
           ),
 
           // Layer 3: Login background image overlay with reduced opacity
           Positioned(
-            top: 0,
+            top: 60,
             left: 0,
             right: 0,
             child: Opacity(
-              opacity: 0.1,
+              opacity: 0.2,
               child: Image.asset(
                 'assets/login_bg.png',
                 fit: BoxFit.contain,
@@ -158,39 +166,49 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
+                // Detect small screens (like Samsung Galaxy S4 Mini)
+                final isSmallScreen = constraints.maxHeight < 600 || constraints.maxWidth < 360;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Spacer to show background at top - more space in forgot password mode
+                    // Reduce spacing on small screens
+                    SizedBox(
+                      height: constraints.maxHeight * (_isForgotPassword || _isVerification || _isSetNewPassword
+                          ? (isSmallScreen ? 0.30 : 0.38)
+                          : (isSmallScreen ? 0.20 : 0.25)),
                     ),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    // Welcome Card - Expanded to fill remaining space
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: constraints.maxWidth * 0.06,
+                          vertical: constraints.maxHeight * (isSmallScreen ? 0.018 : 0.025),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 15,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Expanded(
-                              child: Container(),
-                            ),
-                            // Welcome Card
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                              child: SingleChildScrollView(
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                             // TKX Logo - Centered inside card
                             Center(
                               child: Row(
@@ -199,41 +217,41 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // T letter
-                                  Image.asset(
-                                    'assets/T.png',
-                                    height: 50,
+                                  SvgPicture.asset(
+                                    'assets/T.svg',
+                                    height: constraints.maxHeight * (isSmallScreen ? 0.065 : 0.08),
                                     fit: BoxFit.contain,
                                   ),
-                                  const SizedBox(width: 2),
+                                  SizedBox(width: constraints.maxWidth * 0.005),
                                   // K letter
-                                  Image.asset(
-                                    'assets/K.png',
-                                    height: 50,
+                                  SvgPicture.asset(
+                                    'assets/K.svg',
+                                    height: constraints.maxHeight * (isSmallScreen ? 0.065 : 0.08),
                                     fit: BoxFit.contain,
                                   ),
-                                  const SizedBox(width: 2),
+                                  SizedBox(width: constraints.maxWidth * 0.005),
                                   // X letter
-                                  Image.asset(
-                                    'assets/X.png',
-                                    height: 50,
+                                  SvgPicture.asset(
+                                    'assets/X.svg',
+                                    height: constraints.maxHeight * (isSmallScreen ? 0.065 : 0.08),
                                     fit: BoxFit.contain,
                                   ),
                                 ],
                               ),
                             ),
 
-                            const SizedBox(height: 6),
+                            SizedBox(height: constraints.maxHeight * (isSmallScreen ? 0.006 : 0.008)),
 
                             // Ticketing text
                             Center(
-                              child: Image.asset(
-                                'assets/Ticketing.png',
-                                height: 30,
+                              child: SvgPicture.asset(
+                                'assets/Ticketing (1).svg',
+                                height: constraints.maxHeight * (isSmallScreen ? 0.042 : 0.05),
                                 fit: BoxFit.contain,
                               ),
                             ),
 
-                            const SizedBox(height: 32),
+                            SizedBox(height: constraints.maxHeight * (isSmallScreen ? 0.035 : 0.045)),
 
                             // Welcome text or Forgot Password or Verification or Set New Password text with animation
                             FadeTransition(
@@ -244,33 +262,33 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     : (_isVerification
                                         ? 'Verify Your Identity'
                                         : (_isForgotPassword ? 'Forgot Password' : 'Welcome!')),
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                style: TextStyle(
+                                  fontSize: constraints.maxWidth * 0.065,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: constraints.maxHeight * 0.003),
                             FadeTransition(
                               opacity: _fadeAnimation,
                               child: Text(
                                 _isSetNewPassword
                                     ? 'Create a strong password to protect your account.'
                                     : (_isVerification
-                                        ? 'Enter the verification code we send to\n${_emailController.text.isNotEmpty ? _emailController.text : 'i****@gamil.com'}'
+                                        ? 'Enter the verification code we send to\n${_maskEmail(_emailController.text)}'
                                         : (_isForgotPassword
                                             ? 'Enter the email you used to register'
-                                            : 'Sign in to manage tickets and ticket\nhappening.')),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                  height: 1.4,
+                                            : 'Log in to manage event check-ins and ticket\nscanning.')),
+                                style: TextStyle(
+                                  fontSize: constraints.maxWidth * 0.033,
+                                  color: const Color(0xFF6B7280),
+                                  height: 1.3,
                                 ),
                               ),
                             ),
 
-                            const SizedBox(height: 24),
+                            SizedBox(height: constraints.maxHeight * 0.035),
 
                             // Show different fields based on mode
                             if (_isSetNewPassword) ...[
@@ -341,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ),
                               ),
 
-                              const SizedBox(height: 18),
+                              SizedBox(height: constraints.maxHeight * 0.022),
 
                               // Confirm Password Field
                               FadeTransition(
@@ -523,7 +541,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
                             // Show countdown timer and resend when in verification mode
                             if (_isVerification) ...[
-                              const SizedBox(height: 20),
+                              SizedBox(height: constraints.maxHeight * 0.025),
                               FadeTransition(
                                 opacity: _fadeAnimation,
                                 child: Row(
@@ -576,7 +594,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: !_isForgotPassword && !_isVerification && !_isSetNewPassword
                                 ? Column(
                                     children: [
-                                      const SizedBox(height: 18),
+                                      SizedBox(height: constraints.maxHeight * 0.022),
 
                                       // Password TextField
                                       FadeTransition(
@@ -642,7 +660,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         ),
                                       ),
 
-                              const SizedBox(height: 8),
+                              SizedBox(height: constraints.maxHeight * 0.02),
 
                               // Forgot Password link
                               Align(
@@ -672,7 +690,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         : const SizedBox.shrink(),
                       ),
 
-                            const SizedBox(height: 20),
+                            // Spacing before login button
+                            SizedBox(height: constraints.maxHeight * 0.025),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
 
                             // Login Button or Send Reset Code or Verify Code or Update Password Button
                             SizedBox(
@@ -749,9 +773,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                             ),
 
-                            // Show "Back to Login" link when not in normal login mode
-                            if (_isForgotPassword || _isVerification || _isSetNewPassword) ...[
-                              const SizedBox(height: 16),
+                            // Spacing after login button
+                            SizedBox(height: constraints.maxHeight * 0.03),
+
+                            // Show "Back to Login" link only on forgot password screen
+                            if (_isForgotPassword && !_isVerification && !_isSetNewPassword) ...[
+                              SizedBox(height: constraints.maxHeight * 0.02),
                               Center(
                                 child: TextButton(
                                   onPressed: () {
@@ -763,8 +790,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         _isForgotPassword = false;
                                         _animationController.forward();
                                       });
-                                    } else if (_isVerification) {
-                                      _backToForgotPassword();
                                     } else {
                                       _toggleMode();
                                     }
@@ -792,13 +817,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                       ),
                     ),
-
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  ],
                 );
               },
             ),

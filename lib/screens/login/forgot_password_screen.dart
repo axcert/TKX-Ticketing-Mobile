@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -60,19 +61,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     constraints: BoxConstraints(
                       minHeight: constraints.maxHeight,
                     ),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: Container(),
-                            ),
-                            // Forgot Password Card
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Spacer to show more background at top
+                        SizedBox(height: constraints.maxHeight * 0.40),
+                        // Forgot Password Card
+                        Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: constraints.maxWidth * 0.064,
+                                vertical: constraints.maxHeight * 0.04,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
@@ -99,62 +98,62 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           // T letter
-                                          Image.asset(
-                                            'assets/T.png',
-                                            height: 50,
+                                          SvgPicture.asset(
+                                            'assets/T.svg',
+                                            height: constraints.maxHeight * 0.062,
                                             fit: BoxFit.contain,
                                           ),
-                                          const SizedBox(width: 2),
+                                          SizedBox(width: constraints.maxWidth * 0.005),
                                           // K letter
-                                          Image.asset(
-                                            'assets/K.png',
-                                            height: 50,
+                                          SvgPicture.asset(
+                                            'assets/K.svg',
+                                            height: constraints.maxHeight * 0.062,
                                             fit: BoxFit.contain,
                                           ),
-                                          const SizedBox(width: 2),
+                                          SizedBox(width: constraints.maxWidth * 0.005),
                                           // X letter
-                                          Image.asset(
-                                            'assets/X.png',
-                                            height: 50,
+                                          SvgPicture.asset(
+                                            'assets/X.svg',
+                                            height: constraints.maxHeight * 0.062,
                                             fit: BoxFit.contain,
                                           ),
                                         ],
                                       ),
                                     ),
 
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: constraints.maxHeight * 0.008),
 
                                     // Ticketing text
                                     Center(
-                                      child: Image.asset(
-                                        'assets/Ticketing.png',
-                                        height: 30,
+                                      child: SvgPicture.asset(
+                                        'assets/Ticketing (1).svg',
+                                        height: constraints.maxHeight * 0.037,
                                         fit: BoxFit.contain,
                                       ),
                                     ),
 
-                                    const SizedBox(height: 32),
+                                    SizedBox(height: constraints.maxHeight * 0.04),
 
                                     // Forgot Password text
-                                    const Text(
+                                    Text(
                                       'Forgot Password',
                                       style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: constraints.maxWidth * 0.058,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black87,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    const Text(
+                                    SizedBox(height: constraints.maxHeight * 0.01),
+                                    Text(
                                       'Enter the email you used to register',
                                       style: TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF6B7280),
+                                        fontSize: constraints.maxWidth * 0.034,
+                                        color: const Color(0xFF6B7280),
                                         height: 1.4,
                                       ),
                                     ),
 
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: constraints.maxHeight * 0.03),
 
                                     // Email TextField
                                     TextFormField(
@@ -212,7 +211,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       },
                                     ),
 
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: constraints.maxHeight * 0.03),
 
                                     // Send Reset Code Button
                                     SizedBox(
@@ -254,7 +253,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       ),
                                     ),
 
-                                    const SizedBox(height: 16),
+                                    SizedBox(height: constraints.maxHeight * 0.02),
 
                                     // Back to Login link
                                     Center(
@@ -281,15 +280,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         ),
                                       ),
                                     ),
+
+                                    // Bottom spacing
+                                    SizedBox(height: constraints.maxHeight * 0.05),
                                   ],
                                 ),
                               ),
-                            ),
-
-                            const SizedBox(height: 24),
-                          ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 );

@@ -97,11 +97,17 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                   controller: _newPasswordController,
                   obscureText: _obscureNewPassword,
                   decoration: InputDecoration(
-                    hintText: 'New Password',
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade400,
+                    labelText: 'New Password',
+                    labelStyle: TextStyle(
+                      color: Colors.grey.shade600,
                       fontSize: 14,
                     ),
+                    floatingLabelStyle: const TextStyle(
+                      color: Color(0xFF1F5CBF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                     filled: true,
                     fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
@@ -162,11 +168,17 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    hintText: 'Confirm Password',
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade400,
+                    labelText: 'Confirm Password',
+                    labelStyle: TextStyle(
+                      color: Colors.grey.shade600,
                       fontSize: 14,
                     ),
+                    floatingLabelStyle: const TextStyle(
+                      color: Color(0xFF1F5CBF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                     filled: true,
                     fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(

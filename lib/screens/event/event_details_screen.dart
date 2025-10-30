@@ -120,24 +120,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.green.shade400,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Text(
-              'Ongoing',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -155,21 +137,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
+                          child: Row(
+                            children: [
                           // Event Image
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
@@ -250,8 +235,35 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                            ],
+                          ),
+                        ),
+
+                        // Ongoing Badge positioned at top-right on the border
+                        Positioned(
+                          top: -10,
+                          right: 16,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD1FAE5),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF10B981),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Text(
+                              'Ongoing',
+                              style: TextStyle(
+                                color: Color(0xFF059669),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -274,27 +286,30 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           color: Colors.black87,
                         ),
                       ),
-                      TextButton.icon(
+                      ElevatedButton.icon(
                         onPressed: () {
                           // Handle refresh
                         },
                         icon: const Icon(
-                          Icons.refresh,
-                          size: 18,
-                          color: Color(0xFF1F5CBF),
+                          Icons.sync,
+                          size: 16,
+                          color: Colors.white,
                         ),
                         label: const Text(
                           'Refresh',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF1F5CBF),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F5CBF),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ],
@@ -557,7 +572,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           'External Scanner',
                           false,
                           onTap: () {
-                            showBluetoothScannerBottomSheet(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BluetoothScannerSetupScreen(),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -669,40 +689,35 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-        children: [
-          // VIP Badge or Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: scan['isVip'] ? Colors.yellow.shade100 : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: scan['isVip']
-                  ? const Text(
-                      'VIP',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    )
-                  : Icon(
-                      Icons.confirmation_number_outlined,
-                      color: Colors.grey.shade600,
-                      size: 24,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  // Ticket Icon (rounded circle)
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
                     ),
-            ),
-          ),
-          const SizedBox(width: 12),
+                    child: Center(
+                      child: Icon(
+                        Icons.confirmation_number_outlined,
+                        color: Colors.grey.shade600,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
           // Ticket Info
           Expanded(
             child: Column(
@@ -767,8 +782,40 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               ),
             ],
           ),
-        ],
-      ),
+                ],
+              ),
+            ),
+
+            // VIP Badge positioned at top-left corner
+            if (scan['isVip'] == true)
+              Positioned(
+                top: -4,
+                left: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'VIP',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

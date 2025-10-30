@@ -92,7 +92,53 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ];
 
   // COMPLETED EVENTS
-  final List<Event> _completedEvents = [];
+  final List<Event> _completedEvents = [
+    Event(
+      id: 'completed-1',
+      title: 'RAN RASA SADE',
+      imageUrl: 'assets/event_placeholder.png',
+      dateTime: DateTime(2025, 10, 12, 18, 0),
+      venue: 'Kularathna Auditorium',
+      location: 'Ananda College',
+      isCompleted: true,
+    ),
+    Event(
+      id: 'completed-2',
+      title: 'Oktoberfest Kandana',
+      imageUrl: 'assets/event_placeholder.png',
+      dateTime: DateTime(2025, 10, 12, 18, 0),
+      venue: 'Kularathna Auditorium',
+      location: 'Ananda College',
+      isCompleted: true,
+    ),
+    Event(
+      id: 'completed-3',
+      title: 'Mervin',
+      imageUrl: 'assets/event_placeholder.png',
+      dateTime: DateTime(2025, 10, 12, 18, 0),
+      venue: 'Kularathna Auditorium',
+      location: 'Ananda College',
+      isCompleted: true,
+    ),
+    Event(
+      id: 'completed-4',
+      title: 'Prabhanandaya',
+      imageUrl: 'assets/event_placeholder.png',
+      dateTime: DateTime(2025, 10, 12, 18, 0),
+      venue: 'Kularathna Auditorium',
+      location: 'Ananda College',
+      isCompleted: true,
+    ),
+    Event(
+      id: 'completed-5',
+      title: 'Serened',
+      imageUrl: 'assets/event_placeholder.png',
+      dateTime: DateTime(2025, 10, 12, 18, 0),
+      venue: 'Kularathna Auditorium',
+      location: 'Ananda College',
+      isCompleted: true,
+    ),
+  ];
 
   @override
   void initState() {
@@ -232,12 +278,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
 
                   // Space for cards that extend beyond blue background
-                  SizedBox(height: _todayEvents.isEmpty ? 120 : (_todayEvents.length * 100).toDouble()),
+                  SizedBox(height: _todayEvents.isEmpty ? 80 : (_todayEvents.length * 80).toDouble()),
 
                   // Events Section Header with Tabs
                   Container(
                     color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -402,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildTodayEventCard(Event event) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -561,7 +607,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildEventCard(Event event) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -615,50 +661,50 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // Event Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  event.imageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
+                  // Event Image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      event.imageUrl,
                       width: 60,
                       height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.event,
-                        size: 30,
-                        color: Color(0xFF1F5CBF),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Event Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.event,
+                            size: 30,
+                            color: Color(0xFF1F5CBF),
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 6),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Event Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          event.title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(Icons.calendar_today, size: 12, color: Color(0xFF6B7280)),
