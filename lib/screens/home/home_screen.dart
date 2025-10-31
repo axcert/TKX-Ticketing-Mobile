@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 import 'side_menu.dart';
@@ -432,9 +433,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
           // Organization Name - Centered
           Center(
-            child: const Text(
+            child: Text(
               'Lotus Event',
-              style: TextStyle(
+              style: GoogleFonts.baloo2(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

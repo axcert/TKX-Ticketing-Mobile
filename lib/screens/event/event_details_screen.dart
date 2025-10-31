@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/event_model.dart';
 import '../../widgets/manual_checkin_bottom_sheet.dart';
 import '../../widgets/ticket_details_bottom_sheet.dart';
@@ -552,9 +553,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     children: [
                       // Manual Lookup
                       Expanded(
-                        child: _buildBottomNavItem(
-                          Icons.search,
-                          'Manual Lookup',
+                        child: _buildBottomNavItemWithSvg(
+                          'assets/Manual-check-in.svg',
+                          'Manual Check-In',
                           false,
                           onTap: () {
                             showManualCheckInBottomSheet(context);
@@ -567,8 +568,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
                       // External Scanner
                       Expanded(
-                        child: _buildBottomNavItem(
-                          Icons.qr_code_scanner_outlined,
+                        child: _buildBottomNavItemWithSvg(
+                          'assets/external-scanner.svg',
                           'External Scanner',
                           false,
                           onTap: () {
@@ -820,17 +821,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, bool isActive, {VoidCallback? onTap}) {
+  Widget _buildBottomNavItemWithSvg(String svgPath, String label, bool isActive, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: isActive ? const Color(0xFF1F5CBF) : Colors.grey.shade600,
-            size: 28,
+          SvgPicture.asset(
+            svgPath,
+            width: 28,
+            height: 28,
+            colorFilter: ColorFilter.mode(
+              isActive ? const Color(0xFF1F5CBF) : Colors.grey.shade600,
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(height: 6),
           Text(

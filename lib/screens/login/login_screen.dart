@@ -173,11 +173,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Spacer to show background at top - more space in forgot password mode
-                    // Reduce spacing on small screens
+                    // Balance between iPhone SE and Samsung screens
                     SizedBox(
                       height: constraints.maxHeight * (_isForgotPassword || _isVerification || _isSetNewPassword
-                          ? (isSmallScreen ? 0.30 : 0.38)
-                          : (isSmallScreen ? 0.20 : 0.25)),
+                          ? (isSmallScreen ? 0.35 : 0.30)
+                          : (isSmallScreen ? 0.30 : 0.20)),
                     ),
                     // Welcome Card - Expanded to fill remaining space
                     Expanded(
