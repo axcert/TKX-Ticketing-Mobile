@@ -107,7 +107,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.left,
             ),
           ),
         ],
@@ -156,7 +156,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
