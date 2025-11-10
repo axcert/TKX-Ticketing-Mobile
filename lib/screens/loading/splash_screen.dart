@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/config/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   final Duration duration;
@@ -15,7 +16,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late final AnimationController _fadeController;
   late final Animation<double> _fade;
   late final AnimationController _rotationController;
@@ -39,7 +41,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    _rotation = CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut);
+    _rotation = CurvedAnimation(
+      parent: _rotationController,
+      curve: Curves.easeInOut,
+    );
 
     _fadeController.forward();
 
@@ -95,7 +100,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
             // Layer 2: White color overlay with low opacity to lighten the background
             Container(
-              color: const Color(0xFFFFFFFF).withValues(alpha: 0.9), // 30% white overlay to lighten
+              color: const Color(
+                0xFFFFFFFF,
+              ).withValues(alpha: 0.9), // 30% white overlay to lighten
             ),
 
             // Layer 3: Linear gradient overlay with some transparency
@@ -106,8 +113,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF1F5CBF).withValues(alpha: 0.2), // Primary color with transparency
-                    const Color(0xFF27AAE1).withValues(alpha: 0.2), // Logo color with transparency
+                    AppColors.primary.withValues(
+                      alpha: 0.2,
+                    ), // Primary color with transparency
+                    AppColors.primary.withValues(
+                      alpha: 0.2,
+                    ), // Logo color with transparency
                   ],
                   stops: const [0.0, 1.0],
                 ),
