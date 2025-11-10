@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../home/home_screen.dart';
 import 'forgot_password_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
+import '../../../widgets/toast_message.dart';
+import '../../../providers/auth_provider.dart';
 
 class LoginBottomSheet extends StatefulWidget {
   const LoginBottomSheet({super.key});
@@ -23,12 +26,26 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
+
+      if (success && mounted) {
+        // Login successful, navigate to home
+        ToastMessage.success(context, 'Login successful!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (mounted && authProvider.errorMessage != null) {
+        // Show error message
+        ToastMessage.error(context, authProvider.errorMessage!);
+      }
     }
   }
 
@@ -76,7 +93,15 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
                   const SizedBox(height: 8),
                   _buildForgotPasswordButton(),
                   const SizedBox(height: 20),
-                  CustomElevatedButton(text: 'Login', onPressed: _handleLogin),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomElevatedButton(
+                        text: 'Login',
+                        onPressed: _handleLogin,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

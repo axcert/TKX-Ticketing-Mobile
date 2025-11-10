@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'otp_verification_bottom_sheet.dart';
 import 'login_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
+import '../../../widgets/toast_message.dart';
+import '../../../providers/auth_provider.dart';
 
 class ForgotPasswordBottomSheet extends StatefulWidget {
   const ForgotPasswordBottomSheet({super.key});
@@ -49,10 +52,26 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
     super.dispose();
   }
 
-  void _handleSendCode() {
+  Future<void> _handleSendCode() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pop(context);
-      OtpVerificationBottomSheet.show(context, email: _emailController.text);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      final success = await authProvider.forgotPassword(
+        _emailController.text.trim(),
+      );
+
+      if (success && mounted) {
+        // Code sent successfully, navigate to OTP screen
+        ToastMessage.success(context, 'Verification code sent to your email');
+        Navigator.pop(context);
+        OtpVerificationBottomSheet.show(
+          context,
+          email: _emailController.text.trim(),
+        );
+      } else if (mounted && authProvider.errorMessage != null) {
+        // Show error message
+        ToastMessage.error(context, authProvider.errorMessage!);
+      }
     }
   }
 
@@ -127,9 +146,14 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                   const SizedBox(height: 24),
                   _buildEmailField(),
                   const SizedBox(height: 20),
-                  CustomElevatedButton(
-                    text: 'Send Reset Code',
-                    onPressed: _handleSendCode,
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomElevatedButton(
+                        text: 'Send Reset Code',
+                        onPressed: _handleSendCode,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildBackToLoginButton(),

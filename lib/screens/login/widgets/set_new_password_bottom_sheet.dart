@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'login_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
+import '../../../widgets/toast_message.dart';
+import '../../../providers/auth_provider.dart';
 
 class SetNewPasswordBottomSheet extends StatefulWidget {
-  const SetNewPasswordBottomSheet({super.key});
+  final String email;
+  final String otp;
 
-  static void show(BuildContext context) {
+  const SetNewPasswordBottomSheet({
+    super.key,
+    required this.email,
+    required this.otp,
+  });
+
+  static void show(
+    BuildContext context, {
+    required String email,
+    required String otp,
+  }) {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -19,14 +33,19 @@ class SetNewPasswordBottomSheet extends StatefulWidget {
         return Align(
           alignment: Alignment.bottomCenter,
           child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: const SetNewPasswordBottomSheet(),
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+            ),
+            child: SetNewPasswordBottomSheet(
+              email: email,
+              otp: otp,
+            ),
           ),
         );
       },
@@ -52,44 +71,57 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
     super.dispose();
   }
 
-  void _handleUpdatePassword() {
+  Future<void> _handleUpdatePassword() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated successfully!')),
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      final success = await authProvider.resetPassword(
+        widget.email,
+        widget.otp,
+        _newPasswordController.text,
       );
-      Navigator.pop(context);
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) {
-          showGeneralDialog(
-            context: context,
-            barrierDismissible: false,
-            barrierLabel: '',
-            barrierColor: Colors.transparent,
-            transitionDuration: const Duration(milliseconds: 600),
-            pageBuilder: (context, animation1, animation2) {
-              return const SizedBox.shrink();
-            },
-            transitionBuilder: (context, animation, secondaryAnimation, child) {
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: SlideTransition(
-                  position:
-                      Tween<Offset>(
-                        begin: const Offset(0, 1),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        ),
+
+      if (success && mounted) {
+        // Password reset successful
+        ToastMessage.success(context, 'Password updated successfully!');
+
+        // Navigate back to login
+        Navigator.pop(context);
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            showGeneralDialog(
+              context: context,
+              barrierDismissible: false,
+              barrierLabel: '',
+              barrierColor: Colors.transparent,
+              transitionDuration: const Duration(milliseconds: 600),
+              pageBuilder: (context, animation1, animation2) {
+                return const SizedBox.shrink();
+              },
+              transitionBuilder: (context, animation, secondaryAnimation, child) {
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 1),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
                       ),
-                  child: const LoginBottomSheet(),
-                ),
-              );
-            },
-          );
-        }
-      });
+                    ),
+                    child: const LoginBottomSheet(),
+                  ),
+                );
+              },
+            );
+          }
+        });
+      } else if (mounted && authProvider.errorMessage != null) {
+        // Show error message
+        ToastMessage.error(context, authProvider.errorMessage!);
+      }
     }
   }
 
@@ -181,9 +213,14 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
                     isConfirmPassword: true,
                   ),
                   const SizedBox(height: 20),
-                  CustomElevatedButton(
-                    text: 'Update Password',
-                    onPressed: _handleUpdatePassword,
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomElevatedButton(
+                        text: 'Update Password',
+                        onPressed: _handleUpdatePassword,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildBackToLoginButton(),
