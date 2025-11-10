@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tkx_ticketing_mobile/config/app_theme.dart';
 
 class CustomElevatedButton extends StatelessWidget {
   final String text;
@@ -44,38 +45,38 @@ class CustomElevatedButton extends StatelessWidget {
             ),
           )
         : icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  icon!,
-                  const SizedBox(width: 8),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: fontSize ?? 15,
-                      fontWeight: fontWeight ?? FontWeight.w600,
-                      color: textColor ?? Colors.white,
-                    ),
-                  ),
-                ],
-              )
-            : Text(
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              icon!,
+              const SizedBox(width: 8),
+              Text(
                 text,
                 style: TextStyle(
                   fontSize: fontSize ?? 15,
                   fontWeight: fontWeight ?? FontWeight.w600,
                   color: textColor ?? Colors.white,
                 ),
-              );
+              ),
+            ],
+          )
+        : Text(
+            text,
+            style: TextStyle(
+              fontSize: fontSize ?? 15,
+              fontWeight: fontWeight ?? FontWeight.w600,
+              color: textColor ?? Colors.white,
+            ),
+          );
 
     final button = ElevatedButton(
       onPressed: (enabled && !isLoading) ? onPressed : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? const Color(0xFF5B8DEE),
+        backgroundColor: backgroundColor ?? AppColors.primary,
         foregroundColor: textColor ?? Colors.white,
-        disabledBackgroundColor: const Color(0xFFE5E7EB),
-        disabledForegroundColor: const Color(0xFF9CA3AF),
+        disabledBackgroundColor: AppColors.primaryLight,
+        disabledForegroundColor: AppColors.primaryLight,
         padding: padding ?? const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius ?? 8),
@@ -86,10 +87,7 @@ class CustomElevatedButton extends StatelessWidget {
     );
 
     return isFullWidth
-        ? SizedBox(
-            width: double.infinity,
-            child: button,
-          )
+        ? SizedBox(width: double.infinity, child: button)
         : button;
   }
 }
