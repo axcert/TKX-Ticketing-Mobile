@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
+
+import 'package:tkx_ticketing_mobile/config/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   final Duration duration;
