@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.3.5
   connectivity_plus: ^6.1.1
   google_fonts: ^6.3.2
+  flutter_svg: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -59,18 +60,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/splash_bg.png
-    - assets/login_bg.png
-    - assets/T.png
-    - assets/K.png
-    - assets/X.png
-    - assets/Ticketing.png
-    - assets/event_placeholder.png
-    - assets/No Events container.png
-    - assets/ticket icon.png
-    - assets/round1.png
-    - assets/round2.png
-    - assets/online-ticket 2.png
+    - assets/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
