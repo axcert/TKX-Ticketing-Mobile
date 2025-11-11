@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/event_model.dart';
+import 'package:mobile_app/config/app_theme.dart';
+import 'package:mobile_app/models/event_model.dart';
 import 'side_menu.dart';
 import '../event/event_details_screen.dart';
 import '../event/scan_not_available_screen.dart';
@@ -13,7 +14,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   // TODAY'S EVENTS - Events happening today (for featured card at top)
@@ -27,22 +29,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       venue: 'Kulasingha Auditorium',
       location: 'Ananda College',
     ),
-    Event(
-      id: 'today-2',
-      title: 'Marambari',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime(2025, 10, 12, 18, 0),
-      venue: 'Kulasingha Auditorium',
-      location: 'Ananda College',
-    ),
-    Event(
-      id: 'today-3',
-      title: 'inthedark...',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime(2025, 10, 12, 18, 0),
-      venue: 'Kulasingha Auditorium',
-      location: 'Ananda College',
-    ),
   ];
 
   // UPCOMING EVENTS - Future events (for bottom list)
@@ -50,42 +36,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // Setting events to 7 days in the future to test "upcoming" behavior
   final List<Event> _upcomingEvents = [
     Event(
-      id: 'upcoming-1',
-      title: 'THE SHOGUN SHIFT 3.0',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime.now().add(const Duration(days: 7)),
-      venue: 'Kularathna Auditorium',
-      location: 'Ananda College',
-    ),
-    Event(
-      id: 'upcoming-2',
-      title: 'Marambari',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime.now().add(const Duration(days: 8)),
-      venue: 'Kulasingha Auditorium',
-      location: 'Ananda College',
-    ),
-    Event(
       id: 'upcoming-3',
       title: 'Marambari',
       imageUrl: 'assets/event_placeholder.png',
       dateTime: DateTime.now().add(const Duration(days: 9)),
-      venue: 'Kulasingha Auditorium',
-      location: 'Ananda College',
-    ),
-    Event(
-      id: 'upcoming-4',
-      title: 'Marambari',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime.now().add(const Duration(days: 10)),
-      venue: 'Kulasingha Auditorium',
-      location: 'Ananda College',
-    ),
-    Event(
-      id: 'upcoming-5',
-      title: 'Marambari',
-      imageUrl: 'assets/event_placeholder.png',
-      dateTime: DateTime.now().add(const Duration(days: 11)),
       venue: 'Kulasingha Auditorium',
       location: 'Ananda College',
     ),
@@ -117,15 +71,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       drawer: const SideMenu(),
       body: Column(
         children: [
           // App Bar
-          SafeArea(
-            bottom: false,
-            child: _buildAppBar(context),
-          ),
+          SafeArea(bottom: false, child: _buildAppBar(context)),
 
           // Scrollable content area
           Expanded(
@@ -142,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         width: double.infinity,
                         height: 200,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF1F5CBF),
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(24),
                             bottomRight: Radius.circular(24),
@@ -151,24 +101,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                         child: Column(
                           children: [
-                            const Text(
+                            Text(
                               "Today's Events",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
+                              style: Theme.of(context).textTheme.displayMedium!
+                                  .copyWith(
+                                    color: AppColors.textWhite,
+                                    fontSize: 26,
+                                  ),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               _getTodayDate(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
-                              ),
+                              style: Theme.of(context).textTheme.displayMedium!
+                                  .copyWith(
+                                    color: AppColors.textWhite,
+                                    fontSize: 18,
+                                  ),
                             ),
                           ],
                         ),
@@ -182,10 +130,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           right: 16,
                           child: Column(
                             children: _todayEvents
-                                .map((event) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 8),
-                                      child: _buildTodayEventCard(event),
-                                    ))
+                                .map(
+                                  (event) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: _buildTodayEventCard(event),
+                                  ),
+                                )
                                 .toList(),
                           ),
                         ),
@@ -213,13 +163,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         color: Colors.grey.shade400,
                                       ),
                                       const SizedBox(height: 12),
-                                      const Text(
+                                      Text(
                                         'No Today Events',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .copyWith(fontSize: 15),
                                       ),
                                     ],
                                   );
@@ -232,11 +181,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
 
                   // Space for cards that extend beyond blue background
-                  SizedBox(height: _todayEvents.isEmpty ? 120 : (_todayEvents.length * 100).toDouble()),
+                  SizedBox(
+                    height: _todayEvents.isEmpty
+                        ? 120
+                        : (_todayEvents.length * 100).toDouble(),
+                  ),
 
                   // Events Section Header with Tabs
                   Container(
-                    color: Colors.white,
+                    color: AppColors.textWhite,
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,67 +241,73 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     color: Colors.white,
                     child: _tabController.index == 0
                         ? (_upcomingEvents.isEmpty
-                            ? Container(
-                                height: 300,
-                                alignment: Alignment.center,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.event_busy,
-                                      size: 64,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No events available',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey.shade600,
+                              ? Container(
+                                  height: 300,
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.event_busy,
+                                        size: 64,
+                                        color: Colors.grey.shade400,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: Column(
-                                  children: _upcomingEvents
-                                      .map((event) => _buildEventCard(event))
-                                      .toList(),
-                                ),
-                              ))
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No events available',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  child: Column(
+                                    children: _upcomingEvents
+                                        .map((event) => _buildEventCard(event))
+                                        .toList(),
+                                  ),
+                                ))
                         : (_completedEvents.isEmpty
-                            ? Container(
-                                height: 300,
-                                alignment: Alignment.center,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.event_busy,
-                                      size: 64,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No events available',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey.shade600,
+                              ? Container(
+                                  height: 300,
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.event_busy,
+                                        size: 64,
+                                        color: Colors.grey.shade400,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: Column(
-                                  children: _completedEvents
-                                      .map((event) => _buildEventCard(event))
-                                      .toList(),
-                                ),
-                              )),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No events available',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  child: Column(
+                                    children: _completedEvents
+                                        .map((event) => _buildEventCard(event))
+                                        .toList(),
+                                  ),
+                                )),
                   ),
                 ],
               ),
@@ -362,9 +321,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget _buildAppBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F5CBF),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFF1F5CBF)),
       child: Stack(
         children: [
           // Menu Icon on the left
@@ -386,13 +343,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
           // Organization Name - Centered
           Center(
-            child: const Text(
+            child: Text(
               'Lotus Event',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium!.copyWith(color: AppColors.textWhite),
             ),
           ),
         ],
@@ -502,7 +457,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today, size: 11, color: Color(0xFF6B7280)),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 11,
+                          color: Color(0xFF6B7280),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -520,7 +479,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 11, color: Color(0xFF6B7280)),
+                        const Icon(
+                          Icons.location_on,
+                          size: 11,
+                          color: Color(0xFF6B7280),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -661,7 +624,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today, size: 12, color: Color(0xFF6B7280)),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Color(0xFF6B7280),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -679,7 +646,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 12, color: Color(0xFF6B7280)),
+                        const Icon(
+                          Icons.location_on,
+                          size: 12,
+                          color: Color(0xFF6B7280),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(

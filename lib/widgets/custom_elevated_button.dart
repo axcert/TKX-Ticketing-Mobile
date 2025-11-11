@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tkx_ticketing_mobile/config/app_theme.dart';
+import 'package:mobile_app/config/app_theme.dart';
 
 class CustomElevatedButton extends StatelessWidget {
   final String text;
