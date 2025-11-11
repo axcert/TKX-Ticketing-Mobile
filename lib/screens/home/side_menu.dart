@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/config/app_theme.dart';
+import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 
@@ -8,10 +10,11 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Drawer(
       backgroundColor: AppColors.background,
       child: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 15),
+        // padding: EdgeInsets.symmetric(horizontal: 10),
         children: [
           DrawerHeader(
             child: Row(
@@ -20,29 +23,31 @@ class SideMenu extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: Colors.grey.shade300,
+                  backgroundColor: AppColors.border,
                   backgroundImage: const AssetImage(
                     'assets/profile_placeholder.png',
                   ),
                   onBackgroundImageError: (exception, stackTrace) {},
                   child: const Icon(Icons.person, size: 30, color: Colors.grey),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ismael Krohn',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'ismaelkrohn@gamil.com',
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: AppColors.textSecondary,
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${authProvider.user?.firstName ?? 'User'} ${authProvider.user?.lastName ?? 'Krohn'}',
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        '${authProvider.user?.email}',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
