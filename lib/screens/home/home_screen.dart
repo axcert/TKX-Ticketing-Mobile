@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen>
                             height: 150,
                             child: Center(
                               child: SvgPicture.asset(
-                                'assets/no_today_events.svg',
+                                'assets/no_today_event.svg',
                               ),
                             ),
                           ),
