@@ -6,6 +6,7 @@ import 'screens/home/home_screen.dart';
 import 'config/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/app_provider.dart';
+import 'providers/event_provider.dart';
 import 'services/storage_service.dart';
 import 'services/connectivity_service.dart';
 
@@ -14,7 +15,6 @@ void main() async {
 
   // Initialize storage service
   await StorageService().init();
-
   // Initialize connectivity service
   final connectivityService = ConnectivityService();
   await connectivityService.initialize();
@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: connectivityService),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
         // Add more providers here as needed
       ],
       child: MaterialApp(
@@ -87,8 +88,6 @@ class _SplashToLoginWrapperState extends State<SplashToLoginWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return const SplashScreen(
-      duration: Duration(seconds: 2),
-    );
+    return const SplashScreen(duration: Duration(seconds: 2));
   }
 }
