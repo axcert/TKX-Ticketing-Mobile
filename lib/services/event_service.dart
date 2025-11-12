@@ -249,30 +249,22 @@ class EventService {
     return Event(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? 'Untitled Event',
-      imageUrl:
-          json['image_url'] ??
-          json['image'] ??
-          json['poster_url'] ??
-          json['banner_url'] ??
-          'assets/event_placeholder.png',
+      imageUrl: json['image_url'] ?? 'assets/event_placeholder.png',
       dateTime: _parseDateTime(
         json['date'] ??
             json['start_date'] ??
             json['event_date'] ??
             json['datetime'],
       ),
-      venue: json['venue'] ?? json['location'] ?? 'TBA',
-      location:
-          json['location'] ??
-          json['address'] ??
-          json['city'] ??
-          json['venue'] ??
-          'TBA',
+      venue: json['venue'] ?? json['location'] ?? 'N/A',
+      location: json['location'] ?? 'N/A',
       isCompleted:
           json['is_completed'] ??
           json['completed'] ??
           json['status'] == 'completed' ??
           false,
+      category: json['category'] ?? 'N/A',
+      description: json['description'] ?? 'No description available',
     );
   }
 
