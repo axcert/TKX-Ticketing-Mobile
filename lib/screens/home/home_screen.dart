@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/models/event_model.dart';
+import 'package:mobile_app/widgets/offline_indicator.dart';
 import 'side_menu.dart';
 import 'tabs/upcoming_events_tab.dart';
 import 'tabs/completed_events_tab.dart';
@@ -86,8 +88,12 @@ class _HomeScreenState extends State<HomeScreen>
 
       body: Column(
         children: [
+          // Offline Indicator
+
           // App Bar
-          SafeArea(bottom: false, child: _buildAppBar(context)),
+          SizedBox(height: MediaQuery.of(context).padding.top),
+          const OfflineIndicator(),
+          _buildAppBar(context),
 
           // Scrollable content area
           Expanded(
@@ -120,6 +126,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   .copyWith(
                                     color: AppColors.textWhite,
                                     fontSize: 26,
+                                    fontFamily: GoogleFonts.plusJakartaSans()
+                                        .fontFamily,
                                   ),
                             ),
                             const SizedBox(height: 6),
@@ -127,8 +135,10 @@ class _HomeScreenState extends State<HomeScreen>
                               _getTodayDate(),
                               style: Theme.of(context).textTheme.displayMedium!
                                   .copyWith(
-                                    color: AppColors.textWhite,
+                                    color: AppColors.border,
                                     fontSize: 18,
+                                    fontFamily: GoogleFonts.plusJakartaSans()
+                                        .fontFamily,
                                   ),
                             ),
                           ],
@@ -187,38 +197,30 @@ class _HomeScreenState extends State<HomeScreen>
                       children: [
                         Text(
                           'Events',
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: Theme.of(context).textTheme.titleLarge!
+                              .copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey.shade300,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: TabBar(
-                            controller: _tabController,
-                            labelColor: AppColors.primary,
-                            unselectedLabelColor: AppColors.surfaceDark,
-                            labelStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
 
-                            unselectedLabelStyle: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.surfaceDark,
-                            ),
-                            indicatorWeight: 2,
-                            tabs: const [
-                              Tab(text: 'Upcoming events'),
-                              Tab(text: 'Completed events'),
-                            ],
+                        TabBar(
+                          controller: _tabController,
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: AppColors.surfaceDark,
+                          labelStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
+
+                          unselectedLabelStyle: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.surfaceDark,
+                          ),
+                          indicatorWeight: 2,
+                          tabs: const [
+                            Tab(text: 'Upcoming events'),
+                            Tab(text: 'Completed events'),
+                          ],
                         ),
                       ],
                     ),
@@ -226,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen>
 
                   // Events List based on selected tab
                   Container(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     child: _tabController.index == 0
                         ? UpcomingEventsTab(events: _upcomingEvents)
                         : CompletedEventsTab(events: _completedEvents),
@@ -285,15 +287,15 @@ class _HomeScreenState extends State<HomeScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.black.withValues(alpha: 0.1),
+          color: AppColors.shadow.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: AppColors.shadow.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -350,13 +352,13 @@ class _HomeScreenState extends State<HomeScreen>
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
+                        color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.event,
                         size: 30,
-                        color: Color(0xFF1F5CBF),
+                        color: AppColors.primary,
                       ),
                     );
                   },
