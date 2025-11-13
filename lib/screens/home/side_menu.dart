@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:mobile_app/providers/event_provider.dart';
+import 'package:mobile_app/main.dart';
 import 'package:provider/provider.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
@@ -14,7 +16,6 @@ class SideMenu extends StatelessWidget {
     return Drawer(
       backgroundColor: AppColors.background,
       child: ListView(
-        // padding: EdgeInsets.symmetric(horizontal: 10),
         children: [
           DrawerHeader(
             child: Row(
@@ -36,7 +37,7 @@ class SideMenu extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${authProvider.user?.firstName ?? 'User'} ${authProvider.user?.lastName ?? 'Krohn'}',
+                        '${authProvider.user?.fullName}',
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 4),
@@ -143,8 +144,89 @@ class SideMenu extends StatelessWidget {
             iconBgColor: const Color(0xFFFFEBEE),
             title: 'Log Out',
             subtitle: 'Logout from app',
-            onTap: () {
-              // Handle logout
+            onTap: () async {
+              // Show confirmation dialog
+              await showDialog(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        // Close the confirmation dialog
+                        Navigator.pop(dialogContext);
+
+                        if (!context.mounted) return;
+
+                        // Close the drawer
+                        // Navigator.pop(context);
+
+                        if (!context.mounted) return;
+
+                        // Show loading dialog
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) =>
+                              const Center(child: CircularProgressIndicator()),
+                        );
+
+                        try {
+                          final authProvider = Provider.of<AuthProvider>(
+                            context,
+                            listen: false,
+                          );
+                          final eventProvider = Provider.of<EventProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                          // Call logout API and clear local data
+                          await authProvider.logout();
+
+                          // Clear event data
+                          eventProvider.clearEvents();
+
+                          if (!context.mounted) return;
+
+                          // Close loading dialog
+                          Navigator.of(context, rootNavigator: true).pop();
+
+                          if (!context.mounted) return;
+
+                          // Navigate to SplashToLoginWrapper which will show login screen
+                          Navigator.of(
+                            context,
+                            rootNavigator: true,
+                          ).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => const SplashToLoginWrapper(),
+                            ),
+                            (route) => false,
+                          );
+                        } catch (e) {
+                          // Close loading dialog on error
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Logout failed: ${e.toString()}'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
         ],

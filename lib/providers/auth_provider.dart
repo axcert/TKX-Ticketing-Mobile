@@ -57,13 +57,19 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (response.success && response.data != null) {
-        // Extract token and user data from response
+        // Extract token, expires_in, and user data from response
         final token = response.data!['token'] ?? response.data!['access_token'];
+        final expiresIn = response.data!['expires_in'];
         final userData = response.data!['user'] ?? response.data!;
 
         // Save authentication data
         if (token != null) {
           await _storageService.saveAuthToken(token);
+        }
+
+        // Save token expiration time
+        if (expiresIn != null) {
+          await _storageService.saveTokenExpiration(expiresIn as int);
         }
 
         // Save user data
@@ -121,16 +127,27 @@ class AuthProvider extends ChangeNotifier {
       final email = await _storageService.getUserEmail();
 
       if (token != null && userId != null && email != null) {
-        // User has valid token, fetch user profile
-        final response = await _authService.getUserProfile();
+        // Check if token is expired
+        final isExpired = await _storageService.isTokenExpired();
 
-        if (response.success && response.data != null) {
-          _user = response.data!;
-          _isAuthenticated = true;
-        } else {
-          // Token might be invalid, clear data
+        if (isExpired) {
+          // Token expired, clear data and logout
+          print('🔒 Token expired, logging out');
           await _storageService.clearUserData();
           _isAuthenticated = false;
+          _user = null;
+        } else {
+          // User has valid token, fetch user profile
+          final response = await _authService.getUserProfile();
+
+          if (response.success && response.data != null) {
+            _user = response.data!;
+            _isAuthenticated = true;
+          } else {
+            // Token might be invalid, clear data
+            await _storageService.clearUserData();
+            _isAuthenticated = false;
+          }
         }
       } else {
         _isAuthenticated = false;
@@ -187,10 +204,7 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      final response = await _authService.verifyOtp(
-        email: email,
-        otp: otp,
-      );
+      final response = await _authService.verifyOtp(email: email, otp: otp);
 
       if (response.success) {
         setLoading(false);
