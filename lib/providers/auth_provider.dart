@@ -12,12 +12,14 @@ class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _errorMessage;
+  String? _successMessage;
   User? _user;
 
   // Getters
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String? get successMessage => _successMessage;
   User? get user => _user;
 
   // Set loading state
@@ -32,9 +34,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Set success message
+  void setSuccess(String? message) {
+    _successMessage = message;
+    notifyListeners();
+  }
+
   // Clear error
   void clearError() {
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  // Clear success
+  void clearSuccess() {
+    _successMessage = null;
     notifyListeners();
   }
 
@@ -166,6 +180,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       setLoading(true);
       clearError();
+      clearSuccess();
 
       // Check internet connectivity
       if (_connectivityService.isOffline) {
@@ -177,6 +192,8 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.forgotPassword(email: email);
 
       if (response.success) {
+        // Store success message from backend
+        setSuccess(response.message ?? 'Verification code sent to your email');
         setLoading(false);
         return true;
       } else {
@@ -250,6 +267,49 @@ class AuthProvider extends ChangeNotifier {
         return true;
       } else {
         setError(response.message ?? 'Failed to reset password');
+        setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      setError('An error occurred: ${e.toString()}');
+      setLoading(false);
+      return false;
+    }
+  }
+
+  /// Update user profile
+  Future<bool> updateProfile({
+    required String firstName,
+    required String lastName,
+  }) async {
+    try {
+      setLoading(true);
+      clearError();
+      clearSuccess();
+
+      // Check internet connectivity
+      if (_connectivityService.isOffline) {
+        setError('No internet connection. Please check your network.');
+        setLoading(false);
+        return false;
+      }
+
+      final response = await _authService.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+      );
+
+      if (response.success && response.data != null) {
+        // Update user data with new profile information
+        _user = response.data!;
+
+        // Store success message from backend
+        setSuccess(response.message ?? 'Profile updated successfully');
+        setLoading(false);
+        notifyListeners();
+        return true;
+      } else {
+        setError(response.message ?? 'Failed to update profile');
         setLoading(false);
         return false;
       }

@@ -349,4 +349,38 @@ class AuthService {
       return ApiResponse.error('Unexpected error: ${e.toString()}');
     }
   }
+
+  /// Update user profile
+  Future<ApiResponse<User>> updateProfile({
+    required String firstName,
+    required String lastName,
+  }) async {
+    try {
+      final url = Uri.parse(
+        AppConfig.buildUrl(AppConfig.updateProfileEndpoint),
+      );
+      final headers = await _getHeaders(includeAuth: true);
+      final body = jsonEncode({'first_name': firstName, 'last_name': lastName});
+
+      print('🌐 API Request: PUT $url');
+      print('📦 Body: $body');
+
+      final response = await http
+          .put(url, headers: headers, body: body)
+          .timeout(AppConfig.connectionTimeout);
+
+      print('✅ Response Status: ${response.statusCode}');
+      print('📄 Response Body: ${response.body}');
+
+      return _handleResponse<User>(response, (json) => User.fromJson(json));
+    } on SocketException catch (e) {
+      print('❌ SocketException: $e');
+      return ApiResponse.error(
+        'Cannot connect to server. Please check your network connection.',
+      );
+    } catch (e) {
+      print('❌ Unexpected error: $e');
+      return ApiResponse.error('Unexpected error: ${e.toString()}');
+    }
+  }
 }

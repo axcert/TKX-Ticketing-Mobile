@@ -23,7 +23,7 @@ class AppConfig {
 
   // User Endpoints
   static const String userProfileEndpoint = '/users/me';
-  static const String updateProfileEndpoint = '/user/update';
+  static const String updateProfileEndpoint = '/users/me';
 
   // Event Endpoints
   // get all events

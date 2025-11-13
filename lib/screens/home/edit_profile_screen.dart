@@ -17,7 +17,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _phoneNumberController = TextEditingController();
   bool _isLoading = true;
 
   @override
@@ -52,15 +51,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _populateFields(User user) {
     _firstNameController.text = user.firstName;
     _lastNameController.text = user.lastName;
-    _phoneNumberController.text = user.phone ?? '';
   }
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _phoneNumberController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSaveChanges() async {
+    if (_formKey.currentState!.validate()) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      final success = await authProvider.updateProfile(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
+
+      if (mounted) {
+        if (success) {
+          // Show success message from backend
+          final message =
+              authProvider.successMessage ?? 'Profile updated successfully';
+          ToastMessage.success(context, message);
+
+          // Navigate back after successful update
+          Navigator.pop(context);
+        } else if (authProvider.errorMessage != null) {
+          // Show error message from backend
+          ToastMessage.error(context, authProvider.errorMessage!);
+        }
+      }
+    }
   }
 
   @override
@@ -159,14 +182,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
 
                           const SizedBox(height: 10),
-
-                          // Phone Number Field
-                          _buildTextField(
-                            controller: _phoneNumberController,
-                            label: '',
-                            hint: 'Phone Number',
-                            keyboardType: TextInputType.phone,
-                          ),
                         ],
                       ),
                     ),
@@ -174,20 +189,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 );
               },
             ),
-      bottomNavigationBar: BottomAppBar(
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: CustomElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                // Handle save changes
-                ToastMessage.success(context, 'Profile updated successfully');
-              }
-            },
-            text: 'Save Changes',
-          ),
-        ),
+      bottomNavigationBar: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          return BottomAppBar(
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: CustomElevatedButton(
+                onPressed: _handleSaveChanges,
+                text: 'Save Changes',
+                isLoading: authProvider.isLoading,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -206,12 +221,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           controller: controller,
           keyboardType: keyboardType,
           decoration: InputDecoration(hintText: hint),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'This field is required';
-            }
-            return null;
-          },
+          // validator: (value) {
+          //   if (value == null || value.isEmpty) {
+          //     return 'This field is required';
+          //   }
+          //   return null;
+          // },
         ),
       ],
     );
