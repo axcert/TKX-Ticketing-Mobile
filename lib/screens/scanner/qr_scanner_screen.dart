@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
+import '../../widgets/showpreferences_dialog_box.dart';
 import '../ticket/valid_ticket_screen.dart';
 
 class QRScannerScreen extends StatefulWidget {
@@ -108,177 +109,19 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     }
   }
 
+  // Show preferences dialog
   void _showPreferencesDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              insetPadding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with title and close button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Scanner Preferences',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, size: 24),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Vibrate option
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Vibrate',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Vibrate if scan is successful',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        Switch(
-                          value: _vibrateOnScan,
-                          onChanged: (value) {
-                            setState(() {
-                              this.setState(() {
-                                _vibrateOnScan = value;
-                              });
-                            });
-                          },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Beep option
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Beep',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Beep if scan is successful',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        Switch(
-                          value: _beepOnScan,
-                          onChanged: (value) {
-                            setState(() {
-                              this.setState(() {
-                                _beepOnScan = value;
-                              });
-                            });
-                          },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Auto Check-in option
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Auto Check-in',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Scans check in automatically',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        Switch(
-                          value: _autoCheckIn,
-                          onChanged: (value) {
-                            setState(() {
-                              this.setState(() {
-                                _autoCheckIn = value;
-                              });
-                            });
-                          },
-                          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
+    ShowPreferencesDialogBox.show(
+      context,
+      vibrateOnScan: _vibrateOnScan,
+      beepOnScan: _beepOnScan,
+      autoCheckIn: _autoCheckIn,
+      onPreferencesChanged: (vibrateOnScan, beepOnScan, autoCheckIn) {
+        setState(() {
+          _vibrateOnScan = vibrateOnScan;
+          _beepOnScan = beepOnScan;
+          _autoCheckIn = autoCheckIn;
+        });
       },
     );
   }
@@ -290,10 +133,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       body: Stack(
         children: [
           // Camera View
-          MobileScanner(
-            controller: cameraController,
-            onDetect: _onDetect,
-          ),
+          MobileScanner(controller: cameraController, onDetect: _onDetect),
 
           // Overlay with scanning frame
           _buildScanOverlay(),
@@ -305,7 +145,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             right: 0,
             child: SafeArea(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -369,7 +212,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
@@ -407,7 +253,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              _isTorchOn ? Icons.lightbulb : Icons.lightbulb_outline,
+                              _isTorchOn
+                                  ? Icons.lightbulb
+                                  : Icons.lightbulb_outline,
                               color: _isTorchOn ? Colors.white : Colors.white,
                               size: 28,
                             ),
@@ -506,9 +354,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   Widget _buildScanOverlay() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-      ),
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5)),
       child: Center(
         child: Stack(
           alignment: Alignment.center,
@@ -518,10 +364,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               width: 280,
               height: 280,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
+                border: Border.all(color: Colors.white, width: 2),
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
@@ -541,8 +384,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
-                          left: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
+                          top: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
+                          left: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
                         ),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(16),
@@ -559,8 +408,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
-                          right: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
+                          top: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
+                          right: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
                         ),
                         borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(16),
@@ -577,8 +432,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
-                          left: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
+                          bottom: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
+                          left: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
                         ),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(16),
@@ -595,8 +456,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
-                          right: BorderSide(color: const Color(0xFF1F5CBF), width: 4),
+                          bottom: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
+                          right: BorderSide(
+                            color: const Color(0xFF1F5CBF),
+                            width: 4,
+                          ),
                         ),
                         borderRadius: const BorderRadius.only(
                           bottomRight: Radius.circular(16),
@@ -660,9 +527,7 @@ class _ScanningLineAnimationState extends State<_ScanningLineAnimation>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return CustomPaint(
-          painter: ScanLinePainter(_animation.value),
-        );
+        return CustomPaint(painter: ScanLinePainter(_animation.value));
       },
     );
   }
@@ -682,11 +547,7 @@ class ScanLinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final y = size.height * progress;
-    canvas.drawLine(
-      Offset(0, y),
-      Offset(size.width, y),
-      paint,
-    );
+    canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
   }
 
   @override

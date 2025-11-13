@@ -3,16 +3,25 @@ import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:mobile_app/providers/event_provider.dart';
 import 'package:mobile_app/main.dart';
+import 'package:mobile_app/widgets/showpreferences_dialog_box.dart';
 import 'package:provider/provider.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 
-class SideMenu extends StatelessWidget {
+class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
 
   @override
+  State<SideMenu> createState() => _SideMenuState();
+}
+
+class _SideMenuState extends State<SideMenu> {
+  @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    bool _vibrateOnScan = true;
+    bool _beepOnScan = false;
+    bool _autoCheckIn = false;
     return Drawer(
       backgroundColor: AppColors.background,
       child: ListView(
@@ -114,6 +123,19 @@ class SideMenu extends StatelessWidget {
             title: 'Scanner Preferences',
             subtitle: 'Customize how your scanner responds',
             onTap: () {
+              ShowPreferencesDialogBox.show(
+                context,
+                vibrateOnScan: _vibrateOnScan,
+                beepOnScan: _beepOnScan,
+                autoCheckIn: _autoCheckIn,
+                onPreferencesChanged: (vibrateOnScan, beepOnScan, autoCheckIn) {
+                  setState(() {
+                    _vibrateOnScan = vibrateOnScan;
+                    _beepOnScan = beepOnScan;
+                    _autoCheckIn = autoCheckIn;
+                  });
+                },
+              );
               // Navigate to Scanner Preferences
             },
           ),
@@ -205,7 +227,8 @@ class SideMenu extends StatelessWidget {
                             rootNavigator: true,
                           ).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder: (context) => const SplashToLoginWrapper(),
+                              builder: (context) =>
+                                  const SplashToLoginWrapper(),
                             ),
                             (route) => false,
                           );
