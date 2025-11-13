@@ -62,14 +62,17 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
 
       if (success && mounted) {
         // Code sent successfully, navigate to OTP screen
-        ToastMessage.success(context, 'Verification code sent to your email');
+        // Show message from backend
+        final message = authProvider.successMessage ??
+            'Verification code sent to your email';
+        ToastMessage.success(context, message);
         Navigator.pop(context);
         OtpVerificationBottomSheet.show(
           context,
           email: _emailController.text.trim(),
         );
       } else if (mounted && authProvider.errorMessage != null) {
-        // Show error message
+        // Show error message from backend
         ToastMessage.error(context, authProvider.errorMessage!);
       }
     }
