@@ -217,9 +217,10 @@ class _OtpVerificationBottomSheetState
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             maxLength: 1,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge!.copyWith(color: AppColors.surfaceDark),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: AppColors.surfaceDark,
+              fontWeight: FontWeight.w700,
+            ),
             decoration: InputDecoration(
               counterText: '',
               filled: true,
