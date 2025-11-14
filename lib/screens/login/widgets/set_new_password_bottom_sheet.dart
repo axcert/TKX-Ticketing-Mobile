@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'login_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
@@ -33,19 +34,14 @@ class SetNewPasswordBottomSheet extends StatefulWidget {
         return Align(
           alignment: Alignment.bottomCenter,
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ),
-            ),
-            child: SetNewPasswordBottomSheet(
-              email: email,
-              otp: otp,
-            ),
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+            child: SetNewPasswordBottomSheet(email: email, otp: otp),
           ),
         );
       },
@@ -79,6 +75,7 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
         widget.email,
         widget.otp,
         _newPasswordController.text,
+        _confirmPasswordController.text,
       );
 
       if (success && mounted) {
@@ -98,23 +95,25 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
               pageBuilder: (context, animation1, animation2) {
                 return const SizedBox.shrink();
               },
-              transitionBuilder: (context, animation, secondaryAnimation, child) {
-                return Align(
-                  alignment: Alignment.bottomCenter,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 1),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
+              transitionBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return Align(
+                      alignment: Alignment.bottomCenter,
+                      child: SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0, 1),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: const LoginBottomSheet(),
                       ),
-                    ),
-                    child: const LoginBottomSheet(),
-                  ),
-                );
-              },
+                    );
+                  },
             );
           }
         });
@@ -188,7 +187,7 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLogo(),
+                  SvgPicture.asset('assets/tkx_logo.svg'),
                   const SizedBox(height: 32),
                   _buildTitle(),
                   const SizedBox(height: 8),
@@ -229,27 +228,6 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLogo() {
-    return Center(
-      child: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/T.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/K.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/X.png', height: 50),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Image.asset('assets/Ticketing.png', height: 30),
-        ],
       ),
     );
   }

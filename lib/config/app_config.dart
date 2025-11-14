@@ -16,10 +16,11 @@ class AppConfig {
   static const String loginEndpoint = '/auth/login';
   static const String logoutEndpoint = '/auth/logout';
 
-  static const String forgotPasswordEndpoint = '/auth/forgot-password';
-  static const String resetPasswordEndpoint = '/auth/reset-password';
-  static const String changePasswordEndpoint = '/auth/change-password';
-  static const String refreshTokenEndpoint = '/auth/refresh-token';
+  static const String forgotPasswordVerifyEmail =
+      '/auth/gatekeeper/forgot-password';
+  static const String verifyOtpEndpoint = '/auth/gatekeeper/verify-otp';
+  static const String changePasswordEndpoint =
+      '/auth/gatekeeper/reset-password';
 
   // User Endpoints
   static const String userProfileEndpoint = '/users/me';

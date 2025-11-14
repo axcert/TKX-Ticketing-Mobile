@@ -242,7 +242,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> resetPassword(
     String email,
     String otp,
-    String newPassword,
+    String password,
+    String password_confirmation,
   ) async {
     try {
       setLoading(true);
@@ -258,8 +259,8 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.resetPassword(
         email: email,
         otp: otp,
-        password: newPassword,
-        passwordConfirmation: newPassword,
+        password: password,
+        passwordConfirmation: password_confirmation,
       );
 
       if (response.success) {
