@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app/config/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'otp_verification_bottom_sheet.dart';
 import 'login_bottom_sheet.dart';
@@ -63,7 +66,8 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
       if (success && mounted) {
         // Code sent successfully, navigate to OTP screen
         // Show message from backend
-        final message = authProvider.successMessage ??
+        final message =
+            authProvider.successMessage ??
             'Verification code sent to your email';
         ToastMessage.success(context, message);
         Navigator.pop(context);
@@ -122,8 +126,8 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: AppColors.background,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -141,7 +145,10 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLogo(),
+                  Align(
+                    alignment: Alignment.center,
+                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+                  ),
                   const SizedBox(height: 32),
                   _buildTitle(),
                   const SizedBox(height: 8),
@@ -169,42 +176,17 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
     );
   }
 
-  Widget _buildLogo() {
-    return Center(
-      child: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/T.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/K.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/X.png', height: 50),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Image.asset('assets/Ticketing.png', height: 30),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTitle() {
-    return const Text(
+    return Text(
       'Forgot Password',
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
+      style: Theme.of(context).textTheme.headlineLarge,
     );
   }
 
   Widget _buildSubtitle() {
-    return const Text(
+    return Text(
       'Enter the email you used to register',
-      style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 13),
     );
   }
 
@@ -212,28 +194,7 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
-        filled: true,
-        fillColor: const Color(0xFFF9FAFB),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF1F5CBF), width: 1.5),
-        ),
-      ),
+      decoration: InputDecoration(labelText: 'Email'),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter your email';
@@ -250,12 +211,12 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
     return Center(
       child: TextButton(
         onPressed: _handleBackToLogin,
-        child: const Text(
+        child: Text(
           'Back to Login',
-          style: TextStyle(
-            color: Color(0xFF1F5CBF),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            fontFamily: GoogleFonts.inter().fontFamily,
+            color: AppColors.primary,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
