@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mobile_app/config/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'set_new_password_bottom_sheet.dart';
 import 'forgot_password_bottom_sheet.dart';
@@ -110,11 +112,7 @@ class _OtpVerificationBottomSheetState
       // OTP verified, navigate to set new password
       ToastMessage.success(context, 'Code verified successfully');
       Navigator.pop(context);
-      SetNewPasswordBottomSheet.show(
-        context,
-        email: widget.email,
-        otp: otp,
-      );
+      SetNewPasswordBottomSheet.show(context, email: widget.email, otp: otp);
     } else if (mounted && authProvider.errorMessage != null) {
       // Show error message
       ToastMessage.error(context, authProvider.errorMessage!);
@@ -143,8 +141,8 @@ class _OtpVerificationBottomSheetState
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: AppColors.background,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -160,7 +158,10 @@ class _OtpVerificationBottomSheetState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLogo(),
+                Align(
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset('assets/tkx_logo.svg'),
+                ),
                 const SizedBox(height: 32),
                 _buildTitle(),
                 const SizedBox(height: 8),
@@ -189,46 +190,17 @@ class _OtpVerificationBottomSheetState
     );
   }
 
-  Widget _buildLogo() {
-    return Center(
-      child: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/T.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/K.png', height: 50),
-              const SizedBox(width: 2),
-              Image.asset('assets/X.png', height: 50),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Image.asset('assets/Ticketing.png', height: 30),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTitle() {
-    return const Text(
+    return Text(
       'Verify Your Identity',
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
+      style: Theme.of(context).textTheme.headlineLarge,
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
       'Enter the verification code we send to\n${widget.email}',
-      style: const TextStyle(
-        fontSize: 13,
-        color: Color(0xFF6B7280),
-        height: 1.4,
-      ),
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13),
     );
   }
 
@@ -245,27 +217,14 @@ class _OtpVerificationBottomSheetState
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             maxLength: 1,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge!.copyWith(color: AppColors.surfaceDark),
             decoration: InputDecoration(
               counterText: '',
               filled: true,
               fillColor: const Color(0xFFF9FAFB),
               contentPadding: EdgeInsets.zero,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: Color(0xFF1F5CBF),
-                  width: 2,
-                ),
-              ),
             ),
             onChanged: (value) {
               if (value.isNotEmpty && index < 5) {
@@ -284,26 +243,28 @@ class _OtpVerificationBottomSheetState
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           "Don't get the code?  ",
-          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 13),
         ),
         if (_canResend)
           GestureDetector(
             onTap: _handleResendCode,
-            child: const Text(
+            child: Text(
               'Resend',
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(
                 fontSize: 13,
-                color: Color(0xFF1F5CBF),
-                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
               ),
             ),
           )
         else
           Text(
             'Resend in ${_countdown}s',
-            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall!.copyWith(fontSize: 13),
           ),
       ],
     );
@@ -313,13 +274,11 @@ class _OtpVerificationBottomSheetState
     return Center(
       child: TextButton(
         onPressed: _handleBackToForgotPassword,
-        child: const Text(
+        child: Text(
           'Back to Login',
-          style: TextStyle(
-            color: Color(0xFF1F5CBF),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge!.copyWith(color: AppColors.primary),
         ),
       ),
     );
