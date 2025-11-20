@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/config/app_theme.dart';
+import 'package:mobile_app/widgets/event_card.dart';
+import 'package:mobile_app/widgets/event_statistic.dart';
 import '../../models/event_model.dart';
 import '../../widgets/manual_checkin_bottom_sheet.dart';
 import '../../widgets/ticket_details_bottom_sheet.dart';
@@ -9,10 +12,7 @@ import 'scan_not_available_screen.dart';
 class EventDetailsScreen extends StatefulWidget {
   final Event event;
 
-  const EventDetailsScreen({
-    super.key,
-    required this.event,
-  });
+  const EventDetailsScreen({super.key, required this.event});
 
   @override
   State<EventDetailsScreen> createState() => _EventDetailsScreenState();
@@ -101,23 +101,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F5CBF),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.background),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: Text(
           widget.event.title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium!.copyWith(color: AppColors.background),
         ),
         centerTitle: true,
         actions: [
@@ -125,16 +123,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.green.shade400,
+              color: AppColors.success,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Text(
+            child: Text(
               'Ongoing',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: AppColors.background),
             ),
           ),
         ],
@@ -143,10 +139,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         child: Column(
           children: [
             // Blue background area
-            Container(
-              height: 60,
-              color: const Color(0xFF1F5CBF),
-            ),
+            Container(height: 60, color: const Color(0xFF1F5CBF)),
 
             // Event Info Card (overlapping)
             Transform.translate(
@@ -155,104 +148,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          // Event Image
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              widget.event.imageUrl,
-                              width: 70,
-                              height: 70,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.event,
-                                    size: 30,
-                                    color: Color(0xFF1F5CBF),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Event Details
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.event.title,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.calendar_today, size: 12, color: Color(0xFF6B7280)),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        widget.event.formattedDateTime,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.location_on, size: 12, color: Color(0xFF6B7280)),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        '${widget.event.venue} - ${widget.event.location}',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    child: EventCard(event: widget.event),
                   ),
 
                   const SizedBox(height: 24),
@@ -261,215 +157,51 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: Column(
-                children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Event Statistics',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          // Handle refresh
-                        },
-                        icon: const Icon(
-                          Icons.refresh,
-                          size: 18,
-                          color: Color(0xFF1F5CBF),
-                        ),
-                        label: const Text(
-                          'Refresh',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF1F5CBF),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Statistics Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
                       children: [
-                        // Progress Circle (Left side)
-                        SizedBox(
-                          width: 70,
-                          height: 70,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 70,
-                                height: 70,
-                                child: CircularProgressIndicator(
-                                  value: 0.68,
-                                  strokeWidth: 6,
-                                  backgroundColor: Colors.grey.shade200,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.green,
-                                  ),
-                                ),
+                        // Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Event Statistics',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
-                              const Text(
-                                '68%',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () {
+                                // Handle refresh
+                              },
+                              icon: Icon(
+                                Icons.refresh,
+                                size: 18,
+                                color: AppColors.primary,
                               ),
-                            ],
-                          ),
+                              label: Text(
+                                'Refresh',
+                                style: Theme.of(context).textTheme.labelLarge!
+                                    .copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 24),
+                        const SizedBox(height: 16),
 
-                        // Middle Column (Registered & Remaining)
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // First row: Registered
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '500',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade800,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Registered',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Second row: Remaining
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '160',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade800,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Remaining',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 16),
-
-                        // Right Column (Checked-In & Invalid)
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // First row: Checked-In
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '340',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade800,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Checked-In',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Second row: Invalid
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '8',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade800,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Invalid',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Statistics Card
+                        EventStatisticWidget(),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
 
                   // Scan History Section
                   const Padding(
@@ -524,10 +256,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               clipBehavior: Clip.none,
               children: [
                 // Bottom bar background
-                Container(
-                  height: 80,
-                  color: Colors.white,
-                ),
+                Container(height: 80, color: Colors.white),
 
                 // Navigation items
                 Positioned.fill(
@@ -576,7 +305,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ScanNotAvailableScreen(event: widget.event),
+                            builder: (context) =>
+                                ScanNotAvailableScreen(event: widget.event),
                           ),
                         );
                       } else {
@@ -596,7 +326,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F5CBF).withValues(alpha: 0.3),
+                            color: const Color(
+                              0xFF1F5CBF,
+                            ).withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -676,104 +408,104 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
-        children: [
-          // VIP Badge or Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: scan['isVip'] ? Colors.yellow.shade100 : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: scan['isVip']
-                  ? const Text(
-                      'VIP',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+          children: [
+            // VIP Badge or Icon
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: scan['isVip']
+                    ? Colors.yellow.shade100
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: scan['isVip']
+                    ? const Text(
+                        'VIP',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      )
+                    : Icon(
+                        Icons.confirmation_number_outlined,
+                        color: Colors.grey.shade600,
+                        size: 24,
                       ),
-                    )
-                  : Icon(
-                      Icons.confirmation_number_outlined,
-                      color: Colors.grey.shade600,
-                      size: 24,
-                    ),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          // Ticket Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 12),
+            // Ticket Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    scan['ticketId'],
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    scan['name'],
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+            // Status and Time
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  scan['ticketId'],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusBgColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 14, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        scan['status'],
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
-                  scan['name'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  scan['time'],
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),
-          ),
-          // Status and Time
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      statusIcon,
-                      size: 14,
-                      color: statusColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      scan['status'],
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                scan['time'],
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, bool isActive, {VoidCallback? onTap}) {
+  Widget _buildBottomNavItem(
+    IconData icon,
+    String label,
+    bool isActive, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
