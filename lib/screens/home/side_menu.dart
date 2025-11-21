@@ -68,10 +68,9 @@ class _SideMenuState extends State<SideMenu> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Text(
               'General',
-              style: TextStyle(
-                fontSize: 16,
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: AppColors.textHint,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
               ),
             ),
           ),
@@ -80,8 +79,7 @@ class _SideMenuState extends State<SideMenu> {
           _buildMenuItem(
             context: context,
             icon: Icons.person_outline,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
+
             title: 'Edit Profile',
             subtitle: 'Edit your information',
             onTap: () {
@@ -99,8 +97,7 @@ class _SideMenuState extends State<SideMenu> {
           _buildMenuItem(
             context: context,
             icon: Icons.lock_outline,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
+
             title: 'Change Password',
             subtitle: 'Change Password',
             onTap: () {
@@ -118,22 +115,18 @@ class _SideMenuState extends State<SideMenu> {
           _buildMenuItem(
             context: context,
             icon: Icons.settings_outlined,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
             title: 'Scanner Preferences',
             subtitle: 'Customize how your scanner responds',
             onTap: () {
               ShowPreferencesDialogBox.show(
                 context,
-                vibrateOnScan: _vibrateOnScan,
-                beepOnScan: _beepOnScan,
-                autoCheckIn: _autoCheckIn,
+
                 onPreferencesChanged: (vibrateOnScan, beepOnScan, autoCheckIn) {
-                  setState(() {
-                    _vibrateOnScan = vibrateOnScan;
-                    _beepOnScan = beepOnScan;
-                    _autoCheckIn = autoCheckIn;
-                  });
+                  authProvider.updateUserPreferences(
+                    isVibrate: vibrateOnScan,
+                    isBeep: beepOnScan,
+                    isAutoCheckIn: autoCheckIn,
+                  );
                 },
               );
               // Navigate to Scanner Preferences
@@ -149,10 +142,9 @@ class _SideMenuState extends State<SideMenu> {
               alignment: Alignment.centerLeft,
               child: Text(
                 'Preferences',
-                style: TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: AppColors.textHint,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
                 ),
               ),
             ),
@@ -162,8 +154,8 @@ class _SideMenuState extends State<SideMenu> {
           _buildMenuItem(
             context: context,
             icon: Icons.logout,
-            iconColor: const Color(0xFFE53935),
-            iconBgColor: const Color(0xFFFFEBEE),
+            iconColor: AppColors.error,
+            iconBgColor: AppColors.error.withOpacity(0.3),
             title: 'Log Out',
             subtitle: 'Logout from app',
             onTap: () async {
@@ -239,7 +231,7 @@ class _SideMenuState extends State<SideMenu> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Logout failed: ${e.toString()}'),
-                                backgroundColor: Colors.red,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                           }
@@ -260,8 +252,8 @@ class _SideMenuState extends State<SideMenu> {
   Widget _buildMenuItem({
     required BuildContext context,
     required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
+    Color? iconColor,
+    Color? iconBgColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -275,10 +267,10 @@ class _SideMenuState extends State<SideMenu> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: iconBgColor,
+              color: iconBgColor ?? AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(icon, color: iconColor ?? AppColors.primary, size: 24),
           ),
 
       // Title and Subtitle
