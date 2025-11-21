@@ -77,11 +77,13 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
                 ),
                 IconButton(
                   onPressed: () {
-                    widget.onPreferencesChanged(
-                      _vibrateOnScan,
-                      _beepOnScan,
-                      _autoCheckIn,
-                    );
+                    setState(() {
+                      widget.onPreferencesChanged(
+                        _vibrateOnScan,
+                        _beepOnScan,
+                        _autoCheckIn,
+                      );
+                    });
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.close, size: 24),

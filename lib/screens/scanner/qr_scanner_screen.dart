@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/models/user_model.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
-import 'package:mobile_app/screens/ticket/already_checked_in_screen.dart';
-import 'package:mobile_app/screens/ticket/invalid_ticket_screen.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
@@ -10,6 +8,7 @@ import '../../widgets/showpreferences_dialog_box.dart';
 import '../ticket/valid_ticket_screen.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -22,6 +21,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   MobileScannerController cameraController = MobileScannerController();
   bool _isScanning = true;
   bool _isTorchOn = false;
+  late final AudioPlayer _player;
 
   // Sample scan history data
   final List<Map<String, dynamic>> _scanHistory = [
@@ -49,21 +49,30 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+  }
+
+  @override
   void dispose() {
     cameraController.dispose();
     super.dispose();
   }
 
-  void _handleScannedCode(String code, User user) {
-    if (user.isVibrate ?? false) {
+  void _handleScannedCode(String code, User user) async {
+    if (user.isVibrate ?? true) {
       Vibration.vibrate(duration: 100);
     }
 
     if (user.isBeep ?? true) {
-      SystemSound.play(SystemSoundType.click);
-      // await _player.play(AssetSource('assets/sounds/success.mp3'));
+      try {
+        await _player.play(AssetSource('invalid.mp3'));
+        print("Sound played successfully");
+      } catch (e) {
+        print("Error playing sound: $e");
+      }
     }
-    // if(user.auto)
 
     _showScanResult(code);
   }

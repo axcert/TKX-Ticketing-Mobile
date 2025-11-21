@@ -53,6 +53,9 @@ class AppConfig {
   static const String userIdKey = 'user_id';
   static const String userEmailKey = 'user_email';
   static const String isLoggedInKey = 'is_logged_in';
+  static const String isVibrateKey = 'is_vibrate';
+  static const String isBeepKey = 'is_beep';
+  static const String isAutoCheckInKey = 'is_auto_checkin';
 
   // App Configuration
   static const String appName = 'TKX Mobile';
