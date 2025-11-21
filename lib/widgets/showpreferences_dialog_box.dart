@@ -1,36 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:mobile_app/providers/auth_provider.dart';
 
 class ShowPreferencesDialogBox extends StatefulWidget {
-  final bool vibrateOnScan;
-  final bool beepOnScan;
-  final bool autoCheckIn;
   final Function(bool vibrateOnScan, bool beepOnScan, bool autoCheckIn)
   onPreferencesChanged;
 
   const ShowPreferencesDialogBox({
     super.key,
-    required this.vibrateOnScan,
-    required this.beepOnScan,
-    required this.autoCheckIn,
     required this.onPreferencesChanged,
   });
 
   /// Static method to show the dialog
   static void show(
     BuildContext context, {
-    required bool vibrateOnScan,
-    required bool beepOnScan,
-    required bool autoCheckIn,
     required Function(bool vibrateOnScan, bool beepOnScan, bool autoCheckIn)
     onPreferencesChanged,
   }) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return ShowPreferencesDialogBox(
-          vibrateOnScan: vibrateOnScan,
-          beepOnScan: beepOnScan,
-          autoCheckIn: autoCheckIn,
           onPreferencesChanged: onPreferencesChanged,
         );
       },
@@ -46,13 +38,14 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
   late bool _vibrateOnScan;
   late bool _beepOnScan;
   late bool _autoCheckIn;
-
   @override
   void initState() {
     super.initState();
-    _vibrateOnScan = widget.vibrateOnScan;
-    _beepOnScan = widget.beepOnScan;
-    _autoCheckIn = widget.autoCheckIn;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    _vibrateOnScan = authProvider.user!.isVibrate ?? true;
+    _beepOnScan = authProvider.user!.isBeep ?? false;
+    _autoCheckIn = authProvider.user!.isAutoCheckIn ?? false;
   }
 
   @override
@@ -84,7 +77,6 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
                 ),
                 IconButton(
                   onPressed: () {
-                    // Call callback with updated values before closing
                     widget.onPreferencesChanged(
                       _vibrateOnScan,
                       _beepOnScan,
@@ -140,6 +132,8 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
                 });
               },
             ),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),

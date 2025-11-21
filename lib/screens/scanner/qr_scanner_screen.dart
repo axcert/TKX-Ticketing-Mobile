@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/models/user_model.dart';
+import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:mobile_app/screens/ticket/already_checked_in_screen.dart';
+import 'package:mobile_app/screens/ticket/invalid_ticket_screen.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
 import '../../widgets/showpreferences_dialog_box.dart';
 import '../ticket/valid_ticket_screen.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -15,11 +22,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   MobileScannerController cameraController = MobileScannerController();
   bool _isScanning = true;
   bool _isTorchOn = false;
-
-  // Scanner preferences
-  bool _vibrateOnScan = true;
-  bool _beepOnScan = false;
-  bool _autoCheckIn = false;
 
   // Sample scan history data
   final List<Map<String, dynamic>> _scanHistory = [
@@ -52,23 +54,18 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     super.dispose();
   }
 
-  void _onDetect(BarcodeCapture capture) {
-    if (!_isScanning) return;
-
-    final List<Barcode> barcodes = capture.barcodes;
-
-    if (barcodes.isNotEmpty) {
-      final String? code = barcodes.first.rawValue;
-
-      if (code != null && code.isNotEmpty) {
-        setState(() {
-          _isScanning = false;
-        });
-
-        // Show scanned result
-        _showScanResult(code);
-      }
+  void _handleScannedCode(String code, User user) {
+    if (user.isVibrate ?? false) {
+      Vibration.vibrate(duration: 100);
     }
+
+    if (user.isBeep ?? true) {
+      SystemSound.play(SystemSoundType.click);
+      // await _player.play(AssetSource('assets/sounds/success.mp3'));
+    }
+    // if(user.auto)
+
+    _showScanResult(code);
   }
 
   void _showScanResult(String code) async {
@@ -77,7 +74,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     final ticketData = {
       'ticketId': code,
       'name': 'Nadeesha Perera',
-      'isVip': true,
+      'isVip': false,
       'seatNo': 'A31',
       'row': 'A',
       'column': '31',
@@ -86,7 +83,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       'totalCount': '500',
     };
 
-    // Navigate to valid ticket screen
+    // Navigate to the corresponding screen
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -110,385 +107,436 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   }
 
   // Show preferences dialog
-  void _showPreferencesDialog() {
+  void _showPreferencesDialog(User user, AuthProvider authProvider) {
     ShowPreferencesDialogBox.show(
       context,
-      vibrateOnScan: _vibrateOnScan,
-      beepOnScan: _beepOnScan,
-      autoCheckIn: _autoCheckIn,
       onPreferencesChanged: (vibrateOnScan, beepOnScan, autoCheckIn) {
-        setState(() {
-          _vibrateOnScan = vibrateOnScan;
-          _beepOnScan = beepOnScan;
-          _autoCheckIn = autoCheckIn;
-        });
+        authProvider.updateUserPreferences(
+          isVibrate: vibrateOnScan,
+          isBeep: beepOnScan,
+          isAutoCheckIn: autoCheckIn,
+        );
       },
     );
   }
 
+  void _onDetect(BarcodeCapture capture, User user) {
+    if (!_isScanning) return;
+
+    final List<Barcode> barcodes = capture.barcodes;
+
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+
+      if (code != null && code.isNotEmpty) {
+        setState(() {
+          _isScanning = false;
+        });
+
+        _handleScannedCode(code, user);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Camera View
-          MobileScanner(controller: cameraController, onDetect: _onDetect),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        final user = authProvider.user;
 
-          // Overlay with scanning frame
-          _buildScanOverlay(),
+        if (user == null) {
+          // You might want to show a loading indicator or an error message
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          // Top Bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Close Button
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-
-                    // Title
-                    const Text(
-                      'Scan Tickets',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    // Three-dot menu button
-                    IconButton(
-                      onPressed: _showPreferencesDialog,
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.more_vert,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              // Camera View
+              MobileScanner(
+                controller: cameraController,
+                onDetect: (capture) => _onDetect(capture, user),
               ),
-            ),
-          ),
 
-          // Bottom Info and Flash Button
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'Position the QR code within the frame',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+              // Overlay with scanning frame
+              _buildScanOverlay(),
+
+              // Top Bar
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Flash Toggle Button
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isTorchOn = !_isTorchOn;
-                        });
-                        cameraController.toggleTorch();
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Close Button
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: _isTorchOn
-                                  ? Colors.yellow.shade600
-                                  : Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withOpacity(0.5),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              _isTorchOn
-                                  ? Icons.lightbulb
-                                  : Icons.lightbulb_outline,
-                              color: _isTorchOn ? Colors.white : Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _isTorchOn ? 'Light On' : 'Touch for more light',
-                            style: const TextStyle(
+                            child: const Icon(
+                              Icons.close,
                               color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                              size: 24,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+
+                        // Title
+                        const Text(
+                          'Scan Tickets',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        // Three-dot menu button
+                        IconButton(
+                          onPressed: () =>
+                              _showPreferencesDialog(user, authProvider),
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // Scan History Button (bottom right)
-          Positioned(
-            bottom: 30,
-            right: 20,
-            child: SafeArea(
-              child: GestureDetector(
-                onTap: () {
-                  showScanHistoryBottomSheet(context, _scanHistory);
-                },
-                child: Column(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          const Icon(
-                            Icons.history,
-                            color: Colors.white,
-                            size: 28,
+              // Bottom Info and Flash Button
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
                           ),
-                          if (_scanHistory.isNotEmpty)
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Position the QR code within the frame',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Flash Toggle Button
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isTorchOn = !_isTorchOn;
+                            });
+                            cameraController.toggleTorch();
+                          },
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: _isTorchOn
+                                      ? Colors.yellow.shade600
+                                      : Colors.black.withOpacity(0.5),
                                   shape: BoxShape.circle,
                                 ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
+                                child: Icon(
+                                  _isTorchOn
+                                      ? Icons.lightbulb
+                                      : Icons.lightbulb_outline,
+                                  color: Colors.white,
+                                  size: 28,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    '${_scanHistory.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _isTorchOn
+                                    ? 'Light On'
+                                    : 'Touch for more light',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Scan History Button (bottom right)
+              Positioned(
+                bottom: 30,
+                right: 20,
+                child: SafeArea(
+                  child: GestureDetector(
+                    onTap: () {
+                      showScanHistoryBottomSheet(context, _scanHistory);
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              const Icon(
+                                Icons.history,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                              if (_scanHistory.isNotEmpty)
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${_scanHistory.length}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                        ],
-                      ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Scan History',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Scan History',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildScanOverlay() {
-    return Container(
-      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5)),
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Transparent center area for scanning
-            Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-
-            // Corner decorations
-            SizedBox(
-              width: 280,
-              height: 280,
-              child: Stack(
-                children: [
-                  // Top-left corner
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                          left: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Top-right corner
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                          right: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Bottom-left corner
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                          left: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Bottom-right corner
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                          right: BorderSide(
-                            color: const Color(0xFF1F5CBF),
-                            width: 4,
-                          ),
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          bottomRight: Radius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Scanning line animation
-            if (_isScanning)
-              SizedBox(
-                width: 280,
-                height: 280,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: _ScanningLineAnimation(),
-                ),
-              ),
-          ],
-        ),
-      ),
+    final scanWindow = Rect.fromCenter(
+      center: MediaQuery.of(context).size.center(Offset.zero),
+      width: 280,
+      height: 280,
     );
+
+    return Stack(
+      children: [
+        CustomPaint(
+          size: MediaQuery.of(context).size,
+          painter: ScannerOverlayPainter(scanWindow),
+        ),
+        Center(
+          child: SizedBox(
+            width: 280,
+            height: 280,
+            child: Stack(
+              children: [
+                // Top-left corner
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                        left: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                // Top-right corner
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                        right: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                // Bottom-left corner
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                        left: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                // Bottom-right corner
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                        right: BorderSide(
+                          color: const Color(0xFF1F5CBF),
+                          width: 4,
+                        ),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomRight: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ScannerOverlayPainter extends CustomPainter {
+  final Rect scanWindow;
+
+  ScannerOverlayPainter(this.scanWindow);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final backgroundPaint = Paint()..color = Colors.black.withOpacity(0.5);
+
+    final backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..addRRect(RRect.fromRectAndRadius(scanWindow, const Radius.circular(16)))
+      ..fillType = PathFillType.evenOdd;
+
+    canvas.drawPath(backgroundPath, backgroundPaint);
+
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(scanWindow, const Radius.circular(16)),
+      borderPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(ScannerOverlayPainter oldDelegate) {
+    return oldDelegate.scanWindow != scanWindow;
   }
 }
 
@@ -542,7 +590,7 @@ class ScanLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF1F5CBF).withValues(alpha: 0.7)
+      ..color = const Color(0xFF1F5CBF).withOpacity(0.7)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
