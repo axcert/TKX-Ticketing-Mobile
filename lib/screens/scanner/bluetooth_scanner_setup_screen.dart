@@ -1,62 +1,175 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:get/get.dart';
+import 'package:mobile_app/config/app_theme.dart';
+import 'package:mobile_app/screens/scanner/controller/bluetooth_controller.dart';
+import 'package:mobile_app/widgets/custom_elevated_button.dart';
 
 class BluetoothScannerBottomSheet extends StatefulWidget {
   const BluetoothScannerBottomSheet({super.key});
 
   @override
-  State<BluetoothScannerBottomSheet> createState() => _BluetoothScannerBottomSheetState();
+  State<BluetoothScannerBottomSheet> createState() =>
+      _BluetoothScannerBottomSheetState();
 }
 
-class _BluetoothScannerBottomSheetState extends State<BluetoothScannerBottomSheet> {
-  bool _isSearching = true;
-
-  // Sample available devices
-  final List<Map<String, String>> _availableDevices = [
-    {'name': 'Scanner_01'},
-    {'name': 'Scanner_02'},
-  ];
+class _BluetoothScannerBottomSheetState
+    extends State<BluetoothScannerBottomSheet> {
+  final BluetoothController controller = Get.put(BluetoothController());
 
   @override
   void initState() {
     super.initState();
-    // Simulate searching animation
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _isSearching = false;
-        });
+
+    // Check Bluetooth state after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBluetoothState();
+    });
+  }
+
+  void _checkBluetoothState() {
+    // Listen to Bluetooth state changes
+    controller.adapterState.listen((state) {
+      if (state == BluetoothAdapterState.off) {
+        _showBluetoothOffDialog();
       }
     });
   }
 
-  void _handleRescan() {
-    setState(() {
-      _isSearching = true;
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _isSearching = false;
-        });
-      }
-    });
-  }
-
-  void _handleConnectDevice(String deviceName) {
-    // Handle device connection
+  void _showBluetoothOffDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Connecting...'),
-        content: Text('Connecting to $deviceName'),
+        title: Row(
+          children: [
+            Icon(Icons.bluetooth_disabled, color: AppColors.error),
+            const SizedBox(width: 12),
+            const Text('Bluetooth is Off'),
+          ],
+        ),
+        content: const Text(
+          'Please turn on Bluetooth to scan for nearby devices.',
+          style: TextStyle(fontSize: 14),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close bottom sheet
+            },
             child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              // Note: On Android, you can't programmatically turn on Bluetooth
+              // User must do it manually from settings
+              // You can open Bluetooth settings if needed
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('OK'),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSearchingDevices() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(strokeWidth: 3, color: AppColors.primary),
+          const SizedBox(height: 24),
+          const Text(
+            'Searching for devices...',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Please wait while we scan for nearby Bluetooth devices.',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBluetoothOffWidget() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.bluetooth_disabled,
+              size: 80,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Bluetooth is Off',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Please turn on Bluetooth to scan for nearby devices.',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeviceItem({
+    required BluetoothDevice deviceName,
+    required String id,
+    required String rssi,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        await _connectToDevice(deviceName);
+      },
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        // decoration: BoxDecoration(
+        //   color: Colors.white,
+        //   borderRadius: BorderRadius.circular(12),
+        //   border: Border.all(color: Colors.grey.shade200, width: 1),
+        // ),
+        child: ListTile(
+          title: Text(deviceName.toString()),
+          subtitle: Text(id),
+          trailing: Text(rssi),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _connectToDevice(BluetoothDevice device) async {
+    try {
+      print('Connecting to device: ${device.name}');
+      await device.connect();
+      print('Connected to device: ${device.name}');
+      var sevices = await device.discoverServices();
+      print('Discovered services: ${sevices.length}');
+    } catch (e) {
+      print('Error connecting to device: $e');
+    }
   }
 
   @override
@@ -70,193 +183,148 @@ class _BluetoothScannerBottomSheetState extends State<BluetoothScannerBottomShee
           topRight: Radius.circular(20),
         ),
       ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Searching Section
-                  const Text(
-                    'Searching for Nearby Devices...',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Make sure your scanner is turned on and in pairing mode.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      height: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Available Devices Section
-                  const Text(
-                    'Available Devices',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Devices List
-                  if (_isSearching)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1F5CBF)),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Scanning...',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _availableDevices.length,
-                      itemBuilder: (context, index) {
-                        final device = _availableDevices[index];
-                        return _buildDeviceItem(device['name']!);
-                      },
-                    ),
-
-                  const Spacer(),
-
-                  // Bottom Info and Rescan Button
-                  Text(
-                    'If you don\'t see your scanner, make sure it\'s nearby and try again.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Rescan Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _handleRescan,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1F5CBF),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Rescan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
+      child: Obx(() {
+        // Check if Bluetooth is off
+        if (controller.adapterState.value == BluetoothAdapterState.off) {
+          return _buildBluetoothOffWidget();
+        }
+        // Check if scanning
+        else if (controller.isScanning.value) {
+          // Show loading widget while scanning
+          return _buildSearchingDevices();
+        } else {
+          return Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildDeviceItem(String deviceName) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Device Name
-          Text(
-            deviceName,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
+              const SizedBox(height: 24),
 
-          // Tap to Connect Button
-          GestureDetector(
-            onTap: () => _handleConnectDevice(deviceName),
-            child: Row(
-              children: [
-                const Text(
-                  'Tap to Connect',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F5CBF),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Searching Section
+                      const Text(
+                        'Searching for Nearby Devices...',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Make sure your scanner is turned on and in pairing mode.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Available Devices Section
+                      const Text(
+                        'Available Devices',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      GetBuilder<BluetoothController>(
+                        builder: (controller) {
+                          return Expanded(
+                            child: StreamBuilder<List<ScanResult>>(
+                              stream: controller.ScanResults,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  final devices = snapshot.data!;
+                                  if (devices.isEmpty) {
+                                    return const Center(
+                                      child: Text(
+                                        'No Devices Found',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return ListView.builder(
+                                    itemCount: devices.length,
+                                    itemBuilder: (context, index) {
+                                      final device = devices[index];
+                                      return _buildDeviceItem(
+                                        deviceName: device.device,
+                                        id: device.device.id.id,
+                                        rssi: devices[index].rssi.toString(),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  return Center(
+                                    child: Text(
+                                      'Error: ${snapshot.error}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge!
+                                          .copyWith(color: AppColors.error),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const Spacer(),
+
+                      // Bottom Info and Rescan Button
+                      Text(
+                        'If you don\'t see your scanner, make sure it\'s nearby and try again.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Rescan Button
+                      CustomElevatedButton(
+                        text: 'Rescan',
+                        onPressed: controller.scanDevices,
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.bluetooth,
-                  size: 18,
-                  color: const Color(0xFF1F5CBF),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+              ),
+            ],
+          );
+        }
+      }),
     );
   }
 }
@@ -265,7 +333,7 @@ class _BluetoothScannerBottomSheetState extends State<BluetoothScannerBottomShee
 void showBluetoothScannerBottomSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true,
+    isScrollControlled: false,
     backgroundColor: Colors.transparent,
     builder: (context) => const BluetoothScannerBottomSheet(),
   );
