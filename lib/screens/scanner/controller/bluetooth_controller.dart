@@ -21,8 +21,19 @@ class BluetoothController extends GetxController {
     // Check permissions
     if (await Permission.bluetoothScan.request().isGranted &&
         await Permission.bluetoothConnect.request().isGranted) {
+      // Stop any existing scan first
+      try {
+        await FlutterBluePlus.stopScan();
+      } catch (e) {
+        print('Error stopping scan: $e');
+      }
+
+      // Wait a bit before starting new scan
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // Start scanning
-      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+      print('Started scanning for devices...');
     } else {
       print('Bluetooth permissions not granted');
     }

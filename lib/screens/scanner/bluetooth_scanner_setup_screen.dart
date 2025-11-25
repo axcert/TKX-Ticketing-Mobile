@@ -172,6 +172,56 @@ class _BluetoothScannerBottomSheetState
     }
   }
 
+  void _showSearchingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(strokeWidth: 3, color: AppColors.primary),
+            const SizedBox(height: 24),
+            const Text(
+              'Searching...',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please wait while we scan for devices.',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Listen to scanning state and close dialog when scanning stops
+    final scanSubscription = controller.isScanning.listen((scanning) {
+      if (!scanning && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    });
+
+    // Clean up subscription when dialog is dismissed
+    Future.delayed(const Duration(seconds: 6), () {
+      scanSubscription.cancel();
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  void _handleRescan() {
+    _showSearchingDialog();
+    controller.scanDevices();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -313,7 +363,7 @@ class _BluetoothScannerBottomSheetState
                       // Rescan Button
                       CustomElevatedButton(
                         text: 'Rescan',
-                        onPressed: controller.scanDevices,
+                        onPressed: _handleRescan,
                       ),
 
                       const SizedBox(height: 24),
