@@ -1,10 +1,5 @@
 class AppConfig {
   // API Configuration
-  // IMPORTANT: Update baseUrl based on your environment:
-  // - Android Emulator: Use 'http://10.0.2.2:8000'
-  // - iOS Simulator: Use 'http://localhost:8000' or 'http://127.0.0.1:8000'
-  // - Physical Device: Use 'http://[YOUR_COMPUTER_IP]:8000' (e.g., 'http://192.168.1.100:8000')
-  // - Production: Use your actual server URL
 
   // https://tkxe.axcertro.dev
   // Replace with your computer's IP address from ipconfig/ifconfig
@@ -36,6 +31,10 @@ class AppConfig {
       '/public/organizers/{id}/events/upcoming';
   static const String completedEventsEndpoint =
       '/public/organizers/{id}/events/completed';
+
+  // Get Ticket Statistics detail
+  static const String eventStastics =
+      '/events/{event_id}/stats/realtime-checkin';
 
   // Ticket Endpoints
   static const String ticketsEndpoint = '/tickets';
