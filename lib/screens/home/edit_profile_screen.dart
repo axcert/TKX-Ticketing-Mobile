@@ -56,7 +56,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _populateFields(User user) {
     _firstNameController.text = user.firstName;
     _lastNameController.text = user.lastName;
-    _phoneNumberController.text = user.phone!;
+    _phoneNumberController.text = user.phone ?? '';
     _pickedImage = null; // Clear any previously picked image
 
     print('📸 Populating fields - Profile Photo: ${user.profilePhoto}');
@@ -151,11 +151,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     color: Colors.grey.shade200,
                                   ),
                                   child: ClipOval(
-                                    child: Image(
-                                      image: NetworkImage(
-                                        user?.profilePhoto ?? '',
-                                      ),
-                                    ),
+                                    child: _buildProfileImage(user),
                                   ),
                                 ),
                                 Positioned(
@@ -249,6 +245,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildProfileImage(User? user) {
+    // 1. Check if user picked a new image locally
+    if (_pickedImage != null) {
+      final file = File(_pickedImage!);
+      if (file.existsSync()) {
+        return Image.file(file, fit: BoxFit.cover);
+      }
+    }
+
+    // 2. Check if user has a profile photo URL from API
+    if (user?.profilePhoto != null && user!.profilePhoto!.isNotEmpty) {
+      return Image.network(
+        user.profilePhoto!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, ___) =>
+            const Icon(Icons.person, size: 60, color: Colors.grey),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    // 3. Default fallback
+    return const Icon(Icons.person, size: 60, color: Colors.grey);
   }
 
   Widget _buildTextField({
