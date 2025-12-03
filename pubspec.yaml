@@ -70,6 +70,10 @@ flutter:
   assets:
     - assets/invalid.mp3
     - assets/
+    - assets/icons/setting.svg
+    - assets/icons/log_out.svg
+    - assets/icons/change_password.svg
+    - assets/icons/edit_profile.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

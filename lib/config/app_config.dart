@@ -36,6 +36,8 @@ class AppConfig {
   static const String eventStastics =
       '/events/{event_id}/stats/realtime-checkin';
 
+  static const String scanhistory = '/events/{event_id}/scan-history';
+
   // Ticket Endpoints
   static const String ticketsEndpoint = '/tickets';
   static const String validateTicketEndpoint = '/tickets/validate';

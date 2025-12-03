@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:mobile_app/providers/event_provider.dart';
@@ -92,8 +93,7 @@ class _SideMenuState extends State<SideMenu> {
           // Edit Profile
           _buildMenuItem(
             context: context,
-            icon: Icons.person_outline,
-
+            icon: 'edit_profile.svg',
             title: 'Edit Profile',
             subtitle: 'Edit your information',
             onTap: () {
@@ -110,7 +110,7 @@ class _SideMenuState extends State<SideMenu> {
           // Change Password
           _buildMenuItem(
             context: context,
-            icon: Icons.lock_outline,
+            icon: 'change_password.svg',
 
             title: 'Change Password',
             subtitle: 'Change Password',
@@ -128,7 +128,7 @@ class _SideMenuState extends State<SideMenu> {
           // Scanner Preferences
           _buildMenuItem(
             context: context,
-            icon: Icons.settings_outlined,
+            icon: 'setting.svg',
             title: 'Scanner Preferences',
             subtitle: 'Customize how your scanner responds',
             onTap: () {
@@ -166,7 +166,7 @@ class _SideMenuState extends State<SideMenu> {
           // Log Out
           _buildMenuItem(
             context: context,
-            icon: Icons.logout,
+            icon: 'log_out.svg',
             iconColor: AppColors.error,
             iconBgColor: AppColors.error.withOpacity(0.3),
             title: 'Log Out',
@@ -259,7 +259,7 @@ class _SideMenuState extends State<SideMenu> {
 
   Widget _buildMenuItem({
     required BuildContext context,
-    required IconData icon,
+    required String icon,
     Color? iconColor,
     Color? iconBgColor,
     required String title,
@@ -278,7 +278,11 @@ class _SideMenuState extends State<SideMenu> {
               color: iconBgColor ?? AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor ?? AppColors.primary, size: 24),
+            child: SvgPicture.asset(
+              'assets/icons/$icon',
+              width: 24,
+              height: 24,
+            ),
           ),
 
       // Title and Subtitle
