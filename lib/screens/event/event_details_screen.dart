@@ -3,6 +3,8 @@ import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/widgets/event_card.dart';
 import 'package:mobile_app/widgets/event_statistic.dart';
 import '../../models/event_model.dart';
+import '../../models/event_statistics_model.dart';
+import '../../services/event_service.dart';
 import '../../widgets/manual_checkin_bottom_sheet.dart';
 import '../../widgets/ticket_details_bottom_sheet.dart';
 import '../scanner/bluetooth_scanner_setup_screen.dart';
@@ -19,6 +21,46 @@ class EventDetailsScreen extends StatefulWidget {
 }
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
+  final EventService _eventService = EventService();
+  EventStatistics? _eventStatistics;
+  bool _isLoadingStatistics = false;
+  String? _statisticsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEventStatistics();
+  }
+
+  /// Fetch event statistics from the API
+  Future<void> _fetchEventStatistics() async {
+    setState(() {
+      _isLoadingStatistics = true;
+      _statisticsError = null;
+    });
+
+    try {
+      final response = await _eventService.getEventStatistics(widget.event.id);
+
+      if (response.success && response.data != null) {
+        setState(() {
+          _eventStatistics = response.data;
+          _isLoadingStatistics = false;
+        });
+      } else {
+        setState(() {
+          _statisticsError = response.message ?? 'Failed to load statistics';
+          _isLoadingStatistics = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statisticsError = 'An error occurred: $e';
+        _isLoadingStatistics = false;
+      });
+    }
+  }
+
   // Sample scan history data
   final List<Map<String, dynamic>> _scanHistory = [
     {
@@ -98,6 +140,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     },
   ];
 
+  Map<String, dynamic> _getEventStatus() {
+    if (widget.event.isCompleted) {
+      return {'text': 'Completed', 'color': Colors.red};
+    } else if (widget.event.isOngoing) {
+      return {'text': 'Ongoing', 'color': AppColors.success};
+    } else if (widget.event.isUpcoming) {
+      return {'text': 'Upcoming', 'color': Colors.blue};
+    } else {
+      return {'text': 'Completed', 'color': Colors.red};
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,19 +173,27 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         ),
         centerTitle: true,
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.success,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Ongoing',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall!.copyWith(color: AppColors.background),
-            ),
+          Builder(
+            builder: (context) {
+              final status = _getEventStatus();
+              return Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: status['color'] as Color,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  status['text'] as String,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall!.copyWith(color: Colors.white),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -171,19 +233,23 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ),
                             ),
                             TextButton.icon(
-                              onPressed: () {
-                                // Handle refresh
-                              },
+                              onPressed: _isLoadingStatistics
+                                  ? null
+                                  : _fetchEventStatistics,
                               icon: Icon(
                                 Icons.refresh,
                                 size: 18,
-                                color: AppColors.primary,
+                                color: _isLoadingStatistics
+                                    ? Colors.grey
+                                    : AppColors.primary,
                               ),
                               label: Text(
-                                'Refresh',
+                                _isLoadingStatistics ? 'Loading...' : 'Refresh',
                                 style: Theme.of(context).textTheme.labelLarge!
                                     .copyWith(
-                                      color: AppColors.primary,
+                                      color: _isLoadingStatistics
+                                          ? Colors.grey
+                                          : AppColors.primary,
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
@@ -198,23 +264,77 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         const SizedBox(height: 16),
 
                         // Statistics Card
-                        EventStatisticWidget(),
+                        if (_isLoadingStatistics)
+                          Container(
+                            padding: const EdgeInsets.all(40),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        else if (_statisticsError != null)
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  _statisticsError!,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 12),
+                                TextButton(
+                                  onPressed: _fetchEventStatistics,
+                                  child: const Text('Try Again'),
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (_eventStatistics != null)
+                          EventStatisticWidget(
+                            checkInCount: _eventStatistics!.checkInCount,
+                            invalidCount: _eventStatistics!.invalidCount,
+                            registerCount: _eventStatistics!.registeredCount,
+                            remainingCount: _eventStatistics!.remainingCount,
+                          )
+                        else
+                          EventStatisticWidget(
+                            checkInCount: 0,
+                            invalidCount: 0,
+                            registerCount: 0,
+                            remainingCount: 0,
+                          ),
                       ],
                     ),
                   ),
 
                   // Scan History Section
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Scan History',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium!
+                            .copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -240,7 +360,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.background,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -256,7 +376,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               clipBehavior: Clip.none,
               children: [
                 // Bottom bar background
-                Container(height: 80, color: Colors.white),
 
                 // Navigation items
                 Positioned.fill(
@@ -322,21 +441,19 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F5CBF),
+                        color: AppColors.primaryDark,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF1F5CBF,
-                            ).withValues(alpha: 0.3),
+                            color: AppColors.primaryDark.withValues(alpha: 0.6),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.camera_alt,
-                        color: Colors.white,
+                        color: AppColors.background,
                         size: 32,
                       ),
                     ),
@@ -346,16 +463,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 // Camera label below
                 Positioned(
                   left: MediaQuery.of(context).size.width / 2 - 35,
-                  bottom: 8,
-                  child: const SizedBox(
+                  bottom: 10,
+                  child: SizedBox(
                     width: 70,
                     child: Text(
                       'Camera',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF1F5CBF),
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                       textAlign: TextAlign.center,
                     ),
                   ),

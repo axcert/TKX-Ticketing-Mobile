@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../config/app_config.dart';
 import '../models/api_response.dart';
 import '../models/event_model.dart';
+import '../models/event_statistics_model.dart';
 import 'storage_service.dart';
 
 class EventService {
@@ -282,5 +283,73 @@ class EventService {
     }
 
     return DateTime.now();
+  }
+
+  /// Fetch event statistics by event ID
+  Future<ApiResponse<EventStatistics>> getEventStatistics(
+    String eventId,
+  ) async {
+    try {
+      final headers = await _getAuthHeaders();
+
+      // Build the endpoint with event_id
+      final endpoint = AppConfig.eventStastics.replaceAll(
+        '{event_id}',
+        eventId,
+      );
+
+      print('📊 [Event Statistics] Fetching statistics for event $eventId...');
+      print('📊 [Event Statistics] Endpoint: ${AppConfig.baseUrl}$endpoint');
+
+      final response = await _dio.get(
+        endpoint,
+        options: Options(headers: headers),
+      );
+
+      print('📊 [Event Statistics] Status Code: ${response.statusCode}');
+      print('📊 [Event Statistics] Response Data: ${response.data}');
+
+      if (response.statusCode != 200) {
+        print(
+          '❌ [Event Statistics] Failed with status: ${response.statusCode}',
+        );
+        return ApiResponse.error(
+          'Failed to fetch event statistics',
+          statusCode: response.statusCode,
+        );
+      }
+
+      // Parse the response
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic> &&
+          responseData['data'] != null) {
+        final statistics = EventStatistics.fromJson(responseData['data']);
+        return ApiResponse.success(
+          statistics,
+          message: 'Event statistics fetched successfully',
+        );
+      } else {
+        return ApiResponse.error('Invalid response format');
+      }
+    } on DioException catch (e) {
+      print('❌ [Event Statistics] DioException: ${e.type}');
+      print('❌ [Event Statistics] Message: ${e.message}');
+      print('❌ [Event Statistics] Response: ${e.response?.data}');
+
+      if (e.type == DioExceptionType.connectionTimeout) {
+        return ApiResponse.error('Connection timeout');
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        return ApiResponse.error('Receive timeout');
+      } else if (e.response != null) {
+        final message =
+            e.response?.data['message'] ?? 'Failed to fetch event statistics';
+        return ApiResponse.error(message, statusCode: e.response?.statusCode);
+      } else {
+        return ApiResponse.error('Network error occurred');
+      }
+    } catch (e) {
+      print('❌ [Event Statistics] Unexpected error: $e');
+      return ApiResponse.error('An unexpected error occurred: $e');
+    }
   }
 }
