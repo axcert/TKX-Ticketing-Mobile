@@ -149,7 +149,21 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
     return TextFormField(
       controller: _passwordController,
       obscureText: _obscurePassword,
-      decoration: InputDecoration(labelText: 'Password'),
+      decoration: InputDecoration(
+        labelText: 'Password',
+        suffixIcon: IconButton(
+          icon: Icon(
+            color: AppColors.textSecondary,
+            size: 20,
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscurePassword = !_obscurePassword;
+            });
+          },
+        ),
+      ),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter your password';
