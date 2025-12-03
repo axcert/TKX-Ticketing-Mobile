@@ -34,11 +34,21 @@ class _SideMenuState extends State<SideMenu> {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: AppColors.border,
-                  backgroundImage: const AssetImage(
-                    'assets/profile_placeholder.png',
-                  ),
-                  onBackgroundImageError: (exception, stackTrace) {},
-                  child: const Icon(Icons.person, size: 30, color: Colors.grey),
+                  backgroundImage:
+                      authProvider.user?.profilePhoto != null &&
+                          authProvider.user!.profilePhoto!.isNotEmpty
+                      ? NetworkImage(authProvider.user!.profilePhoto!)
+                      : null,
+                  onBackgroundImageError: (exception, stackTrace) {
+                    print(
+                      '❌ Error loading profile image in drawer: $exception',
+                    );
+                  },
+                  child:
+                      authProvider.user?.profilePhoto == null ||
+                          authProvider.user!.profilePhoto!.isEmpty
+                      ? const Icon(Icons.person, size: 30, color: Colors.grey)
+                      : null,
                 ),
                 Expanded(
                   child: Column(

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import '../config/app_config.dart';
 import '../models/api_response.dart';
-import '../models/user.dart';
+import '../models/user_model.dart';
 import 'storage_service.dart';
 
 class AuthService {
@@ -93,31 +94,20 @@ class AuthService {
       final headers = await _getHeaders(includeAuth: false);
       final body = jsonEncode({'email': email, 'password': password});
 
-      // Debug logging
-      print('🌐 API Request: POST $url');
-      print('📦 Body: $body');
-
       final response = await http
           .post(url, headers: headers, body: body)
           .timeout(AppConfig.connectionTimeout);
 
-      print('✅ Response Status: ${response.statusCode}');
-      print('📄 Response Body: ${response.body}');
-
       return _handleResponse<Map<String, dynamic>>(response, null);
     } on SocketException catch (e) {
-      print('❌ SocketException: $e');
       return ApiResponse.error(
         'Cannot connect to server. Please check your network connection.',
       );
     } on HttpException catch (e) {
-      print('❌ HttpException: $e');
       return ApiResponse.error('Server error occurred');
     } on FormatException catch (e) {
-      print('❌ FormatException: $e');
       return ApiResponse.error('Invalid response format');
     } catch (e) {
-      print('❌ Unexpected error: $e');
       return ApiResponse.error('Unexpected error: ${e.toString()}');
     }
   }
@@ -128,34 +118,27 @@ class AuthService {
       final url = Uri.parse(AppConfig.buildUrl(AppConfig.logoutEndpoint));
       final headers = await _getHeaders(includeAuth: true);
 
-      print('🌐 API Request: POST $url');
-
       final response = await http
           .post(url, headers: headers)
           .timeout(AppConfig.connectionTimeout);
 
-      print('✅ Response Status: ${response.statusCode}');
-      print('📄 Response Body: ${response.body}');
-
       return _handleResponse<Map<String, dynamic>>(response, null);
     } on SocketException catch (e) {
-      print('❌ SocketException: $e');
       return ApiResponse.error(
         'Cannot connect to server. Please check your network connection.',
       );
     } catch (e) {
-      print('❌ Unexpected error: $e');
       return ApiResponse.error('Unexpected error: ${e.toString()}');
     }
   }
 
-  /// Forgot password - Send OTP
+  /// Forgot password - verify email
   Future<ApiResponse<Map<String, dynamic>>> forgotPassword({
     required String email,
   }) async {
     try {
       final url = Uri.parse(
-        AppConfig.buildUrl(AppConfig.forgotPasswordEndpoint),
+        AppConfig.buildUrl(AppConfig.forgotPasswordVerifyEmail),
       );
       final headers = await _getHeaders(includeAuth: false);
       final body = jsonEncode({'email': email});
@@ -188,9 +171,7 @@ class AuthService {
     required String otp,
   }) async {
     try {
-      final url = Uri.parse(
-        AppConfig.buildUrl('${AppConfig.forgotPasswordEndpoint}/verify'),
-      );
+      final url = Uri.parse(AppConfig.buildUrl(AppConfig.verifyOtpEndpoint));
       final headers = await _getHeaders(includeAuth: false);
       final body = jsonEncode({'email': email, 'otp': otp});
 
@@ -225,7 +206,7 @@ class AuthService {
   }) async {
     try {
       final url = Uri.parse(
-        AppConfig.buildUrl(AppConfig.resetPasswordEndpoint),
+        AppConfig.buildUrl(AppConfig.changePasswordEndpoint),
       );
       final headers = await _getHeaders(includeAuth: false);
       final body = jsonEncode({
@@ -258,70 +239,43 @@ class AuthService {
   }
 
   /// Change password (for authenticated users)
-  Future<ApiResponse<Map<String, dynamic>>> changePassword({
-    required String currentPassword,
-    required String newPassword,
-    required String passwordConfirmation,
-  }) async {
-    try {
-      final url = Uri.parse(
-        AppConfig.buildUrl(AppConfig.changePasswordEndpoint),
-      );
-      final headers = await _getHeaders(includeAuth: true);
-      final body = jsonEncode({
-        'current_password': currentPassword,
-        'new_password': newPassword,
-        'password_confirmation': passwordConfirmation,
-      });
+  // Future<ApiResponse<Map<String, dynamic>>> changePassword({
+  //   required String currentPassword,
+  //   required String newPassword,
+  //   required String passwordConfirmation,
+  // }) async {
+  //   try {
+  //     final url = Uri.parse(
+  //       AppConfig.buildUrl(AppConfig.changePasswordEndpoint),
+  //     );
+  //     final headers = await _getHeaders(includeAuth: true);
+  //     final body = jsonEncode({
+  //       'current_password': currentPassword,
+  //       'new_password': newPassword,
+  //       'password_confirmation': passwordConfirmation,
+  //     });
 
-      print('🌐 API Request: POST $url');
-      print('📦 Body: $body');
+  //     print('🌐 API Request: POST $url');
+  //     print('📦 Body: $body');
 
-      final response = await http
-          .post(url, headers: headers, body: body)
-          .timeout(AppConfig.connectionTimeout);
+  //     final response = await http
+  //         .post(url, headers: headers, body: body)
+  //         .timeout(AppConfig.connectionTimeout);
 
-      print('✅ Response Status: ${response.statusCode}');
-      print('📄 Response Body: ${response.body}');
+  //     print('✅ Response Status: ${response.statusCode}');
+  //     print('📄 Response Body: ${response.body}');
 
-      return _handleResponse<Map<String, dynamic>>(response, null);
-    } on SocketException catch (e) {
-      print('❌ SocketException: $e');
-      return ApiResponse.error(
-        'Cannot connect to server. Please check your network connection.',
-      );
-    } catch (e) {
-      print('❌ Unexpected error: $e');
-      return ApiResponse.error('Unexpected error: ${e.toString()}');
-    }
-  }
-
-  /// Refresh authentication token
-  Future<ApiResponse<Map<String, dynamic>>> refreshToken() async {
-    try {
-      final url = Uri.parse(AppConfig.buildUrl(AppConfig.refreshTokenEndpoint));
-      final headers = await _getHeaders(includeAuth: true);
-
-      print('🌐 API Request: POST $url');
-
-      final response = await http
-          .post(url, headers: headers)
-          .timeout(AppConfig.connectionTimeout);
-
-      print('✅ Response Status: ${response.statusCode}');
-      print('📄 Response Body: ${response.body}');
-
-      return _handleResponse<Map<String, dynamic>>(response, null);
-    } on SocketException catch (e) {
-      print('❌ SocketException: $e');
-      return ApiResponse.error(
-        'Cannot connect to server. Please check your network connection.',
-      );
-    } catch (e) {
-      print('❌ Unexpected error: $e');
-      return ApiResponse.error('Unexpected error: ${e.toString()}');
-    }
-  }
+  //     return _handleResponse<Map<String, dynamic>>(response, null);
+  //   } on SocketException catch (e) {
+  //     print('❌ SocketException: $e');
+  //     return ApiResponse.error(
+  //       'Cannot connect to server. Please check your network connection.',
+  //     );
+  //   } catch (e) {
+  //     print('❌ Unexpected error: $e');
+  //     return ApiResponse.error('Unexpected error: ${e.toString()}');
+  //   }
+  // }
 
   /// Get user profile
   Future<ApiResponse<User>> getUserProfile() async {
@@ -338,14 +292,21 @@ class AuthService {
       print('✅ Response Status: ${response.statusCode}');
       print('📄 Response Body: ${response.body}');
 
-      return _handleResponse<User>(response, (json) => User.fromJson(json));
+      final result = _handleResponse<User>(
+        response,
+        (json) => User.fromJson(json),
+      );
+
+      if (result.success && result.data != null) {
+        print('👤 User Profile Photo: ${result.data!.profilePhoto}');
+      }
+
+      return result;
     } on SocketException catch (e) {
-      print('❌ SocketException: $e');
       return ApiResponse.error(
         'Cannot connect to server. Please check your network connection.',
       );
     } catch (e) {
-      print('❌ Unexpected error: $e');
       return ApiResponse.error('Unexpected error: ${e.toString()}');
     }
   }
@@ -354,25 +315,64 @@ class AuthService {
   Future<ApiResponse<User>> updateProfile({
     required String firstName,
     required String lastName,
+    required String phoneNumber,
+    String? profileImage,
   }) async {
     try {
       final url = Uri.parse(
         AppConfig.buildUrl(AppConfig.updateProfileEndpoint),
       );
-      final headers = await _getHeaders(includeAuth: true);
-      final body = jsonEncode({'first_name': firstName, 'last_name': lastName});
+      final token = await _storageService.getAuthToken();
 
-      print('🌐 API Request: PUT $url');
-      print('📦 Body: $body');
+      // Create multipart request
+      var request = http.MultipartRequest('POST', url);
 
-      final response = await http
-          .put(url, headers: headers, body: body)
-          .timeout(AppConfig.connectionTimeout);
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+      request.headers['Accept'] = 'application/json';
+
+      // Add text fields
+      request.fields['first_name'] = firstName;
+      request.fields['last_name'] = lastName;
+      request.fields['phone_number'] = phoneNumber;
+
+      // Add profile image if provided and is a valid local file path
+      if (profileImage != null && profileImage.isNotEmpty) {
+        final file = File(profileImage);
+        if (await file.exists()) {
+          var imageFile = await http.MultipartFile.fromPath(
+            'profile_photo',
+            profileImage,
+          );
+          request.files.add(imageFile);
+        }
+      }
+
+      print('🌐 API Request: POST $url');
+      print('📦 Fields: ${request.fields}');
+      print('📷 Image: ${profileImage != null ? 'Included' : 'Not included'}');
+
+      // Send request
+      var streamedResponse = await request.send().timeout(
+        AppConfig.connectionTimeout,
+      );
+
+      // Get response
+      var response = await http.Response.fromStream(streamedResponse);
 
       print('✅ Response Status: ${response.statusCode}');
       print('📄 Response Body: ${response.body}');
 
-      return _handleResponse<User>(response, (json) => User.fromJson(json));
+      final result = _handleResponse<User>(
+        response,
+        (json) => User.fromJson(json),
+      );
+
+      if (result.success && result.data != null) {
+        print('👤 Updated Profile Photo: ${result.data!.profilePhoto}');
+      }
+
+      return result;
     } on SocketException catch (e) {
       print('❌ SocketException: $e');
       return ApiResponse.error(

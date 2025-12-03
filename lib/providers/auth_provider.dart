@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
@@ -303,6 +304,7 @@ class AuthProvider extends ChangeNotifier {
     required String firstName,
     required String lastName,
     required String phoneNumber,
+    String? profileImage,
   }) async {
     try {
       setLoading(true);
@@ -320,6 +322,7 @@ class AuthProvider extends ChangeNotifier {
         firstName: firstName,
         lastName: lastName,
         phoneNumber: phoneNumber,
+        profileImage: profileImage,
       );
 
       if (response.success && response.data != null) {

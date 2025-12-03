@@ -5,6 +5,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.8.2")
+        force("androidx.activity:activity-ktx:1.8.2")
+    }
+}
+
 android {
     namespace = "com.example.mobile_app"
     compileSdk = flutter.compileSdkVersion
@@ -42,3 +50,4 @@ android {
 flutter {
     source = "../.."
 }
+
