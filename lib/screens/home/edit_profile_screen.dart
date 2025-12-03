@@ -122,7 +122,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
+      appBar: AppBar(
+        title: Text(
+          'Edit Profile',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Consumer<AuthProvider>(
@@ -184,7 +189,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           // User Name (first_name + last_name from api)
                           Text(
                             '${user?.fullName}',
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context).textTheme.titleLarge!
+                                .copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 4),
 
