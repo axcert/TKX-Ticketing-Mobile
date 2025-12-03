@@ -39,11 +39,15 @@ class _SideMenuState extends State<SideMenu> {
                           authProvider.user!.profilePhoto!.isNotEmpty
                       ? NetworkImage(authProvider.user!.profilePhoto!)
                       : null,
-                  onBackgroundImageError: (exception, stackTrace) {
-                    print(
-                      '❌ Error loading profile image in drawer: $exception',
-                    );
-                  },
+                  onBackgroundImageError:
+                      authProvider.user?.profilePhoto != null &&
+                          authProvider.user!.profilePhoto!.isNotEmpty
+                      ? (exception, stackTrace) {
+                          print(
+                            '❌ Error loading profile image in drawer: $exception',
+                          );
+                        }
+                      : null,
                   child:
                       authProvider.user?.profilePhoto == null ||
                           authProvider.user!.profilePhoto!.isEmpty
@@ -139,7 +143,6 @@ class _SideMenuState extends State<SideMenu> {
                   );
                 },
               );
-              // Navigate to Scanner Preferences
             },
           ),
 
@@ -184,11 +187,6 @@ class _SideMenuState extends State<SideMenu> {
                       onPressed: () async {
                         // Close the confirmation dialog
                         Navigator.pop(dialogContext);
-
-                        if (!context.mounted) return;
-
-                        // Close the drawer
-                        // Navigator.pop(context);
 
                         if (!context.mounted) return;
 
@@ -291,14 +289,14 @@ class _SideMenuState extends State<SideMenu> {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
+            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall!.copyWith(fontSize: 13),
+            ).textTheme.bodySmall!.copyWith(fontSize: 14),
           ),
         ],
       ),
