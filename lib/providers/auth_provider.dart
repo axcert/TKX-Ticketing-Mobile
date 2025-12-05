@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
-import '../models/user.dart';
+import 'package:image_picker/image_picker.dart';
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
 import '../services/connectivity_service.dart';
+import '../config/app_config.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -93,6 +95,8 @@ class AuthProvider extends ChangeNotifier {
           email: _user!.email,
         );
 
+        // Save default preferences for a new login session
+
         _isAuthenticated = true;
         setLoading(false);
         return true;
@@ -126,6 +130,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       // Even if API call fails, clear local data
       await _storageService.clearUserData();
+
       _isAuthenticated = false;
       _user = null;
       setError(e.toString());
@@ -155,8 +160,24 @@ class AuthProvider extends ChangeNotifier {
           final response = await _authService.getUserProfile();
 
           if (response.success && response.data != null) {
-            _user = response.data!;
+            final storedIsVibrate = await _storageService.getBool(
+              AppConfig.isVibrateKey,
+            );
+            final storedIsBeep = await _storageService.getBool(
+              AppConfig.isBeepKey,
+            );
+            final storedIsAutoCheckIn = await _storageService.getBool(
+              AppConfig.isAutoCheckInKey,
+            );
+
+            _user = (response.data as User).copyWith();
             _isAuthenticated = true;
+            isVibrate:
+            storedIsVibrate ?? true;
+            isBeep:
+            storedIsBeep ?? true;
+            isAutoCheckIn:
+            storedIsAutoCheckIn ?? false;
           } else {
             // Token might be invalid, clear data
             await _storageService.clearUserData();
@@ -282,6 +303,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updateProfile({
     required String firstName,
     required String lastName,
+    required String phoneNumber,
+    String? profileImage,
   }) async {
     try {
       setLoading(true);
@@ -298,6 +321,8 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.updateProfile(
         firstName: firstName,
         lastName: lastName,
+        phoneNumber: phoneNumber,
+        profileImage: profileImage,
       );
 
       if (response.success && response.data != null) {
@@ -319,5 +344,33 @@ class AuthProvider extends ChangeNotifier {
       setLoading(false);
       return false;
     }
+  }
+
+  /// Update user preferences
+  void updateUserPreferences({
+    bool? isVibrate,
+    bool? isBeep,
+    bool? isAutoCheckIn,
+  }) async {
+    if (user == null) return;
+
+    _user = _user!.copyWith(
+      isVibrate: isVibrate ?? _user!.isVibrate,
+      isBeep: isBeep ?? _user!.isBeep,
+      isAutoCheckIn: isAutoCheckIn ?? _user!.isAutoCheckIn,
+    );
+
+    // Save to local storage
+    await _storageService.setBool(
+      AppConfig.isVibrateKey,
+      _user!.isVibrate ?? true,
+    );
+    await _storageService.setBool(AppConfig.isBeepKey, _user!.isBeep ?? true);
+    await _storageService.setBool(
+      AppConfig.isAutoCheckInKey,
+      _user!.isAutoCheckIn ?? false,
+    );
+
+    notifyListeners();
   }
 }

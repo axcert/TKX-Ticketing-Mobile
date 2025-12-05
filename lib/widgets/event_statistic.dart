@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 
 class EventStatisticWidget extends StatefulWidget {
-  const EventStatisticWidget({super.key});
+  final int registerCount;
+  final int checkInCount;
+  final int remainingCount;
+  final int invalidCount;
+  const EventStatisticWidget({
+    super.key,
+    required this.registerCount,
+    required this.checkInCount,
+    required this.remainingCount,
+    required this.invalidCount,
+  });
 
   @override
   State<EventStatisticWidget> createState() => _EventStatisticWidgetState();
@@ -21,16 +31,18 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
         children: [
           // Progress Circle (Left side)
           SizedBox(
-            width: 70,
-            height: 70,
+            width: 80,
+            height: 80,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 70,
-                  height: 70,
+                  width: 80,
+                  height: 80,
                   child: CircularProgressIndicator(
-                    value: 0.68,
+                    value: widget.registerCount > 0
+                        ? widget.checkInCount / widget.registerCount
+                        : 0.0,
                     strokeWidth: 6,
                     backgroundColor: Colors.grey.shade200,
                     valueColor: const AlwaysStoppedAnimation<Color>(
@@ -38,8 +50,8 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
                     ),
                   ),
                 ),
-                const Text(
-                  '68%',
+                Text(
+                  '${widget.registerCount > 0 ? ((widget.checkInCount / widget.registerCount) * 100).toInt() : 0}%',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -63,7 +75,7 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '500',
+                      '${widget.registerCount}',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -85,7 +97,7 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '160',
+                      '${widget.remainingCount}',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -119,7 +131,7 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '340',
+                      '${widget.checkInCount}',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -141,7 +153,7 @@ class _EventStatisticWidgetState extends State<EventStatisticWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '8',
+                      '${widget.invalidCount}',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,

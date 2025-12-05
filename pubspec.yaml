@@ -43,6 +43,13 @@ dependencies:
   google_fonts: ^6.3.2
   flutter_svg: ^2.2.2
   dio: ^5.9.0
+  vibration: ^3.1.4
+  audioplayers: ^5.2.0
+  flutter_blue_plus: ^1.19.7
+  get: ^4.7.2
+  permission_handler: ^12.0.1
+  image_picker: ^1.2.1
+
 
 dev_dependencies:
   flutter_test:
@@ -61,7 +68,12 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/invalid.mp3
     - assets/
+    - assets/icons/setting.svg
+    - assets/icons/log_out.svg
+    - assets/icons/change_password.svg
+    - assets/icons/edit_profile.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

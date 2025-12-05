@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/user.dart';
+import 'package:mobile_app/models/user_model.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/widgets/custom_elevated_button.dart';
 import 'package:mobile_app/widgets/toast_message.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -17,7 +19,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
   bool _isLoading = true;
+  String? _pickedImage; // Local file path when user picks a new image
 
   @override
   void initState() {
@@ -51,12 +56,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _populateFields(User user) {
     _firstNameController.text = user.firstName;
     _lastNameController.text = user.lastName;
+    _phoneNumberController.text = user.phone ?? '';
+    _pickedImage = null; // Clear any previously picked image
+
+    print('📸 Populating fields - Profile Photo: ${user.profilePhoto}');
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _pickedImage = image.path;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastMessage.error(context, 'Failed to pick image: ${e.toString()}');
+      }
+    }
   }
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _phoneNumberController.dispose();
     super.dispose();
   }
 
@@ -67,6 +98,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final success = await authProvider.updateProfile(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim(),
+        profileImage: _pickedImage, // Only send if user picked a new image
       );
 
       if (mounted) {
@@ -89,7 +122,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
+      appBar: AppBar(
+        title: Text(
+          'Edit Profile',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Consumer<AuthProvider>(
@@ -106,45 +144,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 20),
 
                           // Profile Image
-                          Stack(
-                            children: [
-                              Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey.shade200,
-                                ),
-                                child: ClipOval(
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 60,
-                                    color: Colors.grey.shade400,
+                          GestureDetector(
+                            onTap: _pickImage,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey.shade200,
+                                  ),
+                                  child: ClipOval(
+                                    child: _buildProfileImage(user),
                                   ),
                                 ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 3,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
                                       color: Colors.white,
-                                      width: 3,
+                                      size: 18,
                                     ),
                                   ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 16),
@@ -152,7 +189,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           // User Name (first_name + last_name from api)
                           Text(
                             '${user?.fullName}',
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context).textTheme.titleLarge!
+                                .copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 4),
 
@@ -182,6 +220,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
 
                           const SizedBox(height: 10),
+
+                          _buildTextField(
+                            controller: _phoneNumberController,
+                            label: '',
+                            hint: 'Telephone',
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 10),
                         ],
                       ),
                     ),
@@ -207,6 +253,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Widget _buildProfileImage(User? user) {
+    // 1. Check if user picked a new image locally
+    if (_pickedImage != null) {
+      final file = File(_pickedImage!);
+      if (file.existsSync()) {
+        return Image.file(file, fit: BoxFit.cover);
+      }
+    }
+
+    // 2. Check if user has a profile photo URL from API
+    if (user?.profilePhoto != null && user!.profilePhoto!.isNotEmpty) {
+      return Image.network(
+        user.profilePhoto!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, ___) =>
+            const Icon(Icons.person, size: 60, color: Colors.grey),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    // 3. Default fallback
+    return const Icon(Icons.person, size: 60, color: Colors.grey);
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -221,12 +294,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           controller: controller,
           keyboardType: keyboardType,
           decoration: InputDecoration(hintText: hint),
-          // validator: (value) {
-          //   if (value == null || value.isEmpty) {
-          //     return 'This field is required';
-          //   }
-          //   return null;
-          // },
         ),
       ],
     );

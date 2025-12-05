@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:mobile_app/providers/event_provider.dart';
@@ -34,11 +35,25 @@ class _SideMenuState extends State<SideMenu> {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: AppColors.border,
-                  backgroundImage: const AssetImage(
-                    'assets/profile_placeholder.png',
-                  ),
-                  onBackgroundImageError: (exception, stackTrace) {},
-                  child: const Icon(Icons.person, size: 30, color: Colors.grey),
+                  backgroundImage:
+                      authProvider.user?.profilePhoto != null &&
+                          authProvider.user!.profilePhoto!.isNotEmpty
+                      ? NetworkImage(authProvider.user!.profilePhoto!)
+                      : null,
+                  onBackgroundImageError:
+                      authProvider.user?.profilePhoto != null &&
+                          authProvider.user!.profilePhoto!.isNotEmpty
+                      ? (exception, stackTrace) {
+                          print(
+                            '❌ Error loading profile image in drawer: $exception',
+                          );
+                        }
+                      : null,
+                  child:
+                      authProvider.user?.profilePhoto == null ||
+                          authProvider.user!.profilePhoto!.isEmpty
+                      ? const Icon(Icons.person, size: 30, color: Colors.grey)
+                      : null,
                 ),
                 Expanded(
                   child: Column(
@@ -68,10 +83,9 @@ class _SideMenuState extends State<SideMenu> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Text(
               'General',
-              style: TextStyle(
-                fontSize: 16,
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: AppColors.textHint,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
               ),
             ),
           ),
@@ -79,9 +93,7 @@ class _SideMenuState extends State<SideMenu> {
           // Edit Profile
           _buildMenuItem(
             context: context,
-            icon: Icons.person_outline,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
+            icon: 'edit_profile.svg',
             title: 'Edit Profile',
             subtitle: 'Edit your information',
             onTap: () {
@@ -98,9 +110,8 @@ class _SideMenuState extends State<SideMenu> {
           // Change Password
           _buildMenuItem(
             context: context,
-            icon: Icons.lock_outline,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
+            icon: 'change_password.svg',
+
             title: 'Change Password',
             subtitle: 'Change Password',
             onTap: () {
@@ -117,26 +128,21 @@ class _SideMenuState extends State<SideMenu> {
           // Scanner Preferences
           _buildMenuItem(
             context: context,
-            icon: Icons.settings_outlined,
-            iconColor: const Color(0xFF5B8DEE),
-            iconBgColor: const Color(0xFFE3EDFF),
+            icon: 'setting.svg',
             title: 'Scanner Preferences',
             subtitle: 'Customize how your scanner responds',
             onTap: () {
               ShowPreferencesDialogBox.show(
                 context,
-                vibrateOnScan: _vibrateOnScan,
-                beepOnScan: _beepOnScan,
-                autoCheckIn: _autoCheckIn,
+
                 onPreferencesChanged: (vibrateOnScan, beepOnScan, autoCheckIn) {
-                  setState(() {
-                    _vibrateOnScan = vibrateOnScan;
-                    _beepOnScan = beepOnScan;
-                    _autoCheckIn = autoCheckIn;
-                  });
+                  authProvider.updateUserPreferences(
+                    isVibrate: vibrateOnScan,
+                    isBeep: beepOnScan,
+                    isAutoCheckIn: autoCheckIn,
+                  );
                 },
               );
-              // Navigate to Scanner Preferences
             },
           ),
 
@@ -149,10 +155,9 @@ class _SideMenuState extends State<SideMenu> {
               alignment: Alignment.centerLeft,
               child: Text(
                 'Preferences',
-                style: TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: AppColors.textHint,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
                 ),
               ),
             ),
@@ -161,9 +166,9 @@ class _SideMenuState extends State<SideMenu> {
           // Log Out
           _buildMenuItem(
             context: context,
-            icon: Icons.logout,
-            iconColor: const Color(0xFFE53935),
-            iconBgColor: const Color(0xFFFFEBEE),
+            icon: 'log_out.svg',
+            iconColor: AppColors.error,
+            iconBgColor: AppColors.error.withOpacity(0.3),
             title: 'Log Out',
             subtitle: 'Logout from app',
             onTap: () async {
@@ -182,11 +187,6 @@ class _SideMenuState extends State<SideMenu> {
                       onPressed: () async {
                         // Close the confirmation dialog
                         Navigator.pop(dialogContext);
-
-                        if (!context.mounted) return;
-
-                        // Close the drawer
-                        // Navigator.pop(context);
 
                         if (!context.mounted) return;
 
@@ -239,7 +239,7 @@ class _SideMenuState extends State<SideMenu> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Logout failed: ${e.toString()}'),
-                                backgroundColor: Colors.red,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                           }
@@ -259,9 +259,9 @@ class _SideMenuState extends State<SideMenu> {
 
   Widget _buildMenuItem({
     required BuildContext context,
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
+    required String icon,
+    Color? iconColor,
+    Color? iconBgColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -275,10 +275,14 @@ class _SideMenuState extends State<SideMenu> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: iconBgColor,
+              color: iconBgColor ?? AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: SvgPicture.asset(
+              'assets/icons/$icon',
+              width: 24,
+              height: 24,
+            ),
           ),
 
       // Title and Subtitle
@@ -289,14 +293,14 @@ class _SideMenuState extends State<SideMenu> {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
+            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall!.copyWith(fontSize: 13),
+            ).textTheme.bodySmall!.copyWith(fontSize: 14),
           ),
         ],
       ),

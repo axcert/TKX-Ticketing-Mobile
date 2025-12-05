@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app/config/app_theme.dart';
 import 'package:mobile_app/models/event_model.dart';
@@ -13,6 +13,7 @@ import 'tabs/completed_events_tab.dart';
 import '../event/event_details_screen.dart';
 import '../event/scan_not_available_screen.dart';
 import '../event/offline_checkin_screen.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -143,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen>
                                         .displayMedium!
                                         .copyWith(
                                           color: AppColors.textWhite,
-                                          fontSize: 26,
+                                          fontSize: 36,
                                           fontFamily:
                                               GoogleFonts.plusJakartaSans()
                                                   .fontFamily,
@@ -156,8 +157,8 @@ class _HomeScreenState extends State<HomeScreen>
                                         .textTheme
                                         .displayMedium!
                                         .copyWith(
-                                          color: AppColors.border,
-                                          fontSize: 18,
+                                          color: AppColors.divider,
+                                          fontSize: 16,
                                           fontFamily:
                                               GoogleFonts.plusJakartaSans()
                                                   .fontFamily,
