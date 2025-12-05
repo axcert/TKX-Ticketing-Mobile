@@ -96,16 +96,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     }
   }
 
-  Map<String, dynamic> _getEventStatus() {
-    if (widget.event.isCompleted) {
-      return {'text': 'UpComming', 'color': AppColors.info};
-    } else if (widget.event.isOngoing) {
-      return {'text': 'Ongoing', 'color': AppColors.success};
-    } else {
-      return {'text': 'Completed', 'color': AppColors.warning};
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,30 +116,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ).textTheme.headlineMedium!.copyWith(color: AppColors.background),
         ),
         centerTitle: true,
-        actions: [
-          Builder(
-            builder: (context) {
-              final status = _getEventStatus();
-              return Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: status['color'] as Color,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  status['text'] as String,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall!.copyWith(color: AppColors.background),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
