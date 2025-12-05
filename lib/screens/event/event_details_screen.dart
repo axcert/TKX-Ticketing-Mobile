@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
 import 'package:tkx_ticketing/widgets/event_card.dart';
@@ -348,7 +349,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           color: AppColors.background,
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.05),
+              color: AppColors.textPrimary.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -371,7 +372,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       // Manual Lookup
                       Expanded(
                         child: _buildBottomNavItem(
-                          Icons.search,
+                          "manual_check-in.svg",
                           'Manual Lookup',
                           false,
                           onTap: () {
@@ -386,7 +387,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       // External Scanner
                       Expanded(
                         child: _buildBottomNavItem(
-                          Icons.qr_code_scanner_outlined,
+                          "External_scanner.svg",
                           'External Scanner',
                           false,
                           onTap: () {
@@ -436,25 +437,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: AppColors.background,
-                        size: 32,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            color: AppColors.background,
+                            size: 28,
+                          ),
+                          Text(
+                            'Camera',
+                            style: Theme.of(context).textTheme.bodySmall!
+                                .copyWith(
+                                  color: AppColors.background,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ),
-
-                // Camera label below
-                Positioned(
-                  left: MediaQuery.of(context).size.width / 2 - 35,
-                  bottom: 10,
-                  child: SizedBox(
-                    width: 70,
-                    child: Text(
-                      'Camera',
-                      style: Theme.of(context).textTheme.bodySmall,
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
@@ -592,7 +594,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildBottomNavItem(
-    IconData icon,
+    String icon,
     String label,
     bool isActive, {
     VoidCallback? onTap,
@@ -603,16 +605,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: isActive ? AppColors.primary : AppColors.border,
-            size: 28,
+          SvgPicture.asset(
+            "assets/icons/$icon",
+            color: isActive ? AppColors.primary : AppColors.textSecondary,
           ),
           const SizedBox(height: 6),
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall!.copyWith(
-              color: isActive ? AppColors.primary : AppColors.border,
+              color: isActive ? AppColors.primary : AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

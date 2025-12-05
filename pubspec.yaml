@@ -82,6 +82,8 @@ flutter:
     - assets/icons/log_out.svg
     - assets/icons/change_password.svg
     - assets/icons/edit_profile.svg
+    - assets/icons/External_scanner.svg
+    - assets/icons/manual_check-in.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
