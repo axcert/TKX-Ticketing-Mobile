@@ -5,6 +5,7 @@ import 'package:tkx_ticketing/widgets/event_card.dart';
 import 'package:tkx_ticketing/widgets/event_statistic.dart';
 import 'package:tkx_ticketing/models/event_model.dart';
 import 'package:tkx_ticketing/models/event_statistics_model.dart';
+import 'package:tkx_ticketing/models/scan_history_model.dart';
 import 'package:tkx_ticketing/services/event_service.dart';
 import 'package:tkx_ticketing/widgets/manual_checkin_bottom_sheet.dart';
 import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
@@ -26,10 +27,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   bool _isLoadingStatistics = false;
   String? _statisticsError;
 
+  List<ScanHistory> _scanHistory = [];
+  bool _isLoadingScanHistory = false;
+  String? _scanHistoryError;
+
   @override
   void initState() {
     super.initState();
     _fetchEventStatistics();
+    _fetchScanHistory();
   }
 
   /// Fetch event statistics from the API
@@ -61,94 +67,42 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     }
   }
 
-  // Sample scan history data
-  final List<Map<String, dynamic>> _scanHistory = [
-    {
-      'ticketId': 'TCK-98432',
-      'name': 'Nadeesha Perera',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': true,
-      'ticketType': 'VIP',
-      'seatNo': 'A12',
-      'row': 'A',
-      'column': '12',
-      'recordId': '#0012',
-      'scanTime': '10:32 AM, Oct 08, 2025',
-      'scanType': 'Camera',
-      'scannedBy': 'Kasun',
-    },
-    {
-      'ticketId': 'TCK-78945',
-      'name': 'Elena Martinez',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': false,
-      'ticketType': 'Regular',
-      'seatNo': 'B15',
-      'row': 'B',
-      'column': '15',
-      'recordId': '#0013',
-      'scanTime': '10:35 AM, Oct 08, 2025',
-      'scanType': 'Camera',
-      'scannedBy': 'Kasun',
-    },
-    {
-      'ticketId': 'TCK-65478',
-      'name': 'Kamal Silva',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': true,
-      'ticketType': 'VIP',
-      'seatNo': 'A10',
-      'row': 'A',
-      'column': '10',
-      'recordId': '#0014',
-      'scanTime': '10:40 AM, Oct 08, 2025',
-      'scanType': 'Scanner',
-      'scannedBy': 'Admin',
-    },
-    {
-      'ticketId': 'TCK-91014',
-      'name': 'Elena Martinez',
-      'time': '06:30 PM',
-      'status': 'Already Checked-In',
-      'isVip': false,
-      'ticketType': 'Regular',
-      'seatNo': 'C20',
-      'row': 'C',
-      'column': '20',
-      'recordId': '#0015',
-      'scanTime': '10:45 AM, Oct 08, 2025',
-      'scanType': 'Camera',
-      'scannedBy': 'Kasun',
-    },
-    {
-      'ticketId': 'TCK-56789',
-      'name': 'N/A',
-      'time': '06:15 PM',
-      'status': 'Invalid',
-      'isVip': false,
-      'ticketType': 'N/A',
-      'seatNo': 'N/A',
-      'row': 'N/A',
-      'column': 'N/A',
-      'recordId': '#0016',
-      'scanTime': '10:50 AM, Oct 08, 2025',
-      'scanType': 'Camera',
-      'scannedBy': 'Kasun',
-    },
-  ];
+  /// Fetch scan history from the API
+  Future<void> _fetchScanHistory() async {
+    setState(() {
+      _isLoadingScanHistory = true;
+      _scanHistoryError = null;
+    });
+
+    try {
+      final response = await _eventService.getScanHistory(widget.event.id);
+
+      if (response.success && response.data != null) {
+        setState(() {
+          _scanHistory = response.data!;
+          _isLoadingScanHistory = false;
+        });
+      } else {
+        setState(() {
+          _scanHistoryError = response.message ?? 'Failed to load scan history';
+          _isLoadingScanHistory = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _scanHistoryError = 'An error occurred: $e';
+        _isLoadingScanHistory = false;
+      });
+    }
+  }
 
   Map<String, dynamic> _getEventStatus() {
     if (widget.event.isCompleted) {
-      return {'text': 'Completed', 'color': Colors.red};
+      return {'text': 'UpComming', 'color': AppColors.info};
     } else if (widget.event.isOngoing) {
       return {'text': 'Ongoing', 'color': AppColors.success};
-    } else if (widget.event.isUpcoming) {
-      return {'text': 'Upcoming', 'color': Colors.blue};
     } else {
-      return {'text': 'Completed', 'color': Colors.red};
+      return {'text': 'Completed', 'color': AppColors.warning};
     }
   }
 
@@ -157,7 +111,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1F5CBF),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.background),
@@ -190,7 +144,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   status['text'] as String,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodySmall!.copyWith(color: Colors.white),
+                  ).textTheme.bodySmall!.copyWith(color: AppColors.background),
                 ),
               );
             },
@@ -201,7 +155,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         child: Column(
           children: [
             // Blue background area
-            Container(height: 60, color: const Color(0xFF1F5CBF)),
+            Container(height: 60, color: AppColors.primary),
 
             // Event Info Card (overlapping)
             Transform.translate(
@@ -224,13 +178,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Event Statistics',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge!
+                                  .copyWith(fontWeight: FontWeight.w700),
                             ),
                             TextButton.icon(
                               onPressed: _isLoadingStatistics
@@ -268,7 +219,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           Container(
                             padding: const EdgeInsets.all(40),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.background,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.grey.shade200),
                             ),
@@ -280,7 +231,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.background,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.grey.shade200),
                             ),
@@ -288,16 +239,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               children: [
                                 Icon(
                                   Icons.error_outline,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                   size: 40,
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
                                   _statisticsError!,
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 14,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium!
+                                      .copyWith(color: AppColors.error),
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 12),
@@ -340,17 +289,87 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Scan History List
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _scanHistory.length,
-                    itemBuilder: (context, index) {
-                      final scan = _scanHistory[index];
-                      return _buildScanHistoryItem(scan);
-                    },
-                  ),
+                  // Scan History List with loading/error states
+                  if (_isLoadingScanHistory)
+                    Padding(
+                      padding: const EdgeInsets.all(40),
+                      child: const Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_scanHistoryError != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _scanHistoryError!,
+                              style: Theme.of(context).textTheme.bodyLarge!
+                                  .copyWith(color: AppColors.error),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: _fetchScanHistory,
+                              child: const Text('Try Again'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_scanHistory.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.history,
+                              color: AppColors.border,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No scan history available',
+                              style: Theme.of(context).textTheme.bodyLarge!
+                                  .copyWith(
+                                    color: AppColors.border,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _scanHistory.length,
+                      itemBuilder: (context, index) {
+                        final scan = _scanHistory[index];
+                        return _buildScanHistoryItem(scan);
+                      },
+                    ),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -363,7 +382,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           color: AppColors.background,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: AppColors.textPrimary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -481,42 +500,42 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  Widget _buildScanHistoryItem(Map<String, dynamic> scan) {
+  Widget _buildScanHistoryItem(ScanHistory scan) {
     Color statusColor;
     Color statusBgColor;
     IconData statusIcon;
 
-    switch (scan['status']) {
+    switch (scan.status) {
       case 'Checked-In':
-        statusColor = Colors.green;
+        statusColor = AppColors.success;
         statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
       case 'Already Checked-In':
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         statusBgColor = Colors.orange.shade50;
         statusIcon = Icons.warning;
         break;
       case 'Invalid':
-        statusColor = Colors.red;
+        statusColor = AppColors.error;
         statusBgColor = Colors.red.shade50;
         statusIcon = Icons.cancel;
         break;
       default:
-        statusColor = Colors.grey;
+        statusColor = AppColors.border;
         statusBgColor = Colors.grey.shade50;
         statusIcon = Icons.info;
     }
 
     return GestureDetector(
       onTap: () {
-        showTicketDetailsBottomSheet(context, scan);
+        showTicketDetailsBottomSheet(context, scan.toJson());
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade200),
         ),
@@ -527,24 +546,22 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: scan['isVip']
+                color: scan.isVip
                     ? Colors.yellow.shade100
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
-                child: scan['isVip']
-                    ? const Text(
+                child: scan.isVip
+                    ? Text(
                         'VIP',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelLarge!.copyWith(fontSize: 12),
                       )
                     : Icon(
                         Icons.confirmation_number_outlined,
-                        color: Colors.grey.shade600,
+                        color: AppColors.border,
                         size: 24,
                       ),
               ),
@@ -556,17 +573,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    scan['ticketId'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                    scan.ticketId,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    scan['name'],
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    scan.name,
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ],
               ),
@@ -590,20 +603,19 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       Icon(statusIcon, size: 14, color: statusColor),
                       const SizedBox(width: 4),
                       Text(
-                        scan['status'],
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
+                        scan.status,
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(fontSize: 11, color: statusColor),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  scan['time'],
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  scan.time,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelMedium!.copyWith(fontSize: 11),
                 ),
               ],
             ),
@@ -627,16 +639,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         children: [
           Icon(
             icon,
-            color: isActive ? const Color(0xFF1F5CBF) : Colors.grey.shade600,
+            color: isActive ? AppColors.primary : AppColors.border,
             size: 28,
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
-              color: isActive ? const Color(0xFF1F5CBF) : Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
+            style: Theme.of(context).textTheme.labelSmall!.copyWith(
+              color: isActive ? AppColors.primary : AppColors.border,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

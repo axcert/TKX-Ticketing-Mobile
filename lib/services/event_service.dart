@@ -3,6 +3,7 @@ import '../config/app_config.dart';
 import '../models/api_response.dart';
 import '../models/event_model.dart';
 import '../models/event_statistics_model.dart';
+import '../models/scan_history_model.dart';
 import 'storage_service.dart';
 
 class EventService {
@@ -349,6 +350,80 @@ class EventService {
       }
     } catch (e) {
       print('❌ [Event Statistics] Unexpected error: $e');
+      return ApiResponse.error('An unexpected error occurred: $e');
+    }
+  }
+
+  /// Fetch scan history by event ID
+  Future<ApiResponse<List<ScanHistory>>> getScanHistory(String eventId) async {
+    try {
+      final headers = await _getAuthHeaders();
+
+      // Build the endpoint with event_id
+      final endpoint = AppConfig.scanhistory.replaceAll('{event_id}', eventId);
+
+      print('📜 [Scan History] Fetching scan history for event $eventId...');
+      print('📜 [Scan History] Endpoint: ${AppConfig.baseUrl}$endpoint');
+
+      final response = await _dio.get(
+        endpoint,
+        options: Options(headers: headers),
+      );
+
+      print('📜 [Scan History] Status Code: ${response.statusCode}');
+      print('📜 [Scan History] Response Data: ${response.data}');
+
+      if (response.statusCode != 200) {
+        print('❌ [Scan History] Failed with status: ${response.statusCode}');
+        return ApiResponse.error(
+          'Failed to fetch scan history',
+          statusCode: response.statusCode,
+        );
+      }
+
+      // Parse the response
+      final responseData = response.data;
+      List<ScanHistory> scanHistoryList = [];
+
+      if (responseData is Map<String, dynamic> &&
+          responseData['data'] != null) {
+        final dataList = responseData['data'] as List;
+        scanHistoryList = dataList
+            .map((item) => ScanHistory.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(
+          scanHistoryList,
+          message: 'Scan history fetched successfully',
+        );
+      } else if (responseData is List) {
+        scanHistoryList = responseData
+            .map((item) => ScanHistory.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(
+          scanHistoryList,
+          message: 'Scan history fetched successfully',
+        );
+      } else {
+        return ApiResponse.error('Invalid response format');
+      }
+    } on DioException catch (e) {
+      print('❌ [Scan History] DioException: ${e.type}');
+      print('❌ [Scan History] Message: ${e.message}');
+      print('❌ [Scan History] Response: ${e.response?.data}');
+
+      if (e.type == DioExceptionType.connectionTimeout) {
+        return ApiResponse.error('Connection timeout');
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        return ApiResponse.error('Receive timeout');
+      } else if (e.response != null) {
+        final message =
+            e.response?.data['message'] ?? 'Failed to fetch scan history';
+        return ApiResponse.error(message, statusCode: e.response?.statusCode);
+      } else {
+        return ApiResponse.error('Network error occurred');
+      }
+    } catch (e) {
+      print('❌ [Scan History] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
