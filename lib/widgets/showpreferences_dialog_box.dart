@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
 
 class ShowPreferencesDialogBox extends StatefulWidget {
   final Function(bool vibrateOnScan, bool beepOnScan, bool autoCheckIn)

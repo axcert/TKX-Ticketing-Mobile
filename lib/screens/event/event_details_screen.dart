@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/widgets/event_card.dart';
-import 'package:mobile_app/widgets/event_statistic.dart';
-import '../../models/event_model.dart';
-import '../../models/event_statistics_model.dart';
-import '../../services/event_service.dart';
-import '../../widgets/manual_checkin_bottom_sheet.dart';
-import '../../widgets/ticket_details_bottom_sheet.dart';
-import '../scanner/bluetooth_scanner_setup_screen.dart';
-import '../scanner/qr_scanner_screen.dart';
-import 'scan_not_available_screen.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
+import 'package:tkx_ticketing/widgets/event_card.dart';
+import 'package:tkx_ticketing/widgets/event_statistic.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
+import 'package:tkx_ticketing/models/event_statistics_model.dart';
+import 'package:tkx_ticketing/services/event_service.dart';
+import 'package:tkx_ticketing/widgets/manual_checkin_bottom_sheet.dart';
+import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
+import 'package:tkx_ticketing/screens/scanner/bluetooth_scanner_setup_screen.dart';
+import 'package:tkx_ticketing/screens/scanner/qr_scanner_screen.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final Event event;

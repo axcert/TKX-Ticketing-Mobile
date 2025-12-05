@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/user_model.dart';
-import 'package:provider/provider.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/widgets/custom_elevated_button.dart';
-import 'package:mobile_app/widgets/toast_message.dart';
-import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/user_model.dart';
 import 'dart:io';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
+import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});

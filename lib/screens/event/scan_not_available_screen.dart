@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/event_model.dart';
 
 class ScanNotAvailableScreen extends StatelessWidget {
   final Event event;
 
-  const ScanNotAvailableScreen({
-    super.key,
-    required this.event,
-  });
+  const ScanNotAvailableScreen({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +82,9 @@ class ScanNotAvailableScreen extends StatelessWidget {
                           width: 70,
                           height: 70,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF1F5CBF,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -115,7 +115,11 @@ class ScanNotAvailableScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today, size: 12, color: Color(0xFF6B7280)),
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 12,
+                              color: Color(0xFF6B7280),
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -133,7 +137,11 @@ class ScanNotAvailableScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.location_on, size: 12, color: Color(0xFF6B7280)),
+                            const Icon(
+                              Icons.location_on,
+                              size: 12,
+                              color: Color(0xFF6B7280),
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -167,18 +175,12 @@ class ScanNotAvailableScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Ticket Icon
-                      Image.asset(
-                        'assets/ticket icon.png',
+                      Container(
                         width: 200,
                         height: 200,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback if image not found
-                          return Icon(
-                            Icons.confirmation_number_outlined,
-                            size: 120,
-                            color: Colors.blue.shade200,
-                          );
-                        },
+                        child: SvgPicture.asset(
+                          'assets/ticket_not_available.svg',
+                        ),
                       ),
 
                       const SizedBox(height: 32),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/screens/scanner/controller/bluetooth_controller.dart';
-import 'package:mobile_app/widgets/custom_elevated_button.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/screens/scanner/controller/bluetooth_controller.dart';
+import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 
 class BluetoothScannerBottomSheet extends StatefulWidget {
   const BluetoothScannerBottomSheet({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/event_model.dart';
-import 'package:mobile_app/screens/home/widgets/event_card.dart';
-import 'package:mobile_app/screens/home/widgets/empty_state_widget.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
+import 'package:tkx_ticketing/widgets/empty_state_widget.dart';
+import 'package:tkx_ticketing/widgets/event_card.dart';
 
 class UpcomingEventsTab extends StatelessWidget {
   final List<Event> events;

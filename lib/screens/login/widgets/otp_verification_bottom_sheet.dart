@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mobile_app/config/app_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import 'set_new_password_bottom_sheet.dart';
 import 'forgot_password_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';

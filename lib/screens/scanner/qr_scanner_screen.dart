@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/user_model.dart';
-import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/models/user_model.dart';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
 import '../../widgets/showpreferences_dialog_box.dart';
 import '../ticket/valid_ticket_screen.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/models/event_model.dart';
-import 'package:mobile_app/screens/event/event_details_screen.dart';
-import 'package:mobile_app/screens/event/scan_not_available_screen.dart';
-import 'package:mobile_app/screens/event/offline_checkin_screen.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
+import 'package:tkx_ticketing/screens/event/event_details_screen.dart';
+import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
+import 'package:tkx_ticketing/screens/event/offline_checkin_screen.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;

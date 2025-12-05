@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/models/event_model.dart';
-import 'package:mobile_app/providers/event_provider.dart';
-import 'package:mobile_app/widgets/offline_indicator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
+import 'package:tkx_ticketing/screens/event/event_details_screen.dart';
+import 'package:tkx_ticketing/screens/event/offline_checkin_screen.dart';
+import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
+import 'package:tkx_ticketing/widgets/offline_indicator.dart';
 import 'side_menu.dart';
 import 'tabs/upcoming_events_tab.dart';
 import 'tabs/completed_events_tab.dart';
-import '../event/event_details_screen.dart';
-import '../event/scan_not_available_screen.dart';
-import '../event/offline_checkin_screen.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {

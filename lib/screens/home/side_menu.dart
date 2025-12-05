@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/providers/auth_provider.dart';
-import 'package:mobile_app/providers/event_provider.dart';
-import 'package:mobile_app/main.dart';
-import 'package:mobile_app/widgets/showpreferences_dialog_box.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/main.dart';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
+import 'package:tkx_ticketing/widgets/showpreferences_dialog_box.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 
