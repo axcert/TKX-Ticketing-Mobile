@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
+import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class OfflineCheckInScreen extends StatefulWidget {
@@ -126,12 +128,12 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black87),
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -144,54 +146,34 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF6366F1), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Ticket Icon
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Center(
-                      child: Image.asset(
-                        'assets/online-ticket 2.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback to icon if image fails to load
-                          return const Icon(
-                            Icons.confirmation_number_outlined,
-                            size: 48,
-                            color: Color(0xFF6366F1),
-                          );
-                        },
-                      ),
+                  Center(
+                    child: Image.asset(
+                      'assets/online-ticket 2.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback to icon if image fails to load
+                        return const Icon(
+                          Icons.confirmation_number_outlined,
+                          size: 48,
+                          color: AppColors.primary,
+                        );
+                      },
                     ),
                   ),
 
                   const SizedBox(height: 24),
 
                   // Title
-                  const Text(
+                  Text(
                     'Preparing Offline Check-In',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
 
@@ -201,11 +183,11 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
                   Text(
                     _errorMessage ??
                         'Connecting to the server and retrieving the latest ticket information.',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.w600,
                       color: _errorMessage != null
-                          ? Colors.red[600]
-                          : Colors.grey[600],
+                          ? AppColors.error
+                          : AppColors.textSecondary,
                       height: 1.5,
                     ),
                     textAlign: TextAlign.center,
@@ -233,11 +215,7 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
                           _totalTickets > 0
                               ? 'Syncing ticket $_syncedTickets of $_totalTickets'
                               : 'Fetching ticket information...',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -253,23 +231,12 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
                           onPressed: () => Navigator.pop(context),
                           child: Text(
                             'Cancel',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton(
                           onPressed: _startDownload,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6366F1),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
                           child: const Text('Retry'),
                         ),
                       ],
