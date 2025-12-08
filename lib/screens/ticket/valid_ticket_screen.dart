@@ -26,6 +26,7 @@ class ValidTicketScreen extends StatelessWidget {
               ),
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
@@ -49,39 +50,59 @@ class ValidTicketScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 40),
-                SizedBox(
-                  height: 30,
-                  width: 30,
-                  child: ticketData['isVip']
-                      ? SvgPicture.asset('assets/icons/vipp.svg')
-                      : SvgPicture.asset('assets/icons/normal.svg'),
-                ),
-                Text(
-                  ticketData['name'] ?? 'N/A',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+
+                Container(
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: ticketData['isVip']
+                                ? AssetImage('assets/vip.png')
+                                : AssetImage('assets/normal.png'),
+                            alignment: Alignment.center,
+                          ),
+                        ),
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        width: MediaQuery.of(context).size.width * 0.2,
+                      ),
+                      Text(
+                        ticketData['name'] ?? 'N/A',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  "Valid Ticket",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  ticketData['ticketId'] ?? 'N/A',
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
                 ),
 
-                Spacer(),
                 Container(
-                  height: 150,
-                  width: 200,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Valid Ticket",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        ticketData['ticketId'] ?? 'N/A',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  height: 100,
+                  width: 150,
                   decoration: BoxDecoration(
                     color: AppColors.background.withOpacity(0.2),
                     borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -105,7 +126,6 @@ class ValidTicketScreen extends StatelessWidget {
                   ),
                 ),
 
-                Spacer(),
                 CustomElevatedButton(
                   backgroundColor: AppColors.background,
                   textColor: AppColors.textPrimary,

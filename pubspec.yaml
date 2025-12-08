@@ -86,9 +86,7 @@ flutter:
     - assets/icons/External_scanner.svg
     - assets/icons/manual_check-in.svg
     - assets/icons/tickets.svg
-    - assets/icons/vip.svg
-    - assets/icons/normal.svg
-    - assets/icons/vipp.svg
+    
     
   
   # The following line ensures that the Material Icons font is
