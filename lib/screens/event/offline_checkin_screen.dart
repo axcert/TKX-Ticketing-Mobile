@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tkx_ticketing/services/ticket_service.dart';
+import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class OfflineCheckInScreen extends StatefulWidget {
   final String eventId;
@@ -15,10 +17,12 @@ class OfflineCheckInScreen extends StatefulWidget {
 }
 
 class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
+  final TicketService _ticketService = TicketService();
   bool _isDownloading = true;
   int _syncedTickets = 0;
-  final int _totalTickets = 500;
+  int _totalTickets = 0;
   double _progress = 0.0;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -27,29 +31,94 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
   }
 
   void _startDownload() async {
-    // Simulate downloading ticket data
-    for (int i = 0; i <= _totalTickets; i += 10) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
-        setState(() {
-          _syncedTickets = i;
-          _progress = i / _totalTickets;
-        });
-      }
-    }
-
-    // Download complete
-    if (mounted) {
+    try {
       setState(() {
-        _isDownloading = false;
-        _syncedTickets = _totalTickets;
-        _progress = 1.0;
+        _isDownloading = true;
+        _errorMessage = null;
       });
 
-      // Wait a moment then show completion message or navigate back
-      await Future.delayed(const Duration(seconds: 1));
+      // Fetch tickets from API
+      final ticketBundle = await _ticketService.fetchTicketsForEvent(
+        widget.eventId,
+      );
+
+      if (ticketBundle == null) {
+        throw Exception('Failed to fetch tickets from server');
+      }
+
+      if (!mounted) return;
+
+      // Check if ticket list is empty
+      if (ticketBundle.count == 0 || ticketBundle.tickets.isEmpty) {
+        // Show toast message for empty tickets
+        if (mounted) {
+          ToastMessage.show(
+            type: ToastType.warning,
+            message: 'No tickets available for this event yet',
+            context,
+            duration: const Duration(seconds: 3),
+          );
+
+          // Navigate back with true to proceed to EventDetailsScreen
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
+        }
+        return;
+      }
+
+      // Update total tickets count
+      setState(() {
+        _totalTickets = ticketBundle.count;
+      });
+
+      // Simulate progress for better UX (since API call is instant)
+      // In real scenario, you might download in batches
+      for (int i = 0; i <= _totalTickets; i += (_totalTickets / 10).ceil()) {
+        await Future.delayed(const Duration(milliseconds: 150));
+        if (mounted) {
+          setState(() {
+            _syncedTickets = i > _totalTickets ? _totalTickets : i;
+            _progress = _syncedTickets / _totalTickets;
+          });
+        }
+      }
+
+      // Save tickets locally
+      final saved = await _ticketService.saveTicketsLocally(
+        widget.eventId,
+        ticketBundle.tickets,
+      );
+
+      if (!saved) {
+        throw Exception('Failed to save tickets locally');
+      }
+
+      // Download complete
       if (mounted) {
-        Navigator.pop(context, true); // Return true to indicate download completed
+        setState(() {
+          _isDownloading = false;
+          _syncedTickets = _totalTickets;
+          _progress = 1.0;
+        });
+
+        // Wait a moment then navigate back
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          Navigator.pop(
+            context,
+            true,
+          ); // Return true to indicate download completed
+        }
+      }
+    } catch (e) {
+      // Handle errors
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
       }
     }
   }
@@ -75,10 +144,7 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF6366F1),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFF6366F1), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
@@ -133,10 +199,13 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
 
                   // Description
                   Text(
-                    'Connecting to the server and retrieving the\nlatest ticket information.',
+                    _errorMessage ??
+                        'Connecting to the server and retrieving the latest ticket information.',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: _errorMessage != null
+                          ? Colors.red[600]
+                          : Colors.grey[600],
                       height: 1.5,
                     ),
                     textAlign: TextAlign.center,
@@ -144,44 +213,73 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Progress Bar
-                  Column(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: _progress,
-                          minHeight: 8,
-                          backgroundColor: Colors.grey[200],
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF6366F1),
+                  // Progress Bar or Error State
+                  if (_errorMessage == null)
+                    Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: _totalTickets > 0 ? _progress : null,
+                            minHeight: 8,
+                            backgroundColor: Colors.grey[200],
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF6366F1),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Syncing ticket $_syncedTickets of $_totalTickets',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(height: 12),
+                        Text(
+                          _totalTickets > 0
+                              ? 'Syncing ticket $_syncedTickets of $_totalTickets'
+                              : 'Fetching ticket information...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
                   const SizedBox(height: 24),
 
-                  // Cancel Button (optional)
-                  if (_isDownloading)
+                  // Action Buttons
+                  if (_errorMessage != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: _startDownload,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    )
+                  else if (_isDownloading)
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'Cancel',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ),
                 ],
