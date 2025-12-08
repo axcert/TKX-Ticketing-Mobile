@@ -4,7 +4,8 @@ class Event {
   final String category;
   final String description;
   final String imageUrl;
-  final DateTime dateTime;
+  final DateTime startDate;
+  final DateTime endDate;
   final String venue;
   final String location;
   final bool isCompleted;
@@ -15,7 +16,8 @@ class Event {
     required this.category,
     required this.description,
     required this.imageUrl,
-    required this.dateTime,
+    required this.startDate,
+    required this.endDate,
     required this.venue,
     required this.location,
     this.isCompleted = false,
@@ -38,35 +40,37 @@ class Event {
       'Dec',
     ];
 
-    final month = months[dateTime.month - 1];
-    final day = dateTime.day;
-    final year = dateTime.year;
+    final month = months[startDate.month - 1];
+    final day = startDate.day;
+    final year = startDate.year;
 
-    final hour = dateTime.hour > 12 ? dateTime.hour - 12 : dateTime.hour;
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-    final period = dateTime.hour >= 12 ? 'PM' : 'AM';
+    final hour = startDate.hour > 12 ? startDate.hour - 12 : startDate.hour;
+    final minute = startDate.minute.toString().padLeft(2, '0');
+    final period = startDate.hour >= 12 ? 'PM' : 'AM';
 
     return '$month $day, $year • ${hour == 0 ? 12 : hour}:$minute $period';
   }
 
   // Check if the event is upcoming (scan not yet available)
-  // Scanning opens 4 hours before the event
+  // Scanning opens 4 hours before the event starts
   bool get isUpcoming {
     final now = DateTime.now();
-    final scanOpenTime = dateTime.subtract(const Duration(hours: 4));
+    final scanOpenTime = startDate.subtract(const Duration(hours: 4));
     return now.isBefore(scanOpenTime) && !isCompleted;
   }
 
   // Check if scanning is available (ongoing)
+  // Event is ongoing from 4 hours before start until the end date
   bool get isOngoing {
     final now = DateTime.now();
-    final scanOpenTime = dateTime.subtract(const Duration(hours: 4));
-    final eventEndTime = dateTime.add(
-      const Duration(hours: 6),
-    ); // Event lasts 6 hours
-    return now.isAfter(scanOpenTime) &&
-        now.isBefore(eventEndTime) &&
-        !isCompleted;
+    final scanOpenTime = startDate.subtract(const Duration(hours: 4));
+    return now.isAfter(scanOpenTime) && now.isBefore(endDate) && !isCompleted;
+  }
+
+  // Check if the event has ended
+  bool get isEnded {
+    final now = DateTime.now();
+    return now.isAfter(endDate) || isCompleted;
   }
 
   // Copy with method for updating properties
@@ -76,7 +80,8 @@ class Event {
     String? category,
     String? description,
     String? imageUrl,
-    DateTime? dateTime,
+    DateTime? startDate,
+    DateTime? endDate,
     String? venue,
     String? location,
     bool? isCompleted,
@@ -87,7 +92,8 @@ class Event {
       category: category ?? this.category,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
-      dateTime: dateTime ?? this.dateTime,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
       venue: venue ?? this.venue,
       location: location ?? this.location,
       isCompleted: isCompleted ?? this.isCompleted,

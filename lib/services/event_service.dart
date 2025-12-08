@@ -252,19 +252,10 @@ class EventService {
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? 'Untitled Event',
       imageUrl: json['image_url'] ?? 'assets/event_placeholder.png',
-      dateTime: _parseDateTime(
-        json['date'] ??
-            json['start_date'] ??
-            json['event_date'] ??
-            json['datetime'],
-      ),
+      startDate: _parseDateTime(json['start_date']),
+      endDate: _parseDateTime(json['end_date']),
       venue: json['venue'] ?? json['location'] ?? 'N/A',
       location: json['location'] ?? 'N/A',
-      isCompleted:
-          json['is_completed'] ??
-          json['completed'] ??
-          json['status'] == 'completed' ??
-          false,
       category: json['category'] ?? 'N/A',
       description: json['description'] ?? 'No description available',
     );

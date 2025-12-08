@@ -9,8 +9,8 @@ class EventCard extends StatelessWidget {
   EventCard({super.key, required this.event, this.onTap});
 
   Map<String, dynamic> _getEventStatus() {
-    if (event.isCompleted) {
-      return {'text': 'UpComming', 'color': AppColors.info.withOpacity(0.8)};
+    if (event.isUpcoming) {
+      return {'text': 'Upcoming', 'color': AppColors.info.withOpacity(0.8)};
     } else if (event.isOngoing) {
       return {'text': 'Ongoing', 'color': AppColors.success.withOpacity(0.8)};
     } else {
@@ -31,13 +31,13 @@ class EventCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: onTap != null
+            border: onTap != null || event.isUpcoming
                 ? Border.all(
                     color: AppColors.shadow.withValues(alpha: 0.15),
                     width: 1,
                   )
                 : null,
-            boxShadow: onTap != null
+            boxShadow: onTap != null || event.isUpcoming
                 ? [
                     BoxShadow(
                       color: AppColors.shadow.withValues(alpha: 0.04),
