@@ -17,10 +17,14 @@ class CompletedEventsTab extends StatelessWidget {
       return const EmptyStateWidget(message: 'No events available');
     }
 
+    // Sort events by dateTime in descending order (most recent first)
+    final sortedEvents = List<Event>.from(events)
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
-        children: events
+        children: sortedEvents
             .map(
               (event) => EventCard(
                 event: event,
