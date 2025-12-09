@@ -267,7 +267,11 @@ class EventService {
 
     if (dateValue is String) {
       try {
-        return DateTime.parse(dateValue);
+        // Strip the 'Z' to treat the time as local
+        final dateString = dateValue.endsWith('Z')
+            ? dateValue.substring(0, dateValue.length - 1)
+            : dateValue;
+        return DateTime.parse(dateString);
       } catch (e) {
         // print('⚠️ [Events API] Failed to parse date: $dateValue');
         return DateTime.now();
