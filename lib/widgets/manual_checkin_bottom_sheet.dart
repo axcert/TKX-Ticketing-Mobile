@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/models/ticket_model.dart';
 import 'package:tkx_ticketing/screens/ticket/valid_ticket_screen.dart';
+import 'package:tkx_ticketing/screens/ticket/already_checked_in_screen.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 
 class ManualCheckInBottomSheet extends StatefulWidget {
@@ -238,32 +239,45 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
                                 .where((t) => t.status == 'checked-in')
                                 .length;
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ValidTicketScreen(
-                                  ticketData: {
-                                    'recordId': ticket.ticketId.toString(),
-                                    'checkedCount': checkedCount.toString(),
-                                    'totalCount': totalCount.toString(),
-                                    'isVip':
-                                        ticket.ticketType.toLowerCase() ==
-                                        'vip',
-                                    'name': ticket.attendeeName,
-                                    'ticketId': ticket.attendeePublicId,
-                                    'seatNo': ticket.seatNumber ?? 'N/A',
-                                    'row': '-', // Placeholder
-                                    'column': '-', // Placeholder
-                                  },
+                            final ticketData = {
+                              'recordId': ticket.ticketId.toString(),
+                              'checkedCount': checkedCount.toString(),
+                              'totalCount': totalCount.toString(),
+                              'isVip': ticket.ticketType.toLowerCase() == 'vip',
+                              'name': ticket.attendeeName,
+                              'ticketId': ticket.attendeePublicId,
+                              'seatNo': ticket.seatNumber ?? 'N/A',
+                              'row': '-', // Placeholder
+                              'column': '-', // Placeholder
+                            };
+
+                            if (ticket.isCheckedIn) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AlreadyCheckedInScreen(
+                                    ticketData: ticketData,
+                                  ),
                                 ),
-                              ),
-                            ).then((result) {
-                              if (result == true) {
-                                // Handle successful check-in if needed
-                                // Maybe refresh list or show success message
-                                Navigator.pop(context); // Close bottom sheet
-                              }
-                            });
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ValidTicketScreen(
+                                    ticketData: ticketData,
+                                    eventId: widget.eventId,
+                                  ),
+                                ),
+                              ).then((result) {
+                                if (result == true) {
+                                  // Refresh the ticket list after a successful check-in
+                                  _loadTickets();
+                                  // Close bottom sheet if desired, or stay to check in more
+                                  // Navigator.pop(context);
+                                }
+                              });
+                            }
                           },
                         ),
                       );

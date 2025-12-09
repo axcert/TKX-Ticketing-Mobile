@@ -1,17 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:tkx_ticketing/widgets/toast_message.dart';
 
-class ValidTicketScreen extends StatelessWidget {
+class ValidTicketScreen extends StatefulWidget {
   final Map<String, dynamic> ticketData;
+  final String eventId;
 
-  const ValidTicketScreen({super.key, required this.ticketData});
+  const ValidTicketScreen({
+    super.key,
+    required this.ticketData,
+    required this.eventId,
+  });
+
+  @override
+  State<ValidTicketScreen> createState() => _ValidTicketScreenState();
+}
+
+class _ValidTicketScreenState extends State<ValidTicketScreen> {
+  final TicketService _ticketService = TicketService();
+  bool _isProcessing = false;
+
+  Future<void> _handleCheckIn() async {
+    if (_isProcessing) return;
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final ticketId = widget.ticketData['ticketId'] as String?;
+    if (ticketId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid ticket data'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      setState(() => _isProcessing = false);
+      return;
+    }
+
+    // Call service to check in
+    final result = await _ticketService.checkInTicket(widget.eventId, ticketId);
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      ToastMessage.show(
+        context,
+        message: 'Check-in successful',
+        type: ToastType.success,
+      );
+      // Brief delay for user feedback
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } else {
+      ToastMessage.show(
+        context,
+        message: 'Check-in failed',
+        type: ToastType.error,
+      );
+      setState(() => _isProcessing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.textPrimary,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -33,19 +92,17 @@ class ValidTicketScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '#${ticketData['recordId'] ?? 'N/A'}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      '#${widget.ticketData['recordId'] ?? 'N/A'}',
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        color: AppColors.background,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      '${ticketData['checkedCount'] ?? '325'}/${ticketData['totalCount'] ?? '500'}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      '${widget.ticketData['checkedCount'] ?? '325'}/${widget.ticketData['totalCount'] ?? '500'}',
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        color: AppColors.background,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -57,7 +114,7 @@ class ValidTicketScreen extends StatelessWidget {
                       Container(
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: ticketData['isVip']
+                            image: widget.ticketData['isVip']
                                 ? AssetImage('assets/vip.png')
                                 : AssetImage('assets/normal.png'),
                             alignment: Alignment.center,
@@ -67,7 +124,7 @@ class ValidTicketScreen extends StatelessWidget {
                         width: MediaQuery.of(context).size.width * 0.2,
                       ),
                       Text(
-                        ticketData['name'] ?? 'N/A',
+                        widget.ticketData['name'] ?? 'N/A',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -83,18 +140,20 @@ class ValidTicketScreen extends StatelessWidget {
                     children: [
                       Text(
                         "Valid Ticket",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.displayLarge!
+                            .copyWith(
+                              fontSize: 40,
+                              color: AppColors.background,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       Text(
-                        ticketData['ticketId'] ?? 'N/A',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
+                        widget.ticketData['ticketId'] ?? 'N/A',
+                        style: Theme.of(context).textTheme.headlineMedium!
+                            .copyWith(
+                              color: AppColors.background,
+                              fontWeight: FontWeight.normal,
+                            ),
                       ),
                     ],
                   ),
@@ -112,7 +171,7 @@ class ValidTicketScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          ticketData['seatNo'] ?? 'N/A',
+                          widget.ticketData['seatNo'] ?? 'N/A',
                           style: Theme.of(context).textTheme.displayLarge!
                               .copyWith(color: AppColors.background),
                         ),
@@ -127,11 +186,13 @@ class ValidTicketScreen extends StatelessWidget {
                 ),
 
                 CustomElevatedButton(
-                  backgroundColor: AppColors.background,
+                  backgroundColor: _isProcessing
+                      ? Colors.grey
+                      : AppColors.background,
                   textColor: AppColors.textPrimary,
-
-                  text: "Check-in",
-                  onPressed: () {},
+                  text: _isProcessing ? "Checking in..." : "Check-in",
+                  isLoading: _isProcessing,
+                  onPressed: () => _handleCheckIn(),
                 ),
               ],
             ),

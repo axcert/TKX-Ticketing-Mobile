@@ -140,4 +140,57 @@ class TicketService {
       print('Error clearing tickets: $e');
     }
   }
+
+  // Check in a ticket locally
+  Future<Map<String, dynamic>> checkInTicket(
+    String eventId,
+    String ticketPublicId,
+  ) async {
+    try {
+      final tickets = await loadTicketsLocally(eventId);
+      final index = tickets.indexWhere(
+        (t) => t.attendeePublicId == ticketPublicId,
+      );
+
+      if (index == -1) {
+        return {'success': false, 'message': 'Ticket not found'};
+      }
+
+      final ticket = tickets[index];
+
+      // Check if already checked in
+      if (ticket.isCheckedIn) {
+        return {
+          'success': false,
+          'message': 'Ticket already checked in at ${ticket.checkedInAt}',
+        };
+      }
+
+      // Create updated ticket
+      final updatedTicket = Ticket(
+        ticketId: ticket.ticketId,
+        attendeePublicId: ticket.attendeePublicId,
+        attendeeName: ticket.attendeeName,
+        attendeeEmail: ticket.attendeeEmail,
+        ticketType: ticket.ticketType,
+        seatNumber: ticket.seatNumber,
+        seatUuid: ticket.seatUuid,
+        status: 'checked-in',
+        orderShortId: ticket.orderShortId,
+        isCheckedIn: true,
+        checkedInAt: DateTime.now(),
+      );
+
+      // Update list
+      tickets[index] = updatedTicket;
+
+      // Save back to storage
+      await saveTicketsLocally(eventId, tickets);
+
+      return {'success': true, 'message': 'Check-in successful'};
+    } catch (e) {
+      print('Error checking in ticket: $e');
+      return {'success': false, 'message': 'An error occurred'};
+    }
+  }
 }
