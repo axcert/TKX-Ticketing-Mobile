@@ -10,11 +10,23 @@ class EventCard extends StatelessWidget {
 
   Map<String, dynamic> _getEventStatus() {
     if (event.isUpcoming) {
-      return {'text': 'Upcoming', 'color': AppColors.info.withOpacity(0.8)};
+      return {
+        'text': 'Upcoming',
+        'color': const Color.fromARGB(255, 216, 208, 136),
+        'borderColor': AppColors.warning,
+      };
     } else if (event.isOngoing) {
-      return {'text': 'Ongoing', 'color': AppColors.success.withOpacity(0.8)};
+      return {
+        'text': 'Ongoing',
+        'color': const Color.fromARGB(255, 159, 237, 160),
+        'borderColor': AppColors.success,
+      };
     } else {
-      return {'text': 'Completed', 'color': AppColors.warning.withOpacity(0.8)};
+      return {
+        'text': 'Completed',
+        'color': const Color.fromARGB(255, 149, 200, 242),
+        'borderColor': AppColors.info,
+      };
     }
   }
 
@@ -79,7 +91,7 @@ class EventCard extends StatelessWidget {
                         color: status['color'] as Color,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: status['color'] as Color,
+                          color: status['borderColor'] as Color,
                           width: 1,
                         ),
                       ),
