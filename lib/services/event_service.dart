@@ -32,7 +32,7 @@ class EventService {
   }
 
   /// Fetch all events for the user (gatekeeper)
-  Future<ApiResponse<Map<String, List<Event>>>> getMyEvents() async {
+  Future<ApiResponse<Map<String, dynamic>>> getMyEvents() async {
     try {
       final headers = await _getAuthHeaders();
 
@@ -41,15 +41,11 @@ class EventService {
       print(
         '📡 [GateKeeper] Endpoint: ${AppConfig.baseUrl}${AppConfig.gateKeeperEndpoint}',
       );
-      // print('📡 [GateKeeper] Token: ${headers['Authorization']}');
 
       final gateKeeperResponse = await _dio.get(
         AppConfig.gateKeeperEndpoint,
         options: Options(headers: headers),
       );
-
-      // print('📡 [GateKeeper] Status Code: ${gateKeeperResponse.statusCode}');
-      // print('📡 [GateKeeper] Response Data: ${gateKeeperResponse.data}');
 
       if (gateKeeperResponse.statusCode != 200) {
         print(
@@ -65,6 +61,7 @@ class EventService {
       final gateKeeperData = gateKeeperResponse.data;
       Set<int> assignedEventIds = {};
       Set<int> organizerIds = {};
+      String? organizerName;
 
       if (gateKeeperData is Map<String, dynamic> &&
           gateKeeperData['data'] != null) {
@@ -73,22 +70,30 @@ class EventService {
           if (eventJson['id'] != null) {
             assignedEventIds.add(eventJson['id'] as int);
           }
-          if (eventJson['organizer'] != null &&
-              eventJson['organizer']['id'] != null) {
-            organizerIds.add(eventJson['organizer']['id'] as int);
+          if (eventJson['organizer'] != null) {
+            if (eventJson['organizer']['id'] != null) {
+              organizerIds.add(eventJson['organizer']['id'] as int);
+            }
+            // Capture organizer name from the first available event
+            if (organizerName == null) {
+              organizerName = eventJson['organizer']['name'].toString();
+            }
           }
         }
       }
 
       print('📋 [GateKeeper] Assigned Event IDs: $assignedEventIds');
       print('📋 [GateKeeper] Organizer IDs: $organizerIds');
+      if (organizerName != null) {
+        print('📋 [GateKeeper] Organizer Name: $organizerName');
+      }
 
       if (assignedEventIds.isEmpty) {
-        // print('⚠️ [GateKeeper] No assigned events found');
         return ApiResponse.success({
           'today': <Event>[],
           'upcoming': <Event>[],
           'completed': <Event>[],
+          'organizerName': organizerName,
         }, message: 'No assigned events');
       }
 
@@ -105,16 +110,11 @@ class EventService {
             '{id}',
             organizerId.toString(),
           );
-          print(
-            '📅 [Today Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$todayEndpoint',
-          );
 
           final todayResponse = await _dio.get(
             todayEndpoint,
             options: Options(headers: headers),
           );
-          print('📅 [Today Events] Status: ${todayResponse.statusCode}');
-          print('📅 [Today Events] Response: ${todayResponse.data}');
 
           if (todayResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(todayResponse.data);
@@ -122,14 +122,9 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             todayEvents.addAll(filteredEvents);
-            // print(
-            //   '📅 [Today Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          print(
-            '⚠️ [Today Events] Error fetching from organizer $organizerId: $e',
-          );
+          print('⚠️ Error fetching today events: $e');
         }
 
         // Fetch upcoming events
@@ -138,16 +133,11 @@ class EventService {
             '{id}',
             organizerId.toString(),
           );
-          // print(
-          //   '🔜 [Upcoming Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$upcomingEndpoint',
-          // );
 
           final upcomingResponse = await _dio.get(
             upcomingEndpoint,
             options: Options(headers: headers),
           );
-          // print('🔜 [Upcoming Events] Status: ${upcomingResponse.statusCode}');
-          // print('🔜 [Upcoming Events] Response: ${upcomingResponse.data}');
 
           if (upcomingResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(upcomingResponse.data);
@@ -155,30 +145,20 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             upcomingEvents.addAll(filteredEvents);
-            // print(
-            //   '🔜 [Upcoming Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          // print(
-          //   '⚠️ [Upcoming Events] Error fetching from organizer $organizerId: $e',
-          // );
+          print('⚠️ Error fetching upcoming events: $e');
         }
 
         // Fetch completed events
         try {
           final completedEndpoint = AppConfig.completedEventsEndpoint
               .replaceAll('{id}', organizerId.toString());
-          // print(
-          //   '✅ [Completed Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$completedEndpoint',
-          // );
 
           final completedResponse = await _dio.get(
             completedEndpoint,
             options: Options(headers: headers),
           );
-          // print('✅ [Completed Events] Status: ${completedResponse.statusCode}');
-          // print('✅ [Completed Events] Response: ${completedResponse.data}');
 
           if (completedResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(completedResponse.data);
@@ -186,25 +166,17 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             completedEvents.addAll(filteredEvents);
-            // print(
-            //   '✅ [Completed Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          // print(
-          //   '⚠️ [Completed Events] Error fetching from organizer $organizerId: $e',
-          // );
+          print('⚠️ Error fetching completed events: $e');
         }
       }
-
-      // print(
-      //   '📊 [Final Results] Today: ${todayEvents.length}, Upcoming: ${upcomingEvents.length}, Completed: ${completedEvents.length}',
-      // );
 
       final categorizedEvents = {
         'today': todayEvents,
         'upcoming': upcomingEvents,
         'completed': completedEvents,
+        'organizerName': organizerName,
       };
 
       return ApiResponse.success(

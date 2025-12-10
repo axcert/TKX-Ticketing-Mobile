@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 SizedBox(height: MediaQuery.of(context).padding.top),
                 const OfflineIndicator(),
-                _buildAppBar(context),
+                _buildAppBar(context, eventProvider.organizerName),
                 const Expanded(
                   child: Center(
                     child: Column(
@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen>
                 // App Bar
                 SizedBox(height: MediaQuery.of(context).padding.top),
                 const OfflineIndicator(),
-                _buildAppBar(context),
+                _buildAppBar(context, eventProvider.organizerName),
 
                 // Scrollable content area
                 Expanded(
@@ -116,6 +116,12 @@ class _HomeScreenState extends State<HomeScreen>
                         Stack(
                           clipBehavior: Clip.none,
                           alignment: Alignment.topCenter,
+
+                          // ... (cutting out middle part to avoid finding issues, I will target specific blocks if possible)
+                          // Wait, replace_file_content handles a contiguous block.
+                          // I have two calls to _buildAppBar separated by lines.
+                          // And the definition is further down.
+                          // I should use MULTI_REPLACE.
                           children: [
                             // Blue Background
                             Container(
@@ -283,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, String? organizerName) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(color: AppColors.primary),
@@ -313,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen>
           // Organization Name - Centered
           Center(
             child: Text(
-              'Lotus Event',
+              organizerName ?? '',
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium!.copyWith(color: AppColors.textWhite),
@@ -353,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             );
           } else {
-            // Show offline check-in preparation screen first
+            // Show offline check-in preparation screen
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
