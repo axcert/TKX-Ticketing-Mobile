@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_config.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/models/user_model.dart';
 import 'dart:io';
@@ -136,7 +137,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                 return SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(16),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -264,8 +265,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     // 2. Check if user has a profile photo URL from API
     if (user?.profilePhoto != null && user!.profilePhoto!.isNotEmpty) {
+      String photoUrl = user!.profilePhoto!;
+
+      // Handle relative paths (in case Model didn't catch it or update returned relative path)
+      if (!photoUrl.startsWith('http')) {
+        // Ensure it has /storage prefix if missing
+        if (!photoUrl.startsWith('/storage') &&
+            !photoUrl.startsWith('storage')) {
+          final cleanPath = photoUrl.startsWith('/') ? photoUrl : '/$photoUrl';
+          photoUrl = '/storage$cleanPath';
+        }
+        // Ensure leading slash for final concatenation
+        if (!photoUrl.startsWith('/')) {
+          photoUrl = '/$photoUrl';
+        }
+
+        photoUrl = '${AppConfig.baseUrl}$photoUrl';
+      }
+
       return Image.network(
-        user.profilePhoto!,
+        photoUrl,
         fit: BoxFit.cover,
         errorBuilder: (_, _, ___) =>
             const Icon(Icons.person, size: 60, color: Colors.grey),

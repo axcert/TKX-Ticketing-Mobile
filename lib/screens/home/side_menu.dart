@@ -29,8 +29,8 @@ class _SideMenuState extends State<SideMenu> {
         children: [
           DrawerHeader(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // crossAxisAlignment: CrossAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CircleAvatar(
                   radius: 30,
@@ -55,6 +55,7 @@ class _SideMenuState extends State<SideMenu> {
                       ? const Icon(Icons.person, size: 30, color: Colors.grey)
                       : null,
                 ),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

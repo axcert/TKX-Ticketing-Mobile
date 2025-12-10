@@ -44,7 +44,7 @@ class User {
         // Ensure exactly one slash between base URL and path
         final baseUrl = AppConfig.baseUrl;
         final cleanPath = photoPath.startsWith('/') ? photoPath : '/$photoPath';
-        profilePhotoUrl = '$baseUrl$cleanPath';
+        profilePhotoUrl = '$baseUrl/storage/$cleanPath';
         print('🔧 Constructed URL: $profilePhotoUrl');
       }
     }
