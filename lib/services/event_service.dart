@@ -220,16 +220,91 @@ class EventService {
 
   /// Parse event from JSON
   Event _parseEvent(Map<String, dynamic> json) {
+    // Safely parse organizer name
+    String organizerName = 'N/A';
+    if (json['organizer'] != null && json['organizer'] is Map) {
+      organizerName = json['organizer']['name']?.toString() ?? 'N/A';
+    }
+
+    // Parse Venue and Location
+    // Parse Venue and Location
+    String? venue;
+    String? location;
+
+    // Determine where location_details are stored
+    Map<String, dynamic>? locDetails;
+    if (json['settings'] != null &&
+        json['settings'] is Map &&
+        json['settings']['location_details'] != null) {
+      locDetails = json['settings']['location_details'] as Map<String, dynamic>;
+    } else if (json['location_details'] != null &&
+        json['location_details'] is Map) {
+      locDetails = json['location_details'] as Map<String, dynamic>;
+    }
+
+    if (locDetails != null) {
+      // Parse Venue
+      if (locDetails['venue_name'] != null) {
+        final v = locDetails['venue_name'].toString().trim();
+        if (v.isNotEmpty && v.toLowerCase() != 'null') {
+          venue = v;
+        }
+      }
+
+      // Parse Location (Build address from parts)
+      final List<String> addressParts = [];
+      final addressFields = [
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state_or_region',
+      ];
+
+      for (var field in addressFields) {
+        final val = locDetails[field];
+        if (val != null) {
+          final strVal = val.toString().trim();
+          if (strVal.isNotEmpty && strVal.toLowerCase() != 'null') {
+            addressParts.add(strVal);
+          }
+        }
+      }
+
+      if (addressParts.isNotEmpty) {
+        location = addressParts.join(', ');
+      }
+    }
+
+    // Fallbacks if not found in location_details
+    if (venue == null) {
+      final v = json['venue']?.toString() ?? json['location']?.toString();
+      if (v != null && v.isNotEmpty && v.toLowerCase() != 'null') {
+        venue = v;
+      }
+    }
+
+    if (location == null) {
+      final l = json['location']?.toString();
+      if (l != null && l.isNotEmpty && l.toLowerCase() != 'null') {
+        location = l;
+      }
+    }
+
+    print(
+      '📍 Parsed Location - ID: ${json['id']}, Venue: "$venue", Location: "$location"',
+    );
+
     return Event(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? 'Untitled Event',
       imageUrl: json['image_url'] ?? 'assets/event_placeholder.png',
       startDate: _parseDateTime(json['start_date']),
       endDate: _parseDateTime(json['end_date']),
-      venue: json['venue'] ?? json['location'] ?? 'N/A',
-      location: json['location'] ?? 'N/A',
+      venue: venue ?? 'N/A',
+      location: location ?? 'N/A',
       category: json['category'] ?? 'N/A',
       description: json['description'] ?? 'No description available',
+      organizerName: organizerName,
     );
   }
 
