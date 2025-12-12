@@ -8,6 +8,7 @@ class Event {
   final DateTime endDate;
   final String venue;
   final String location;
+  final String organizerName;
   final bool isCompleted;
 
   Event({
@@ -21,6 +22,7 @@ class Event {
     required this.venue,
     required this.location,
     this.isCompleted = false,
+    required this.organizerName,
   });
 
   // Format date as "Oct 12, 2025 • 06:00 PM"
@@ -85,6 +87,7 @@ class Event {
     String? venue,
     String? location,
     bool? isCompleted,
+    String? organizerName,
   }) {
     return Event(
       id: id ?? this.id,
@@ -97,6 +100,7 @@ class Event {
       venue: venue ?? this.venue,
       location: location ?? this.location,
       isCompleted: isCompleted ?? this.isCompleted,
+      organizerName: organizerName ?? this.organizerName,
     );
   }
 }
