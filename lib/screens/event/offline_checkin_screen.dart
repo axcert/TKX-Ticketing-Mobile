@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:tkx_ticketing/services/connectivity_service.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class OfflineCheckInScreen extends StatefulWidget {
@@ -32,12 +33,50 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
     _startDownload();
   }
 
+  final ConnectivityService _connectivityService = ConnectivityService();
+
   void _startDownload() async {
     try {
       setState(() {
         _isDownloading = true;
         _errorMessage = null;
       });
+
+      // Check internet connectivity
+      if (_connectivityService.isOffline) {
+        // If offline, check if we have data locally
+        final hasOfflineData = await _ticketService.hasOfflineTickets(
+          widget.eventId,
+        );
+
+        if (hasOfflineData) {
+          // If we have data, we can proceed
+          if (mounted) {
+            setState(() {
+              _errorMessage = null;
+              // Set dummy progress to show we are "loading" local data
+              _progress = 1.0;
+              _syncedTickets = 100; // Just a placeholder
+            });
+
+            ToastMessage.show(
+              type: ToastType.success,
+              message: 'Using offline ticket database',
+              context,
+            );
+
+            await Future.delayed(const Duration(milliseconds: 800));
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
+          }
+          return;
+        } else {
+          throw Exception(
+            'No internet connection and no offline tickets available. Please connect to internet to download tickets.',
+          );
+        }
+      }
 
       // Fetch tickets from API
       final ticketBundle = await _ticketService.fetchTicketsForEvent(

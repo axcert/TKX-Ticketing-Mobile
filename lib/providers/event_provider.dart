@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/event_model.dart';
 import '../services/event_service.dart';
 import '../services/connectivity_service.dart';
@@ -6,6 +8,8 @@ import '../services/connectivity_service.dart';
 class EventProvider extends ChangeNotifier {
   final EventService _eventService = EventService();
   final ConnectivityService _connectivityService = ConnectivityService();
+
+  static const String _eventsCacheKey = 'cached_events_data';
 
   List<Event> _todayEvents = [];
   List<Event> _upcomingEvents = [];
@@ -32,10 +36,25 @@ class EventProvider extends ChangeNotifier {
 
       // Check internet connectivity
       if (_connectivityService.isOffline) {
-        _errorMessage = 'No internet connection. Please check your network.';
-        _isLoading = false;
-        notifyListeners();
-        return;
+        debugPrint(
+          '⚠️ [EventProvider] Offline mode detected. Attempting to load from cache...',
+        );
+        final hasCachedData = await _loadEventsFromCache();
+
+        if (hasCachedData) {
+          debugPrint('✅ [EventProvider] Loaded events from cache.');
+          _isLoading = false;
+          // We don't set error message here so UI shows content
+          // But we could add a "Showing offline data" flag if needed
+          notifyListeners();
+          return;
+        } else {
+          _errorMessage =
+              'No internet connection and no offline data available.';
+          _isLoading = false;
+          notifyListeners();
+          return;
+        }
       }
 
       final response = await _eventService.getMyEvents();
@@ -58,6 +77,9 @@ class EventProvider extends ChangeNotifier {
         if (_organizerName != null) {
           debugPrint('   Organizer: $_organizerName');
         }
+
+        // Save to cache
+        _saveEventsToCache();
       } else {
         _errorMessage = response.message ?? 'Failed to fetch events';
         debugPrint('❌ [EventProvider] Failed: $_errorMessage');
@@ -71,6 +93,59 @@ class EventProvider extends ChangeNotifier {
       notifyListeners();
       debugPrint('❌ [EventProvider] Error: $e');
     }
+  }
+
+  /// Save events to local cache
+  Future<void> _saveEventsToCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheMap = {
+        'today': _todayEvents.map((e) => e.toJson()).toList(),
+        'upcoming': _upcomingEvents.map((e) => e.toJson()).toList(),
+        'completed': _completedEvents.map((e) => e.toJson()).toList(),
+        'organizerName': _organizerName,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+
+      await prefs.setString(_eventsCacheKey, json.encode(cacheMap));
+      debugPrint('💾 [EventProvider] Events cached successfully');
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Failed to cache events: $e');
+    }
+  }
+
+  /// Load events from local cache
+  Future<bool> _loadEventsFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_eventsCacheKey);
+
+      if (jsonString != null) {
+        final decoded = json.decode(jsonString) as Map<String, dynamic>;
+
+        if (decoded['today'] != null) {
+          _todayEvents = (decoded['today'] as List)
+              .map((e) => Event.fromJson(e))
+              .toList();
+        }
+        if (decoded['upcoming'] != null) {
+          _upcomingEvents = (decoded['upcoming'] as List)
+              .map((e) => Event.fromJson(e))
+              .toList();
+        }
+        if (decoded['completed'] != null) {
+          _completedEvents = (decoded['completed'] as List)
+              .map((e) => Event.fromJson(e))
+              .toList();
+        }
+        _organizerName = decoded['organizerName'] as String?;
+
+        return true;
+      }
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Error loading cache: $e');
+    }
+    return false;
   }
 
   /// Refresh events (for pull-to-refresh)
@@ -110,6 +185,17 @@ class EventProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // Check offline
+      if (_connectivityService.isOffline) {
+        debugPrint('⚠️ [EventProvider] Offline. Loading scan history cache...');
+        final hasCached = await _loadScanHistoryFromCache(eventId);
+        if (hasCached) {
+          _isLoading = false;
+          notifyListeners();
+          return;
+        }
+      }
+
       final response = await _eventService.getScanHistory(eventId);
 
       if (response.success && response.data != null) {
@@ -125,6 +211,9 @@ class EventProvider extends ChangeNotifier {
         debugPrint(
           '✅ [EventProvider] Scan history loaded: ${_scanHistory.length} items',
         );
+
+        // Save to cache
+        _saveScanHistoryToCache(eventId);
       } else {
         debugPrint(
           '❌ [EventProvider] Failed to fetch scan history: ${response.message}',
@@ -136,6 +225,36 @@ class EventProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  String _scanHistoryCacheKey(String eventId) => 'scan_history_$eventId';
+
+  Future<void> _saveScanHistoryToCache(String eventId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _scanHistoryCacheKey(eventId),
+        json.encode(_scanHistory),
+      );
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Failed to cache scan history: $e');
+    }
+  }
+
+  Future<bool> _loadScanHistoryFromCache(String eventId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_scanHistoryCacheKey(eventId));
+      if (jsonString != null) {
+        final List<dynamic> decoded = json.decode(jsonString);
+        _scanHistory = decoded.cast<Map<String, dynamic>>();
+        _unseenScanCount = 0; // Reset for cached data
+        return true;
+      }
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Error loading scan history cache: $e');
+    }
+    return false;
   }
 
   /// Mark all scans as seen (reset unseen count)
