@@ -96,4 +96,80 @@ class EventProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  // --- Scan History Management ---
+  List<Map<String, dynamic>> _scanHistory = [];
+  int _unseenScanCount = 0; // New: Track unseen scans
+
+  List<Map<String, dynamic>> get scanHistory => _scanHistory;
+  int get unseenScanCount => _unseenScanCount;
+
+  /// Fetch scan history for a specific event
+  Future<void> fetchScanHistory(String eventId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _eventService.getScanHistory(eventId);
+
+      if (response.success && response.data != null) {
+        // Convert List<ScanHistory> to List<Map<String, dynamic>> for the UI
+        final newHistory = response.data!.map((scan) => scan.toJson()).toList();
+
+        // Calculate unseen count (for now, simplistic logic: new total - old total)
+        // Or if you want to count all fetched as unseen initially:
+        _unseenScanCount = newHistory.length;
+
+        _scanHistory = newHistory;
+
+        debugPrint(
+          '✅ [EventProvider] Scan history loaded: ${_scanHistory.length} items',
+        );
+      } else {
+        debugPrint(
+          '❌ [EventProvider] Failed to fetch scan history: ${response.message}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Error fetching scan history: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Mark all scans as seen (reset unseen count)
+  void markScansAsSeen() {
+    _unseenScanCount = 0;
+    notifyListeners();
+  }
+
+  /// Add a test scan for UI testing
+  void addTestScan() {
+    final testScan = {
+      'ticketId': 'TEST-123',
+      'name': 'Test User',
+      'time': '12:00 PM',
+      'status': 'Checked-In',
+      'isVip': true,
+      'ticketType': 'VIP',
+      'seatNo': 'A1',
+      'row': 'A',
+      'column': '1',
+      'recordId': 'REC-001',
+      'scanTime': DateTime.now().toIso8601String(),
+      'scanType': 'Manual',
+      'scannedBy': 'Tester',
+    };
+    _scanHistory.insert(0, testScan);
+    _unseenScanCount++;
+    notifyListeners();
+  }
+
+  /// Clear scan history
+  void clearScanHistory() {
+    _scanHistory = [];
+    _unseenScanCount = 0;
+    notifyListeners();
+  }
 }

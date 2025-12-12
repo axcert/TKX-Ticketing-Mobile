@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:tkx_ticketing/models/user_model.dart';
 import 'package:tkx_ticketing/providers/auth_provider.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
 import '../../widgets/showpreferences_dialog_box.dart';
 import '../ticket/valid_ticket_screen.dart';
@@ -11,7 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 class QRScannerScreen extends StatefulWidget {
-  const QRScannerScreen({super.key});
+  final String? eventId;
+  const QRScannerScreen({super.key, this.eventId});
 
   @override
   State<QRScannerScreen> createState() => _QRScannerScreenState();
@@ -23,35 +25,17 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   bool _isTorchOn = false;
   late final AudioPlayer _player;
 
-  // Sample scan history data
-  final List<Map<String, dynamic>> _scanHistory = [
-    {
-      'ticketId': 'TCK1234',
-      'name': 'Nimali Silva',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': true,
-    },
-    {
-      'ticketId': 'TCK1234',
-      'name': 'Elena Martinez',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': false,
-    },
-    {
-      'ticketId': 'TCK1234',
-      'name': 'Kamal Silva',
-      'time': '06:02 PM',
-      'status': 'Checked-In',
-      'isVip': false,
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+
+    // Fetch scan history if eventId is available
+    if (widget.eventId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<EventProvider>().fetchScanHistory(widget.eventId!);
+      });
+    }
   }
 
   @override
@@ -96,7 +80,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ValidTicketScreen(ticketData: ticketData),
+        builder: (context) => ValidTicketScreen(
+          ticketData: ticketData,
+          eventId: widget.eventId ?? '',
+        ),
       ),
     );
 
@@ -205,12 +192,20 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                         ),
 
                         // Title
-                        const Text(
-                          'Scan Tickets',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                        GestureDetector(
+                          onLongPress: () {
+                            context.read<EventProvider>().addTestScan();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Test scan added!')),
+                            );
+                          },
+                          child: const Text(
+                            'Scan Tickets',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
 
@@ -321,67 +316,78 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 bottom: 30,
                 right: 20,
                 child: SafeArea(
-                  child: GestureDetector(
-                    onTap: () {
-                      showScanHistoryBottomSheet(context, _scanHistory);
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(
-                                Icons.history,
-                                color: Colors.white,
-                                size: 28,
+                  child: Consumer<EventProvider>(
+                    builder: (context, eventProvider, _) {
+                      return GestureDetector(
+                        onTap: () {
+                          // Show history and verify scanned
+                          showScanHistoryBottomSheet(
+                            context,
+                            eventProvider.scanHistory,
+                          );
+                          // Mark as seen when opened
+                          eventProvider.markScansAsSeen();
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                shape: BoxShape.circle,
                               ),
-                              if (_scanHistory.isNotEmpty)
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '${_scanHistory.length}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.history,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                  // Show badge only if there are unseen scans
+                                  if (eventProvider.unseenScanCount > 0)
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${eventProvider.unseenScanCount}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Scan History',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Scan History',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),
