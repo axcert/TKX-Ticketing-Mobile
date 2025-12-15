@@ -7,13 +7,49 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:mobile_app/main.dart';
+import 'package:mobile_app/services/connectivity_service.dart';
+
+// Mock ConnectivityService
+class MockConnectivityService implements ConnectivityService {
+  @override
+  Future<void> initialize() async {
+    // Mock initialization
+  }
+
+  @override
+  bool get isOffline => false;
+
+  @override
+  bool get isOnline => true;
+
+  @override
+  Future<void> checkConnectivity() async {}
+
+  @override
+  void dispose() {}
+
+  @override
+  void addListener(VoidCallback listener) {}
+
+  @override
+  bool get hasListeners => false;
+
+  @override
+  void notifyListeners() {}
+
+  @override
+  void removeListener(VoidCallback listener) {}
+}
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Create a mock ConnectivityService
+    final mockConnectivityService = MockConnectivityService();
+    await mockConnectivityService.initialize();
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(connectivityService: mockConnectivityService));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

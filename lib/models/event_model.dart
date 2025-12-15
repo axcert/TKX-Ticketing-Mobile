@@ -103,4 +103,38 @@ class Event {
       organizerName: organizerName ?? this.organizerName,
     );
   }
+
+  // Convert Event to JSON Map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'category': category,
+      'description': description,
+      'imageUrl': imageUrl,
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'venue': venue,
+      'location': location,
+      'isCompleted': isCompleted,
+      'organizerName': organizerName,
+    };
+  }
+
+  // Create Event from JSON Map
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      category: json['category'] as String,
+      description: json['description'] as String,
+      imageUrl: json['imageUrl'] as String,
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: DateTime.parse(json['endDate'] as String),
+      venue: json['venue'] as String,
+      location: json['location'] as String,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      organizerName: json['organizerName'] as String,
+    );
+  }
 }

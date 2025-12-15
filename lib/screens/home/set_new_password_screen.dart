@@ -4,6 +4,7 @@ import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/toast_message.dart';
+import '../../main.dart';
 
 class SetNewPasswordScreen extends StatefulWidget {
   final String email;
@@ -47,9 +48,19 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
       if (mounted) {
         if (success) {
           ToastMessage.success(context, 'Password updated successfully');
-          // Navigate back to login or home screen
-          // Pop all screens and go back to the first route
-          Navigator.popUntil(context, (route) => route.isFirst);
+
+          // Clear user data to force login with new password
+          await authProvider.logout();
+
+          if (mounted) {
+            // Navigate to SplashToLoginWrapper which will show splash and then login screen
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const SplashToLoginWrapper(),
+              ),
+              (route) => false,
+            );
+          }
         } else {
           ToastMessage.error(
             context,

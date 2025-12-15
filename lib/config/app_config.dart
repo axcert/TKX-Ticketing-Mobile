@@ -23,7 +23,6 @@ class AppConfig {
 
   // Event Endpoints
   // get all events
-  //
   static const String gateKeeperEndpoint = '/gate-keeper/my-events';
   static const String todayEventsEndpoint =
       '/public/organizers/{id}/events/today';
@@ -39,10 +38,14 @@ class AppConfig {
   static const String scanhistory = '/events/{event_id}/scan-history';
 
   // Ticket Endpoints
-  static const String ticketsEndpoint = '/tickets';
-  static const String validateTicketEndpoint = '/tickets/validate';
+  static const String getAvailableTicketsEndpoint =
+      '/public/events/{event_id}/ticket-bundle';
+  static const String validateTicketEndpoint =
+      '/public/events/{event_id}/check-ins/sync';
   static const String checkInEndpoint = '/tickets/check-in';
   static const String scanHistoryEndpoint = '/tickets/scan-history';
+  // static const String manualCheckInEndpoint =
+  //     '/public/events/{event_id}/attendees/search?query={Full Ticket Code/name/Email}';
 
   // Timeout Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);

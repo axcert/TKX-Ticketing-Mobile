@@ -30,7 +30,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   void initState() {
     super.initState();
-    _initializePasswordChange();
+    // Use addPostFrameCallback to ensure the API call happens after the build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializePasswordChange();
+    });
   }
 
   @override

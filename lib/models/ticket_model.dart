@@ -8,6 +8,8 @@ class Ticket {
   final String? seatUuid;
   final String status;
   final String orderShortId;
+  final bool isCheckedIn;
+  final DateTime? checkedInAt;
 
   Ticket({
     required this.ticketId,
@@ -19,6 +21,8 @@ class Ticket {
     this.seatUuid,
     required this.status,
     required this.orderShortId,
+    required this.isCheckedIn,
+    this.checkedInAt,
   });
 
   // Factory constructor to create Ticket from JSON
@@ -33,6 +37,10 @@ class Ticket {
       seatUuid: json['seat_uuid'],
       status: json['status'] ?? 'valid',
       orderShortId: json['order_short_id'] ?? '',
+      isCheckedIn: json['is_checked_in'] ?? false,
+      checkedInAt: json['checked_in_at'] != null
+          ? DateTime.parse(json['checked_in_at'])
+          : null,
     );
   }
 
@@ -48,6 +56,8 @@ class Ticket {
       'seat_uuid': seatUuid,
       'status': status,
       'order_short_id': orderShortId,
+      'is_checked_in': isCheckedIn,
+      'checked_in_at': checkedInAt?.toIso8601String(),
     };
   }
 

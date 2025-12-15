@@ -17,9 +17,9 @@ class CompletedEventsTab extends StatelessWidget {
       return const EmptyStateWidget(message: 'No events available');
     }
 
-    // Sort events by dateTime in descending order (most recent first)
+    // Sort events by endDate in descending order (most recently ended first)
     final sortedEvents = List<Event>.from(events)
-      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+      ..sort((a, b) => b.endDate.compareTo(a.endDate));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
