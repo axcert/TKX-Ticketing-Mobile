@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/scan_history_model.dart';
 
 class ScanHistoryBottomSheet extends StatefulWidget {
   final List<Map<String, dynamic>> scanHistory;
 
-  const ScanHistoryBottomSheet({
-    super.key,
-    required this.scanHistory,
-  });
+  const ScanHistoryBottomSheet({super.key, required this.scanHistory});
 
   @override
   State<ScanHistoryBottomSheet> createState() => _ScanHistoryBottomSheetState();
 }
 
 class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
-  final DraggableScrollableController _controller = DraggableScrollableController();
+  final DraggableScrollableController _controller =
+      DraggableScrollableController();
 
   @override
   void dispose() {
@@ -30,8 +31,8 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
       maxChildSize: 0.9,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: AppColors.background,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -45,7 +46,7 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: AppColors.textSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -58,19 +59,15 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Scan History',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
                       '${widget.scanHistory.length}/${widget.scanHistory.length}',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: AppColors.textSecondary,
                         fontSize: 14,
-                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -89,15 +86,13 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                             Icon(
                               Icons.history,
                               size: 64,
-                              color: Colors.grey.shade300,
+                              color: AppColors.textSecondary.withOpacity(0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'No scan history yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade500,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium!
+                                  .copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -107,7 +102,9 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         itemCount: widget.scanHistory.length,
                         itemBuilder: (context, index) {
-                          final scan = widget.scanHistory[index];
+                          final scan = ScanHistory.fromJson(
+                            widget.scanHistory[index],
+                          );
                           return _buildScanHistoryItem(scan);
                         },
                       ),
@@ -119,25 +116,25 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
     );
   }
 
-  Widget _buildScanHistoryItem(Map<String, dynamic> scan) {
+  Widget _buildScanHistoryItem(ScanHistory scan) {
     Color statusColor;
     Color statusBgColor;
     IconData statusIcon;
 
-    switch (scan['status']) {
+    switch (scan.status) {
       case 'Checked-In':
-        statusColor = Colors.green;
-        statusBgColor = Colors.green.shade50;
+        statusColor = AppColors.success;
+        statusBgColor = const Color.fromARGB(255, 179, 236, 182);
         statusIcon = Icons.check_circle;
         break;
       case 'Already Checked-In':
         statusColor = Colors.orange;
-        statusBgColor = Colors.orange.shade50;
+        statusBgColor = const Color.fromARGB(255, 255, 225, 172);
         statusIcon = Icons.warning;
         break;
       case 'Invalid':
         statusColor = Colors.red;
-        statusBgColor = Colors.red.shade50;
+        statusBgColor = const Color.fromARGB(255, 255, 190, 200);
         statusIcon = Icons.cancel;
         break;
       default:
@@ -146,114 +143,115 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
         statusIcon = Icons.info;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          // VIP Badge or Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: scan['isVip'] == true ? Colors.yellow.shade100 : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: scan['isVip'] == true
-                  ? const Text(
-                      'VIP',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              // VIP Badge or Icon
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: SvgPicture.asset('assets/icons/tickets.svg'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Ticket Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      scan.ticketId,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
-                    )
-                  : Icon(
-                      Icons.confirmation_number_outlined,
-                      color: Colors.grey.shade600,
-                      size: 24,
                     ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Ticket Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  scan['ticketId'] ?? 'N/A',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  scan['name'] ?? 'N/A',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Status and Time
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      statusIcon,
-                      size: 14,
-                      color: statusColor,
-                    ),
-                    const SizedBox(width: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      scan['status'] ?? 'Unknown',
+                      scan.name,
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                scan['time'] ?? 'N/A',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey.shade600,
-                ),
+              // Status and Time
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 14, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          scan.status,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    scan.time,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        scan.isVip
+            ? Positioned(
+                top: -9,
+                left: 25,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  child: SvgPicture.asset('assets/icons/VIP Badge.svg'),
+                ),
+              )
+            : SizedBox.shrink(),
+      ],
     );
   }
 }
 
 // Function to show the scan history bottom sheet
-void showScanHistoryBottomSheet(BuildContext context, List<Map<String, dynamic>> scanHistory) {
+void showScanHistoryBottomSheet(
+  BuildContext context,
+  List<Map<String, dynamic>> scanHistory,
+) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,

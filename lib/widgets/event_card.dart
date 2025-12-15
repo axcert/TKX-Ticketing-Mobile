@@ -1,81 +1,113 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/models/event_model.dart';
-import 'package:mobile_app/screens/event/event_details_screen.dart';
-import 'package:mobile_app/screens/event/scan_not_available_screen.dart';
-import 'package:mobile_app/screens/event/offline_checkin_screen.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
+  final Function()? onTap;
 
-  const EventCard({super.key, required this.event});
+  EventCard({super.key, required this.event, this.onTap});
+
+  Map<String, dynamic> _getEventStatus() {
+    if (event.isUpcoming) {
+      return {
+        'text': 'Upcoming',
+        'color': const Color.fromARGB(255, 216, 208, 136),
+        'borderColor': AppColors.warning,
+      };
+    } else if (event.isOngoing) {
+      return {
+        'text': 'Ongoing',
+        'color': const Color.fromARGB(255, 159, 237, 160),
+        'borderColor': AppColors.success,
+      };
+    } else {
+      return {
+        'text': 'Completed',
+        'color': const Color.fromARGB(255, 149, 200, 242),
+        'borderColor': AppColors.info,
+      };
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.shadow.withValues(alpha: 0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    return Stack(
+      clipBehavior: Clip.none, // Allow children to overflow the Stack bounds
+      children: [
+        Container(
+          margin: const EdgeInsets.only(
+            bottom: 12,
+            top: 8,
+          ), // Added top margin for status badge
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: onTap != null || event.isUpcoming
+                ? Border.all(
+                    color: AppColors.shadow.withValues(alpha: 0.15),
+                    width: 1,
+                  )
+                : null,
+            boxShadow: onTap != null || event.isUpcoming
+                ? [
+                    BoxShadow(
+                      color: AppColors.shadow.withValues(alpha: 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
           ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _handleTap(context),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              _buildEventImage(),
-              const SizedBox(width: 12),
-              Expanded(child: _buildEventDetails()),
-              _buildArrowIcon(),
-            ],
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  _buildEventImage(),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildEventDetails()),
+                  onTap != null ? _buildArrowIcon() : const SizedBox.shrink(),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        onTap == null
+            ? Positioned(
+                right: 20, // Position from right side for better alignment
+                top: -5, // Align with top of the card
+                child: Builder(
+                  builder: (context) {
+                    final status = _getEventStatus();
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: status['color'] as Color,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: status['borderColor'] as Color,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        status['text'] as String,
+                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+            : const SizedBox.shrink(),
+      ],
     );
-  }
-
-  Future<void> _handleTap(BuildContext context) async {
-    // Navigate to different screens based on event status
-    if (event.isUpcoming) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanNotAvailableScreen(event: event),
-        ),
-      );
-    } else {
-      // Show offline check-in preparation screen first
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              OfflineCheckInScreen(eventId: event.id, eventName: event.title),
-        ),
-      );
-
-      // If download completed successfully, navigate to event details
-      if (result == true && context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EventDetailsScreen(event: event),
-          ),
-        );
-      }
-    }
   }
 
   Widget _buildEventImage() {

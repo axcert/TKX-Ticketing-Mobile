@@ -1,14 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/ticket_model.dart';
+import 'package:tkx_ticketing/screens/ticket/valid_ticket_screen.dart';
+import 'package:tkx_ticketing/screens/ticket/already_checked_in_screen.dart';
+import 'package:tkx_ticketing/services/ticket_service.dart';
 
 class ManualCheckInBottomSheet extends StatefulWidget {
-  const ManualCheckInBottomSheet({super.key});
+  final String eventId;
+
+  const ManualCheckInBottomSheet({super.key, required this.eventId});
 
   @override
-  State<ManualCheckInBottomSheet> createState() => _ManualCheckInBottomSheetState();
+  State<ManualCheckInBottomSheet> createState() =>
+      _ManualCheckInBottomSheetState();
 }
 
 class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
+  final TicketService _ticketService = TicketService();
+
+  List<Ticket> _allTickets = [];
+  List<Ticket> _filteredTickets = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTickets();
+  }
+
+  Future<void> _loadTickets() async {
+    final tickets = await _ticketService.loadTicketsLocally(widget.eventId);
+    if (mounted) {
+      setState(() {
+        _allTickets = tickets;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _filterTickets(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredTickets = [];
+      });
+      return;
+    }
+
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      _filteredTickets = _allTickets.where((ticket) {
+        return ticket.attendeeName.toLowerCase().contains(lowerQuery) ||
+            ticket.attendeePublicId.toLowerCase().contains(lowerQuery) ||
+            ticket.attendeeEmail.toLowerCase().contains(lowerQuery);
+      }).toList();
+    });
+  }
 
   @override
   void dispose() {
@@ -21,7 +69,7 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -32,10 +80,10 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
           // Handle bar
           Container(
             margin: const EdgeInsets.only(top: 12),
-            width: 40,
+            width: 100,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: AppColors.textHint,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -43,17 +91,13 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
           const SizedBox(height: 20),
 
           // Title
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Manual Check-In',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: Theme.of(context).textTheme.headlineLarge,
               ),
             ),
           ),
@@ -66,11 +110,7 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by Name or Ticket ID...',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 14,
-                ),
+                hintText: 'Search by Name, ID or Email...',
                 prefixIcon: Icon(
                   Icons.search,
                   color: Colors.grey.shade400,
@@ -80,42 +120,24 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
                 fillColor: Colors.grey.shade50,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF1F5CBF),
-                    width: 2,
-                  ),
+                  borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 14,
                 ),
               ),
-              onChanged: (value) {
-                // Handle search
-                setState(() {});
-              },
+              onChanged: _filterTickets,
             ),
           ),
 
           const SizedBox(height: 24),
 
-          // Search Results Area (Empty State)
+          // Search Results Area
           Expanded(
-            child: _searchController.text.isEmpty
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _searchController.text.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -128,28 +150,137 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
                         const SizedBox(height: 16),
                         Text(
                           'Search for attendees',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade500,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Enter name or ticket ID to check-in',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade400,
-                          ),
+                          'Enter name, ID or email to check-in',
+                          style: Theme.of(context).textTheme.titleSmall!
+                              .copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ),
                   )
-                : ListView.builder(
+                : _filteredTickets.isEmpty
+                ? Center(
+                    child: Text(
+                      'No attendees found',
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: 0, // Replace with actual search results
+                    itemCount: _filteredTickets.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
                     itemBuilder: (context, index) {
-                      return Container(); // Replace with result items
+                      final ticket = _filteredTickets[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.textSecondary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border(
+                            bottom: BorderSide(
+                              width: 1,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.textSecondary
+                                .withOpacity(0.1),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: SvgPicture.asset(
+                                "assets/icons/tickets.svg",
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            ticket.attendeeName,
+                            style: Theme.of(context).textTheme.titleMedium!
+                                .copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ticket.attendeeEmail,
+                                style: Theme.of(context).textTheme.bodyMedium!
+                                    .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                              ),
+                              Text(
+                                'ID: ${ticket.attendeePublicId}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.textHint,
+                          ),
+                          onTap: () {
+                            // Calculate counts
+                            final totalCount = _allTickets.length;
+                            final checkedCount = _allTickets
+                                .where((t) => t.status == 'checked-in')
+                                .length;
+
+                            final ticketData = {
+                              'recordId': ticket.ticketId.toString(),
+                              'checkedCount': checkedCount.toString(),
+                              'totalCount': totalCount.toString(),
+                              'isVip': ticket.ticketType.toLowerCase() == 'vip',
+                              'name': ticket.attendeeName,
+                              'ticketId': ticket.attendeePublicId,
+                              'seatNo': ticket.seatNumber ?? 'N/A',
+                              'row': '-', // Placeholder
+                              'column': '-', // Placeholder
+                            };
+
+                            if (ticket.isCheckedIn) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AlreadyCheckedInScreen(
+                                    ticketData: ticketData,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ValidTicketScreen(
+                                    ticketData: ticketData,
+                                    eventId: widget.eventId,
+                                  ),
+                                ),
+                              ).then((result) {
+                                if (result == true) {
+                                  // Refresh the ticket list after a successful check-in
+                                  _loadTickets();
+                                  // Close bottom sheet if desired, or stay to check in more
+                                  // Navigator.pop(context);
+                                }
+                              });
+                            }
+                          },
+                        ),
+                      );
                     },
                   ),
           ),
@@ -160,11 +291,11 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
 }
 
 // Function to show the bottom sheet
-void showManualCheckInBottomSheet(BuildContext context) {
+void showManualCheckInBottomSheet(BuildContext context, String eventId) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => const ManualCheckInBottomSheet(),
+    builder: (context) => ManualCheckInBottomSheet(eventId: eventId),
   );
 }

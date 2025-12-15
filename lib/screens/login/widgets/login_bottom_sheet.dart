@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app/config/app_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import '../../home/home_screen.dart';
 import 'forgot_password_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';

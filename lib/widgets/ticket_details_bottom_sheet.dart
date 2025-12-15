@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 
 class TicketDetailsBottomSheet extends StatelessWidget {
   final Map<String, dynamic> ticketData;
 
-  const TicketDetailsBottomSheet({
-    super.key,
-    required this.ticketData,
-  });
+  const TicketDetailsBottomSheet({super.key, required this.ticketData});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -57,9 +55,15 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                _buildDetailRow('Ticket ID / Code', ticketData['ticketId'] ?? 'N/A'),
+                _buildDetailRow(
+                  'Ticket ID / Code',
+                  ticketData['ticketId'] ?? 'N/A',
+                ),
                 _buildDetailRow('Attendee Name', ticketData['name'] ?? 'N/A'),
-                _buildDetailRow('Ticket Type', ticketData['ticketType'] ?? 'N/A'),
+                _buildDetailRow(
+                  'Ticket Type',
+                  ticketData['ticketType'] ?? 'N/A',
+                ),
                 _buildDetailRow('Seat No.', ticketData['seatNo'] ?? 'N/A'),
                 _buildDetailRow('Row', ticketData['row'] ?? 'N/A'),
                 _buildDetailRow('Column', ticketData['column'] ?? 'N/A'),
@@ -70,7 +74,10 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 _buildDetailRow('Scan Time', ticketData['scanTime'] ?? 'N/A'),
                 _buildDetailRow('Scan Type', ticketData['scanType'] ?? 'N/A'),
                 _buildDetailRow('Scanned By', ticketData['scannedBy'] ?? 'N/A'),
-                _buildDetailRowWithStatus('Status', ticketData['status'] ?? 'N/A'),
+                _buildDetailRowWithStatus(
+                  'Status',
+                  ticketData['status'] ?? 'N/A',
+                ),
               ],
             ),
           ),
@@ -91,10 +98,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ),
           const SizedBox(width: 16),
@@ -146,10 +150,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ),
           const SizedBox(width: 16),
@@ -158,7 +159,10 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerRight,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: statusBgColor,
                   borderRadius: BorderRadius.circular(12),
@@ -181,7 +185,10 @@ class TicketDetailsBottomSheet extends StatelessWidget {
 }
 
 // Function to show the ticket details bottom sheet
-void showTicketDetailsBottomSheet(BuildContext context, Map<String, dynamic> ticketData) {
+void showTicketDetailsBottomSheet(
+  BuildContext context,
+  Map<String, dynamic> ticketData,
+) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,

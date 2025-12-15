@@ -3,6 +3,7 @@ import '../config/app_config.dart';
 import '../models/api_response.dart';
 import '../models/event_model.dart';
 import '../models/event_statistics_model.dart';
+import '../models/scan_history_model.dart';
 import 'storage_service.dart';
 
 class EventService {
@@ -31,7 +32,7 @@ class EventService {
   }
 
   /// Fetch all events for the user (gatekeeper)
-  Future<ApiResponse<Map<String, List<Event>>>> getMyEvents() async {
+  Future<ApiResponse<Map<String, dynamic>>> getMyEvents() async {
     try {
       final headers = await _getAuthHeaders();
 
@@ -40,15 +41,11 @@ class EventService {
       print(
         '📡 [GateKeeper] Endpoint: ${AppConfig.baseUrl}${AppConfig.gateKeeperEndpoint}',
       );
-      // print('📡 [GateKeeper] Token: ${headers['Authorization']}');
 
       final gateKeeperResponse = await _dio.get(
         AppConfig.gateKeeperEndpoint,
         options: Options(headers: headers),
       );
-
-      // print('📡 [GateKeeper] Status Code: ${gateKeeperResponse.statusCode}');
-      // print('📡 [GateKeeper] Response Data: ${gateKeeperResponse.data}');
 
       if (gateKeeperResponse.statusCode != 200) {
         print(
@@ -64,6 +61,7 @@ class EventService {
       final gateKeeperData = gateKeeperResponse.data;
       Set<int> assignedEventIds = {};
       Set<int> organizerIds = {};
+      String? organizerName;
 
       if (gateKeeperData is Map<String, dynamic> &&
           gateKeeperData['data'] != null) {
@@ -72,22 +70,30 @@ class EventService {
           if (eventJson['id'] != null) {
             assignedEventIds.add(eventJson['id'] as int);
           }
-          if (eventJson['organizer'] != null &&
-              eventJson['organizer']['id'] != null) {
-            organizerIds.add(eventJson['organizer']['id'] as int);
+          if (eventJson['organizer'] != null) {
+            if (eventJson['organizer']['id'] != null) {
+              organizerIds.add(eventJson['organizer']['id'] as int);
+            }
+            // Capture organizer name from the first available event
+            if (organizerName == null) {
+              organizerName = eventJson['organizer']['name'].toString();
+            }
           }
         }
       }
 
       print('📋 [GateKeeper] Assigned Event IDs: $assignedEventIds');
       print('📋 [GateKeeper] Organizer IDs: $organizerIds');
+      if (organizerName != null) {
+        print('📋 [GateKeeper] Organizer Name: $organizerName');
+      }
 
       if (assignedEventIds.isEmpty) {
-        // print('⚠️ [GateKeeper] No assigned events found');
         return ApiResponse.success({
           'today': <Event>[],
           'upcoming': <Event>[],
           'completed': <Event>[],
+          'organizerName': organizerName,
         }, message: 'No assigned events');
       }
 
@@ -104,16 +110,11 @@ class EventService {
             '{id}',
             organizerId.toString(),
           );
-          print(
-            '📅 [Today Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$todayEndpoint',
-          );
 
           final todayResponse = await _dio.get(
             todayEndpoint,
             options: Options(headers: headers),
           );
-          print('📅 [Today Events] Status: ${todayResponse.statusCode}');
-          print('📅 [Today Events] Response: ${todayResponse.data}');
 
           if (todayResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(todayResponse.data);
@@ -121,14 +122,9 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             todayEvents.addAll(filteredEvents);
-            // print(
-            //   '📅 [Today Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          print(
-            '⚠️ [Today Events] Error fetching from organizer $organizerId: $e',
-          );
+          print('⚠️ Error fetching today events: $e');
         }
 
         // Fetch upcoming events
@@ -137,16 +133,11 @@ class EventService {
             '{id}',
             organizerId.toString(),
           );
-          // print(
-          //   '🔜 [Upcoming Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$upcomingEndpoint',
-          // );
 
           final upcomingResponse = await _dio.get(
             upcomingEndpoint,
             options: Options(headers: headers),
           );
-          // print('🔜 [Upcoming Events] Status: ${upcomingResponse.statusCode}');
-          // print('🔜 [Upcoming Events] Response: ${upcomingResponse.data}');
 
           if (upcomingResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(upcomingResponse.data);
@@ -154,30 +145,20 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             upcomingEvents.addAll(filteredEvents);
-            // print(
-            //   '🔜 [Upcoming Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          // print(
-          //   '⚠️ [Upcoming Events] Error fetching from organizer $organizerId: $e',
-          // );
+          print('⚠️ Error fetching upcoming events: $e');
         }
 
         // Fetch completed events
         try {
           final completedEndpoint = AppConfig.completedEventsEndpoint
               .replaceAll('{id}', organizerId.toString());
-          // print(
-          //   '✅ [Completed Events] Fetching from organizer $organizerId: ${AppConfig.baseUrl}$completedEndpoint',
-          // );
 
           final completedResponse = await _dio.get(
             completedEndpoint,
             options: Options(headers: headers),
           );
-          // print('✅ [Completed Events] Status: ${completedResponse.statusCode}');
-          // print('✅ [Completed Events] Response: ${completedResponse.data}');
 
           if (completedResponse.statusCode == 200) {
             final events = _parseEventsFromResponse(completedResponse.data);
@@ -185,25 +166,17 @@ class EventService {
                 .where((e) => assignedEventIds.contains(int.tryParse(e.id)))
                 .toList();
             completedEvents.addAll(filteredEvents);
-            // print(
-            //   '✅ [Completed Events] Found ${filteredEvents.length} assigned events from organizer $organizerId',
-            // );
           }
         } catch (e) {
-          // print(
-          //   '⚠️ [Completed Events] Error fetching from organizer $organizerId: $e',
-          // );
+          print('⚠️ Error fetching completed events: $e');
         }
       }
-
-      // print(
-      //   '📊 [Final Results] Today: ${todayEvents.length}, Upcoming: ${upcomingEvents.length}, Completed: ${completedEvents.length}',
-      // );
 
       final categorizedEvents = {
         'today': todayEvents,
         'upcoming': upcomingEvents,
         'completed': completedEvents,
+        'organizerName': organizerName,
       };
 
       return ApiResponse.success(
@@ -247,25 +220,91 @@ class EventService {
 
   /// Parse event from JSON
   Event _parseEvent(Map<String, dynamic> json) {
+    // Safely parse organizer name
+    String organizerName = 'N/A';
+    if (json['organizer'] != null && json['organizer'] is Map) {
+      organizerName = json['organizer']['name']?.toString() ?? 'N/A';
+    }
+
+    // Parse Venue and Location
+    // Parse Venue and Location
+    String? venue;
+    String? location;
+
+    // Determine where location_details are stored
+    Map<String, dynamic>? locDetails;
+    if (json['settings'] != null &&
+        json['settings'] is Map &&
+        json['settings']['location_details'] != null) {
+      locDetails = json['settings']['location_details'] as Map<String, dynamic>;
+    } else if (json['location_details'] != null &&
+        json['location_details'] is Map) {
+      locDetails = json['location_details'] as Map<String, dynamic>;
+    }
+
+    if (locDetails != null) {
+      // Parse Venue
+      if (locDetails['venue_name'] != null) {
+        final v = locDetails['venue_name'].toString().trim();
+        if (v.isNotEmpty && v.toLowerCase() != 'null') {
+          venue = v;
+        }
+      }
+
+      // Parse Location (Build address from parts)
+      final List<String> addressParts = [];
+      final addressFields = [
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state_or_region',
+      ];
+
+      for (var field in addressFields) {
+        final val = locDetails[field];
+        if (val != null) {
+          final strVal = val.toString().trim();
+          if (strVal.isNotEmpty && strVal.toLowerCase() != 'null') {
+            addressParts.add(strVal);
+          }
+        }
+      }
+
+      if (addressParts.isNotEmpty) {
+        location = addressParts.join(', ');
+      }
+    }
+
+    // Fallbacks if not found in location_details
+    if (venue == null) {
+      final v = json['venue']?.toString() ?? json['location']?.toString();
+      if (v != null && v.isNotEmpty && v.toLowerCase() != 'null') {
+        venue = v;
+      }
+    }
+
+    if (location == null) {
+      final l = json['location']?.toString();
+      if (l != null && l.isNotEmpty && l.toLowerCase() != 'null') {
+        location = l;
+      }
+    }
+
+    print(
+      '📍 Parsed Location - ID: ${json['id']}, Venue: "$venue", Location: "$location"',
+    );
+
     return Event(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? 'Untitled Event',
       imageUrl: json['image_url'] ?? 'assets/event_placeholder.png',
-      dateTime: _parseDateTime(
-        json['date'] ??
-            json['start_date'] ??
-            json['event_date'] ??
-            json['datetime'],
-      ),
-      venue: json['venue'] ?? json['location'] ?? 'N/A',
-      location: json['location'] ?? 'N/A',
-      isCompleted:
-          json['is_completed'] ??
-          json['completed'] ??
-          json['status'] == 'completed' ??
-          false,
+      startDate: _parseDateTime(json['start_date']),
+      endDate: _parseDateTime(json['end_date']),
+      venue: venue ?? 'N/A',
+      location: location ?? 'N/A',
       category: json['category'] ?? 'N/A',
       description: json['description'] ?? 'No description available',
+      organizerName: organizerName,
     );
   }
 
@@ -275,7 +314,11 @@ class EventService {
 
     if (dateValue is String) {
       try {
-        return DateTime.parse(dateValue);
+        // Strip the 'Z' to treat the time as local
+        final dateString = dateValue.endsWith('Z')
+            ? dateValue.substring(0, dateValue.length - 1)
+            : dateValue;
+        return DateTime.parse(dateString);
       } catch (e) {
         // print('⚠️ [Events API] Failed to parse date: $dateValue');
         return DateTime.now();
@@ -349,6 +392,80 @@ class EventService {
       }
     } catch (e) {
       print('❌ [Event Statistics] Unexpected error: $e');
+      return ApiResponse.error('An unexpected error occurred: $e');
+    }
+  }
+
+  /// Fetch scan history by event ID
+  Future<ApiResponse<List<ScanHistory>>> getScanHistory(String eventId) async {
+    try {
+      final headers = await _getAuthHeaders();
+
+      // Build the endpoint with event_id
+      final endpoint = AppConfig.scanhistory.replaceAll('{event_id}', eventId);
+
+      print('📜 [Scan History] Fetching scan history for event $eventId...');
+      print('📜 [Scan History] Endpoint: ${AppConfig.baseUrl}$endpoint');
+
+      final response = await _dio.get(
+        endpoint,
+        options: Options(headers: headers),
+      );
+
+      print('📜 [Scan History] Status Code: ${response.statusCode}');
+      print('📜 [Scan History] Response Data: ${response.data}');
+
+      if (response.statusCode != 200) {
+        print('❌ [Scan History] Failed with status: ${response.statusCode}');
+        return ApiResponse.error(
+          'Failed to fetch scan history',
+          statusCode: response.statusCode,
+        );
+      }
+
+      // Parse the response
+      final responseData = response.data;
+      List<ScanHistory> scanHistoryList = [];
+
+      if (responseData is Map<String, dynamic> &&
+          responseData['data'] != null) {
+        final dataList = responseData['data'] as List;
+        scanHistoryList = dataList
+            .map((item) => ScanHistory.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(
+          scanHistoryList,
+          message: 'Scan history fetched successfully',
+        );
+      } else if (responseData is List) {
+        scanHistoryList = responseData
+            .map((item) => ScanHistory.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(
+          scanHistoryList,
+          message: 'Scan history fetched successfully',
+        );
+      } else {
+        return ApiResponse.error('Invalid response format');
+      }
+    } on DioException catch (e) {
+      print('❌ [Scan History] DioException: ${e.type}');
+      print('❌ [Scan History] Message: ${e.message}');
+      print('❌ [Scan History] Response: ${e.response?.data}');
+
+      if (e.type == DioExceptionType.connectionTimeout) {
+        return ApiResponse.error('Connection timeout');
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        return ApiResponse.error('Receive timeout');
+      } else if (e.response != null) {
+        final message =
+            e.response?.data['message'] ?? 'Failed to fetch scan history';
+        return ApiResponse.error(message, statusCode: e.response?.statusCode);
+      } else {
+        return ApiResponse.error('Network error occurred');
+      }
+    } catch (e) {
+      print('❌ [Scan History] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }

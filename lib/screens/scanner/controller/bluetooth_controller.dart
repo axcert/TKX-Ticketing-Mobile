@@ -1,72 +1,94 @@
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_blue_classic/flutter_blue_classic.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
 
 class BluetoothController extends GetxController {
-  RxBool isScanning = false.obs;
-  Rx<BluetoothAdapterState> adapterState = BluetoothAdapterState.unknown.obs;
+  final FlutterBlueClassic _flutterBlueClassic = FlutterBlueClassic();
 
-  // Check if Bluetooth is turned on
-  Future<bool> isBluetoothOn() async {
-    return adapterState.value == BluetoothAdapterState.on;
-  }
+  RxBool isScanning = false.obs;
+  RxBool isBluetoothOn = false.obs;
+
+  StreamSubscription? _scanSubscription;
+  StreamSubscription? _stateSubscription;
+
+  // List to store discovered devices
+  RxList<BluetoothDevice> discoveredDevices = <BluetoothDevice>[].obs;
 
   Future<void> scanDevices() async {
-    // Check if Bluetooth is on before scanning
-    if (!await isBluetoothOn()) {
-      print('Bluetooth is not enabled');
-      return;
-    }
-
     // Check permissions
-    if (await Permission.bluetoothScan.request().isGranted &&
-        await Permission.bluetoothConnect.request().isGranted) {
-      // Stop any existing scan first
+    // Android 12+ usually deals with BLE permissions, but for Classic we need BLUETOOTH_CONNECT/SCAN
+    // and Location for older devices.
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.bluetooth,
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.location,
+    ].request();
+
+    if ((statuses[Permission.bluetoothScan]?.isGranted ?? false) ||
+        (statuses[Permission.location]?.isGranted ?? false)) {
       try {
-        await FlutterBluePlus.stopScan();
+        isScanning.value = true;
+        discoveredDevices.clear(); // Clear previous results
+
+        _flutterBlueClassic.startScan();
+
+        // Auto stop after timeout since classic scan drains battery and is heavy
+        Future.delayed(const Duration(seconds: 30), () {
+          stopScan();
+        });
       } catch (e) {
-        print('Error stopping scan: $e');
+        print('Error starting scan: $e');
+        isScanning.value = false;
       }
-
-      // Wait a bit before starting new scan
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Start scanning
-      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
-      print('Started scanning for devices...');
     } else {
       print('Bluetooth permissions not granted');
     }
   }
 
-  Stream<List<ScanResult>> get ScanResults => FlutterBluePlus.scanResults;
+  void stopScan() async {
+    _flutterBlueClassic.stopScan();
+    isScanning.value = false;
+  }
+
+  Future<void> connectToDevice(BluetoothDevice device) async {
+    await _flutterBlueClassic.connect(device.address);
+    // Note: Logic for managing connection stream would go here
+  }
 
   @override
   void onInit() {
     super.onInit();
 
-    // Listen to Bluetooth adapter state changes
-    FlutterBluePlus.adapterState.listen((state) {
-      adapterState.value = state;
-      update();
+    // Check initial state
+    // isBluetoothAvailable returns a Future<bool>, so we must await it or use then
+    // isBluetoothAvailable returns a Future<bool>, so we must await it or use then
 
-      // Auto-scan when Bluetooth is turned on
-      if (state == BluetoothAdapterState.on && !isScanning.value) {
+    // Initial Scan if available
+    Future.delayed(const Duration(seconds: 1), () {
+      if (isBluetoothOn.value) {
         scanDevices();
       }
     });
 
-    // Listen to scan state from plugin (better & accurate)
-    FlutterBluePlus.isScanning.listen((scanning) {
+    // Listen to scan results
+    _scanSubscription = _flutterBlueClassic.scanResults.listen((device) {
+      if (!discoveredDevices.any((d) => d.address == device.address)) {
+        discoveredDevices.add(device);
+      }
+    });
+
+    // Listen to scanning status (if available, otherwise we manage manually)
+    _flutterBlueClassic.isScanning.listen((scanning) {
       isScanning.value = scanning;
-      update();
     });
+  }
 
-    // Trigger initial scan only if Bluetooth is on
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      if (await isBluetoothOn()) {
-        scanDevices();
-      }
-    });
+  @override
+  void onClose() {
+    _scanSubscription?.cancel();
+    _stateSubscription?.cancel();
+    super.onClose();
   }
 }

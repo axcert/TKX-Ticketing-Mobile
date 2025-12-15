@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/models/event_model.dart';
-import 'package:mobile_app/providers/event_provider.dart';
-import 'package:mobile_app/widgets/offline_indicator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/models/event_model.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
+import 'package:tkx_ticketing/screens/event/event_details_screen.dart';
+import 'package:tkx_ticketing/screens/event/offline_checkin_screen.dart';
+import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
+import 'package:tkx_ticketing/widgets/offline_indicator.dart';
 import 'side_menu.dart';
 import 'tabs/upcoming_events_tab.dart';
 import 'tabs/completed_events_tab.dart';
-import '../event/event_details_screen.dart';
-import '../event/scan_not_available_screen.dart';
-import '../event/offline_checkin_screen.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -73,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 SizedBox(height: MediaQuery.of(context).padding.top),
                 const OfflineIndicator(),
-                _buildAppBar(context),
+                _buildAppBar(context, eventProvider.organizerName),
                 const Expanded(
                   child: Center(
                     child: Column(
@@ -105,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen>
                 // App Bar
                 SizedBox(height: MediaQuery.of(context).padding.top),
                 const OfflineIndicator(),
-                _buildAppBar(context),
+                _buildAppBar(context, eventProvider.organizerName),
 
                 // Scrollable content area
                 Expanded(
@@ -117,6 +116,12 @@ class _HomeScreenState extends State<HomeScreen>
                         Stack(
                           clipBehavior: Clip.none,
                           alignment: Alignment.topCenter,
+
+                          // ... (cutting out middle part to avoid finding issues, I will target specific blocks if possible)
+                          // Wait, replace_file_content handles a contiguous block.
+                          // I have two calls to _buildAppBar separated by lines.
+                          // And the definition is further down.
+                          // I should use MULTI_REPLACE.
                           children: [
                             // Blue Background
                             Container(
@@ -284,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, String? organizerName) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(color: AppColors.primary),
@@ -314,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen>
           // Organization Name - Centered
           Center(
             child: Text(
-              'Lotus Event',
+              organizerName ?? '',
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium!.copyWith(color: AppColors.textWhite),
@@ -354,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             );
           } else {
-            // Show offline check-in preparation screen first
+            // Show offline check-in preparation screen
             final result = await Navigator.push(
               context,
               MaterialPageRoute(

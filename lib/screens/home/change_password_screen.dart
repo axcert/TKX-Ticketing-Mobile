@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
-import 'package:mobile_app/widgets/custom_elevated_button.dart';
+
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import 'dart:async';
 import '../../providers/auth_provider.dart';
 import '../../widgets/toast_message.dart';
@@ -29,7 +30,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   void initState() {
     super.initState();
-    _initializePasswordChange();
+    // Use addPostFrameCallback to ensure the API call happens after the build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializePasswordChange();
+    });
   }
 
   @override

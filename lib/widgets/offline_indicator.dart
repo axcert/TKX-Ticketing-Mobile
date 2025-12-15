@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/config/app_theme.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../services/connectivity_service.dart';
 

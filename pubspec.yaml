@@ -1,4 +1,4 @@
-name: mobile_app
+name: tkx_ticketing
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -45,10 +45,12 @@ dependencies:
   dio: ^5.9.0
   vibration: ^3.1.4
   audioplayers: ^5.2.0
-  flutter_blue_plus: ^1.19.7
+  flutter_blue_classic: ^0.0.7
   get: ^4.7.2
   permission_handler: ^12.0.1
   image_picker: ^1.2.1
+  
+      
 
 
 dev_dependencies:
@@ -61,6 +63,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -70,10 +78,18 @@ flutter:
   assets:
     - assets/invalid.mp3
     - assets/
+    - assets/valid.png
     - assets/icons/setting.svg
     - assets/icons/log_out.svg
     - assets/icons/change_password.svg
     - assets/icons/edit_profile.svg
+    - assets/icons/External_scanner.svg
+    - assets/icons/manual_check-in.svg
+    - assets/icons/tickets.svg
+    - assets/icons/VIP Badge.svg
+    
+    
+  
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

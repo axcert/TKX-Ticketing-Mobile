@@ -170,14 +170,12 @@ class AuthProvider extends ChangeNotifier {
               AppConfig.isAutoCheckInKey,
             );
 
-            _user = (response.data as User).copyWith();
+            _user = (response.data as User).copyWith(
+              isVibrate: storedIsVibrate ?? true,
+              isBeep: storedIsBeep ?? true,
+              isAutoCheckIn: storedIsAutoCheckIn ?? false,
+            );
             _isAuthenticated = true;
-            isVibrate:
-            storedIsVibrate ?? true;
-            isBeep:
-            storedIsBeep ?? true;
-            isAutoCheckIn:
-            storedIsAutoCheckIn ?? false;
           } else {
             // Token might be invalid, clear data
             await _storageService.clearUserData();

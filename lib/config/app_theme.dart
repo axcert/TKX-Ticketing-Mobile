@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary Colors
-  static const Color primary = Color(0xFF2196F3);
+  static const Color primary = Color(0xFF1F5CBF);
   static const Color primaryDark = Color(0xFF1976D2);
   static const Color primaryLight = Color(0xFFBBDEFB);
 
@@ -198,12 +198,12 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
