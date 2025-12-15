@@ -10,6 +10,9 @@ import '../ticket/valid_ticket_screen.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:tkx_ticketing/services/ticket_service.dart';
+import 'package:tkx_ticketing/screens/ticket/invalid_ticket_screen.dart';
+import 'package:tkx_ticketing/screens/ticket/already_checked_in_screen.dart';
 
 class QRScannerScreen extends StatefulWidget {
   final String? eventId;
@@ -61,44 +64,102 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     _showScanResult(code);
   }
 
+  // Ticket service for validation
+  final TicketService _ticketService = TicketService();
+
   void _showScanResult(String code) async {
-    // Parse the scanned code and create ticket data
-    // In a real app, you would fetch this from an API
-    final ticketData = {
-      'ticketId': code,
-      'name': 'Nadeesha Perera',
-      'isVip': false,
-      'seatNo': 'A31',
-      'row': 'A',
-      'column': '31',
-      'recordId': '#0012',
-      'checkedCount': '325',
-      'totalCount': '500',
-    };
+    setState(() {
+      _isScanning = false;
+    });
 
-    // Navigate to the corresponding screen
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ValidTicketScreen(
-          ticketData: ticketData,
-          eventId: widget.eventId ?? '',
-        ),
-      ),
-    );
-
-    // If check-in was completed, close scanner
-    // Otherwise, resume scanning
-    if (result == true) {
-      // Check-in completed, close scanner
+    final eventId = widget.eventId;
+    if (eventId == null) {
       if (mounted) {
-        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: No event ID found')),
+        );
+        setState(() {
+          _isScanning = true;
+        });
       }
-    } else {
-      // User cancelled, resume scanning
-      setState(() {
-        _isScanning = true;
-      });
+      return;
+    }
+
+    try {
+      // 1. Load tickets locally
+      final tickets = await _ticketService.loadTicketsLocally(eventId);
+
+      // 2. Find matching ticket
+      // Matching rawValue from QR code to attendeePublicId
+      final ticket = tickets.firstWhere(
+        (t) => t.attendeePublicId == code,
+        orElse: () => throw Exception('Ticket not found'),
+      );
+
+      // 3. Check stats
+      final totalCount = tickets.length;
+      final checkedCount = tickets.where((t) => t.isCheckedIn).length;
+
+      // 4. Prepare data
+      final ticketData = {
+        'ticketId': ticket.attendeePublicId,
+        'name': ticket.attendeeName,
+        'isVip': ticket.ticketType.toLowerCase().contains('vip'),
+        'seatNo': ticket.seatNumber ?? 'N/A',
+        'row': '',
+        'column': '',
+        'recordId': '${ticket.ticketId}',
+        'checkedCount': checkedCount.toString(),
+        'totalCount': totalCount.toString(),
+        'status': ticket.status,
+      };
+
+      if (!mounted) return;
+
+      // 5. Navigate based on status
+      Widget nextScreen;
+
+      if (ticket.isCheckedIn) {
+        nextScreen = AlreadyCheckedInScreen(ticketData: ticketData);
+      } else {
+        nextScreen = ValidTicketScreen(
+          ticketData: ticketData,
+          eventId: eventId,
+        );
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => nextScreen),
+      );
+
+      // 6. Handle return
+      if (mounted) {
+        setState(() {
+          _isScanning = true;
+        });
+      }
+    } catch (e) {
+      // Ticket not found - Show Invalid Screen
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => InvalidTicketScreen(
+              ticketData: {
+                'ticketId': code,
+                // We don't have other data since not found
+              },
+            ),
+          ),
+        );
+
+        if (mounted) {
+          setState(() {
+            _isScanning = true;
+          });
+        }
+      }
     }
   }
 
