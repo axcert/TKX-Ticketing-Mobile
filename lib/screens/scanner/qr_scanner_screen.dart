@@ -86,20 +86,21 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     }
 
     try {
-      
+      // 1. Load tickets locally
       final tickets = await _ticketService.loadTicketsLocally(eventId);
 
-     
+      // 2. Find matching ticket
       // Matching rawValue from QR code to attendeePublicId
       final ticket = tickets.firstWhere(
         (t) => t.attendeePublicId == code,
         orElse: () => throw Exception('Ticket not found'),
       );
- 
+
+      // 3. Check stats
       final totalCount = tickets.length;
       final checkedCount = tickets.where((t) => t.isCheckedIn).length;
 
-      
+      // 4. Prepare data
       final ticketData = {
         'ticketId': ticket.attendeePublicId,
         'name': ticket.attendeeName,
@@ -115,7 +116,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
       if (!mounted) return;
 
-        
+      // 5. Navigate based on status
       Widget nextScreen;
 
       if (ticket.isCheckedIn) {
@@ -132,7 +133,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         MaterialPageRoute(builder: (context) => nextScreen),
       );
 
-      
+      // 6. Handle return
       if (mounted) {
         setState(() {
           _isScanning = true;
