@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_classic/flutter_blue_classic.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:app_settings/app_settings.dart';
 
 class BluetoothScannerBottomSheet extends StatefulWidget {
   const BluetoothScannerBottomSheet({super.key});
@@ -15,7 +16,8 @@ class BluetoothScannerBottomSheet extends StatefulWidget {
 }
 
 class _BluetoothScannerBottomSheetState
-    extends State<BluetoothScannerBottomSheet> {
+    extends State<BluetoothScannerBottomSheet>
+    with WidgetsBindingObserver {
   final _flutterBlueClassicPlugin = FlutterBlueClassic();
 
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
@@ -31,10 +33,34 @@ class _BluetoothScannerBottomSheetState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initPlatformState();
     // Start scan automatically when opened
     // Small delay to ensure platform state is ready
     Future.delayed(const Duration(milliseconds: 500), _startScan);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _adapterStateSubscription?.cancel();
+    _scanSubscription?.cancel();
+    _scanningStateSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When app resumes (e.g., returning from Bluetooth settings), refresh the device list
+    if (state == AppLifecycleState.resumed) {
+      if (mounted) {
+        // Small delay to ensure Bluetooth state is updated
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) _startScan();
+        });
+      }
+    }
   }
 
   Future<void> initPlatformState() async {
@@ -75,14 +101,6 @@ class _BluetoothScannerBottomSheetState
       });
     }
     _flutterBlueClassicPlugin.startScan();
-  }
-
-  @override
-  void dispose() {
-    _adapterStateSubscription?.cancel();
-    _scanSubscription?.cancel();
-    _scanningStateSubscription?.cancel();
-    super.dispose();
   }
 
   void _showBluetoothOffDialog() {
@@ -188,6 +206,38 @@ class _BluetoothScannerBottomSheetState
     bool isScanner = false,
   }) {
     return GestureDetector(
+      onLongPress: () async {
+        // Only show unpair option for bonded devices
+        if (device.bondState == BluetoothBondState.bonded) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Unpair Device"),
+                content: Text(
+                  "To unpair '${device.name ?? 'this device'}', please go to your device's Bluetooth settings.\n\nNote: Programmatic unpairing is restricted by Android for security reasons.",
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text("Cancel"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  TextButton(
+                    child: const Text("Open Settings"),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      // Open Bluetooth settings
+                      await AppSettings.openAppSettings(
+                        type: AppSettingsType.bluetooth,
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
       onTap: () async {
         await _connectToDevice(device);
       },
