@@ -1,6 +1,7 @@
 class ScanHistory {
   final String ticketId;
   final String name;
+  final String email;
   final String time;
   final String status;
   final bool isVip;
@@ -16,6 +17,7 @@ class ScanHistory {
   ScanHistory({
     required this.ticketId,
     required this.name,
+    required this.email,
     required this.time,
     required this.status,
     required this.isVip,
@@ -31,19 +33,22 @@ class ScanHistory {
 
   factory ScanHistory.fromJson(Map<String, dynamic> json) {
     return ScanHistory(
-      ticketId: json['ticketId'] ?? json['ticket_id'] ?? 'N/A',
-      name: json['name'] ?? 'N/A',
+      ticketId: json['attendee_public_id'] ?? 'N/A',
+      name: json['attendee_name'] ?? 'N/A',
+      email: json['attendee_email'] ?? 'N/A',
       time: json['time'] ?? 'N/A',
       status: json['status'] ?? 'Unknown',
-      isVip: json['isVip'] ?? json['is_vip'] ?? false,
-      ticketType: json['ticketType'] ?? json['ticket_type'] ?? 'N/A',
-      seatNo: json['seatNo'] ?? json['seat_no'] ?? 'N/A',
+      isVip:
+          json['ticket_type']?.toString().toLowerCase().contains('vip') ??
+          false,
+      ticketType: json['ticket_type'] ?? 'N/A',
+      seatNo: json['seat_number'] ?? 'N/A',
       row: json['row'] ?? 'N/A',
       column: json['column'] ?? 'N/A',
-      recordId: json['recordId'] ?? json['record_id'] ?? 'N/A',
-      scanTime: json['scanTime'] ?? json['scan_time'] ?? 'N/A',
-      scanType: json['scanType'] ?? json['scan_type'] ?? 'N/A',
-      scannedBy: json['scannedBy'] ?? json['scanned_by'] ?? 'N/A',
+      recordId: (json['ticket_id'] ?? 'N/A').toString(),
+      scanTime: json['scan_time'] ?? 'N/A',
+      scanType: json['scan_type'] ?? 'N/A',
+      scannedBy: json['scanned_by'] ?? 'N/A',
     );
   }
 
@@ -51,11 +56,12 @@ class ScanHistory {
     return {
       'ticketId': ticketId,
       'name': name,
+      'email': email,
       'time': time,
       'status': status,
       'isVip': isVip,
       'ticketType': ticketType,
-      'seatNo': seatNo,
+      'seatNumber': seatNo,
       'row': row,
       'column': column,
       'recordId': recordId,
