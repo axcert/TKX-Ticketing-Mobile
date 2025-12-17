@@ -13,6 +13,7 @@ import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
 import 'package:tkx_ticketing/screens/scanner/bluetooth_scanner_setup_screen.dart';
 import 'package:tkx_ticketing/screens/scanner/qr_scanner_screen.dart';
 import 'package:tkx_ticketing/widgets/offline_indicator.dart';
+import 'package:tkx_ticketing/widgets/bluetooth_scanner_status_widget.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final Event event;
@@ -278,6 +279,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ],
                 ),
 
+                // Bluetooth Scanner Status (shows when connected)
+                const BluetoothScannerStatusWidget(),
+
                 // Scan History Header
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -387,7 +391,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                 'External Scanner',
                                 false,
                                 onTap: () {
-                                  showBluetoothScannerBottomSheet(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          BluetoothScannerSetupScreen(
+                                            eventId: widget.event.id,
+                                          ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),

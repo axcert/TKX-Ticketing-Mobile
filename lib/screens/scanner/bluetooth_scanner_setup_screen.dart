@@ -3,20 +3,27 @@ import 'dart:async';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_classic/flutter_blue_classic.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:tkx_ticketing/services/bluetooth_scanner_service.dart';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
+import 'package:tkx_ticketing/widgets/toast_message.dart';
 
-class BluetoothScannerBottomSheet extends StatefulWidget {
-  const BluetoothScannerBottomSheet({super.key});
+class BluetoothScannerSetupScreen extends StatefulWidget {
+  final String eventId;
+
+  const BluetoothScannerSetupScreen({super.key, required this.eventId});
 
   @override
-  State<BluetoothScannerBottomSheet> createState() =>
-      _BluetoothScannerBottomSheetState();
+  State<BluetoothScannerSetupScreen> createState() =>
+      _BluetoothScannerSetupScreenState();
 }
 
-class _BluetoothScannerBottomSheetState
-    extends State<BluetoothScannerBottomSheet>
+class _BluetoothScannerSetupScreenState
+    extends State<BluetoothScannerSetupScreen>
     with WidgetsBindingObserver {
   final _flutterBlueClassicPlugin = FlutterBlueClassic();
 
@@ -56,7 +63,7 @@ class _BluetoothScannerBottomSheetState
     if (state == AppLifecycleState.resumed) {
       if (mounted) {
         // Small delay to ensure Bluetooth state is updated
-        Future.delayed(const Duration(milliseconds: 300), () {
+        Future.delayed(const Duration(seconds: 1), () {
           if (mounted) _startScan();
         });
       }
@@ -76,7 +83,15 @@ class _BluetoothScannerBottomSheetState
       _scanSubscription = _flutterBlueClassicPlugin.scanResults.listen((
         device,
       ) {
-        if (mounted) setState(() => _scanResults.add(device));
+        if (mounted) {
+          setState(() {
+            // Force update: remove if exists (equality by address) to update bond state
+            if (_scanResults.contains(device)) {
+              _scanResults.remove(device);
+            }
+            _scanResults.add(device);
+          });
+        }
       });
       _scanningStateSubscription = _flutterBlueClassicPlugin.isScanning.listen((
         isScanning,
@@ -101,42 +116,6 @@ class _BluetoothScannerBottomSheetState
       });
     }
     _flutterBlueClassicPlugin.startScan();
-  }
-
-  void _showBluetoothOffDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.bluetooth_disabled, color: AppColors.error),
-            const SizedBox(width: 12),
-            const Text('Bluetooth is Off'),
-          ],
-        ),
-        content: const Text(
-          'Please turn on Bluetooth to scan for nearby devices.',
-          style: TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close bottom sheet
-            },
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close dialog
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildSearchingDevices() {
@@ -304,15 +283,44 @@ class _BluetoothScannerBottomSheetState
 
       if (connection != null && connection.isConnected) {
         if (kDebugMode) print("Connected to ${device.name}");
-        Navigator.pop(context); // Close bottom sheet on success
+
+        // Get user preferences from AuthProvider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final user = authProvider.user;
+
+        // Initialize BluetoothScannerService
+        final scannerService = Get.put(BluetoothScannerService());
+        scannerService.setUserPreferences(
+          vibrate: user?.isVibrate ?? true,
+          beep: user?.isBeep ?? true,
+        );
+
+        // Connect to scanner service
+        await scannerService.connectToScanner(
+          connection: connection,
+          deviceName: device.name ?? 'Unknown Device',
+          eventId: widget.eventId,
+        );
+
+        // Close screen
+        Navigator.pop(context);
+
+        // Show success message
+        ToastMessage.show(
+          context,
+          message: 'Connected to ${device.name ?? "scanner"}. Ready to scan!',
+          type: ToastType.success,
+        );
       }
     } catch (e) {
       if (mounted) setState(() => _connectingToIndex = null);
       if (kDebugMode) print(e);
       connection?.dispose();
 
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text("Error connecting to device")),
+      ToastMessage.show(
+        context,
+        message: 'Error connecting to device',
+        type: ToastType.error,
       );
     } finally {
       if (mounted) setState(() => _connectingToIndex = null);
@@ -321,16 +329,22 @@ class _BluetoothScannerBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Bluetooth Scanner Setup',
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
-      child: Builder(
+      body: Builder(
         builder: (context) {
           if (_adapterState == BluetoothAdapterState.off) {
             return _buildBluetoothOffWidget();
@@ -338,19 +352,6 @@ class _BluetoothScannerBottomSheetState
 
           return Column(
             children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
               // Content
               Expanded(
                 child: Padding(
@@ -358,32 +359,25 @@ class _BluetoothScannerBottomSheetState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 24),
+
                       // Header Section
                       Row(
                         children: [
                           Text(
-                            _isScanning ? 'Scanning...' : 'Available Devices',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                              height: 1.3,
-                            ),
+                            'Searching for Nearby\nDevices...',
+                            style: Theme.of(context).textTheme.displayLarge,
                           ),
                         ],
                       ),
 
                       const SizedBox(height: 12),
 
-                      if (!_isScanning)
-                        Text(
-                          'Make sure your scanner is turned on and in pairing mode.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                            height: 1.5,
-                          ),
-                        ),
+                      Text(
+                        'Make sure your scanner is turned on and in pairing mode.',
+                        style: Theme.of(context).textTheme.titleMedium!
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
 
                       const SizedBox(height: 20),
 
@@ -509,6 +503,16 @@ class _BluetoothScannerBottomSheetState
 
                       // Rescan Button
                       if (!_isScanning) ...[
+                        Text(
+                          "If you don't see your scanner, make sure it's nearby and try again.",
+                          style: Theme.of(context).textTheme.bodyMedium!
+                              .copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+
                         CustomElevatedButton(
                           text: 'Rescan',
                           onPressed: _startScan,
@@ -525,13 +529,4 @@ class _BluetoothScannerBottomSheetState
       ),
     );
   }
-}
-
-void showBluetoothScannerBottomSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: false,
-    backgroundColor: Colors.transparent,
-    builder: (context) => const BluetoothScannerBottomSheet(),
-  );
 }
