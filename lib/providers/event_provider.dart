@@ -263,6 +263,17 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Add a scan to history locally and cache it
+  Future<void> addScanToHistory(
+    Map<String, dynamic> scanData,
+    String eventId,
+  ) async {
+    _scanHistory.insert(0, scanData);
+    _unseenScanCount++;
+    notifyListeners();
+    await _saveScanHistoryToCache(eventId);
+  }
+
   /// Add a test scan for UI testing
   void addTestScan() {
     final testScan = {
@@ -280,6 +291,8 @@ class EventProvider extends ChangeNotifier {
       'scanType': 'Manual',
       'scannedBy': 'Tester',
     };
+    // Use an arbitrary event ID or handle caching separately if needed for tests
+    // For UI testing, we might not need persistence, but let's keep it simple.
     _scanHistory.insert(0, testScan);
     _unseenScanCount++;
     notifyListeners();
