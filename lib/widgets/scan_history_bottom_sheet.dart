@@ -223,7 +223,7 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    scan.time,
+                    scan.dateFormat(),
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
                 ],

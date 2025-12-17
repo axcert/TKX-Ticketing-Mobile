@@ -114,6 +114,24 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         'status': ticket.status,
       };
 
+      // Add to local history
+      final historyMap = {
+        'attendee_public_id': ticket.attendeePublicId,
+        'attendee_name': ticket.attendeeName,
+        'attendee_email': ticket.attendeeEmail,
+        'ticket_type': ticket.ticketType,
+        'ticket_id': ticket.ticketId,
+        'seat_number': ticket.seatNumber ?? 'N/A',
+        'status': ticket.isCheckedIn ? 'Already Checked-In' : 'Checked-In',
+        'scan_time': DateTime.now().toIso8601String(),
+        'scan_type': 'QR',
+        'scanned_by': 'Device',
+      };
+
+      if (mounted) {
+        context.read<EventProvider>().addScanToHistory(historyMap, eventId);
+      }
+
       if (!mounted) return;
 
       // 5. Navigate based on status
@@ -141,6 +159,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       }
     } catch (e) {
       // Ticket not found - Show Invalid Screen
+
+      // Add invalid scan to history
+      final invalidHistoryMap = {
+        'attendee_public_id': code,
+        'attendee_name': 'Unknown',
+        'attendee_email': 'N/A',
+        'ticket_type': 'N/A',
+        'ticket_id': 'N/A',
+        'seat_number': 'N/A',
+        'status': 'Invalid',
+        'scan_time': DateTime.now().toIso8601String(),
+        'scan_type': 'QR',
+        'scanned_by': 'Device',
+        'is_vip': false,
+      };
+      if (mounted) {
+        context.read<EventProvider>().addScanToHistory(
+          invalidHistoryMap,
+          eventId,
+        );
+      }
+
       if (mounted) {
         await Navigator.push(
           context,

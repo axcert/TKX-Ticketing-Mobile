@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class ScanHistory {
   final String ticketId;
   final String name;
@@ -69,5 +71,15 @@ class ScanHistory {
       'scanType': scanType,
       'scannedBy': scannedBy,
     };
+  }
+
+  String dateFormat() {
+    try {
+      if (scanTime == 'N/A' || scanTime.isEmpty) return 'N/A';
+      final dateTime = DateTime.parse(scanTime);
+      return DateFormat('h:mm a, MMM dd, yyyy').format(dateTime);
+    } catch (e) {
+      return scanTime;
+    }
   }
 }
