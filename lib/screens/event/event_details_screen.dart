@@ -258,7 +258,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               else if (_eventStatistics != null)
                                 EventStatisticWidget(
                                   checkInCount: _eventStatistics!.checkInCount,
-                                  invalidCount: _eventStatistics!.invalidCount,
+
                                   registerCount:
                                       _eventStatistics!.registeredCount,
                                   remainingCount:
@@ -267,7 +267,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               else
                                 EventStatisticWidget(
                                   checkInCount: 0,
-                                  invalidCount: 0,
                                   registerCount: 0,
                                   remainingCount: 0,
                                 ),
