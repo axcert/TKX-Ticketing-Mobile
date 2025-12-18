@@ -13,6 +13,7 @@ class ScanHistory {
   final String column;
   final String recordId;
   final String scanTime;
+  final String? Time;
   final String scanType;
   final String scannedBy;
 
@@ -29,28 +30,31 @@ class ScanHistory {
     required this.column,
     required this.recordId,
     required this.scanTime,
+    this.Time,
     required this.scanType,
     required this.scannedBy,
   });
 
   factory ScanHistory.fromJson(Map<String, dynamic> json) {
     return ScanHistory(
-      ticketId: json['attendee_public_id'] ?? 'N/A',
-      name: json['attendee_name'] ?? 'N/A',
-      email: json['attendee_email'] ?? 'N/A',
+      ticketId: json['attendee_public_id'] ?? json['ticketId'] ?? 'N/A',
+      name: json['attendee_name'] ?? json['name'] ?? 'N/A',
+      email: json['attendee_email'] ?? json['email'] ?? 'N/A',
       time: json['time'] ?? 'N/A',
       status: json['status'] ?? 'Unknown',
       isVip:
-          json['ticket_type']?.toString().toLowerCase().contains('vip') ??
+          (json['ticket_type']?.toString().toLowerCase().contains('vip') ??
+              json['ticketType']?.toString().toLowerCase().contains('vip') ??
+              json['isVip'] == true) ??
           false,
-      ticketType: json['ticket_type'] ?? 'N/A',
-      seatNo: json['seat_number'] ?? 'N/A',
+      ticketType: json['ticket_type'] ?? json['ticketType'] ?? 'N/A',
+      seatNo: json['seat_number'] ?? json['seatNumber'] ?? 'N/A',
       row: json['row'] ?? 'N/A',
       column: json['column'] ?? 'N/A',
-      recordId: (json['ticket_id'] ?? 'N/A').toString(),
-      scanTime: json['scan_time'] ?? 'N/A',
-      scanType: json['scan_type'] ?? 'N/A',
-      scannedBy: json['scanned_by'] ?? 'N/A',
+      recordId: (json['ticket_id'] ?? json['recordId'] ?? 'N/A').toString(),
+      scanTime: json['scan_time'] ?? json['scanTime'] ?? 'N/A',
+      scanType: json['scan_type'] ?? json['scanType'] ?? 'N/A',
+      scannedBy: json['scanned_by'] ?? json['scannedBy'] ?? 'N/A',
     );
   }
 
@@ -78,6 +82,16 @@ class ScanHistory {
       if (scanTime == 'N/A' || scanTime.isEmpty) return 'N/A';
       final dateTime = DateTime.parse(scanTime);
       return DateFormat('h:mm a, MMM dd, yyyy').format(dateTime);
+    } catch (e) {
+      return scanTime;
+    }
+  }
+
+  String timeFormat() {
+    try {
+      if (scanTime == 'N/A' || scanTime.isEmpty) return 'N/A';
+      final Time = DateTime.parse(scanTime);
+      return DateFormat('h:mm a').format(Time);
     } catch (e) {
       return scanTime;
     }

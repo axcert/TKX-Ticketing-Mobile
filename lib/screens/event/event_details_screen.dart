@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
 import 'package:tkx_ticketing/widgets/event_card.dart';
@@ -542,12 +543,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     children: [
                       Text(
                         scan.ticketId,
-                        style: Theme.of(context).textTheme.labelLarge,
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: GoogleFonts.inter().fontFamily,
+                            ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         scan.name,
-                        style: Theme.of(context).textTheme.labelMedium,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                        ),
                       ),
                     ],
                   ),
@@ -572,17 +582,23 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           Text(
                             scan.status,
                             style: Theme.of(context).textTheme.labelMedium!
-                                .copyWith(fontSize: 11, color: statusColor),
+                                .copyWith(
+                                  fontSize: 14,
+                                  color: statusColor,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      scan.time,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.copyWith(fontSize: 11),
+                      scan.timeFormat(),
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: GoogleFonts.inter().fontFamily,
+                      ),
                     ),
                   ],
                 ),
