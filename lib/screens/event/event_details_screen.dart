@@ -486,25 +486,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     IconData statusIcon;
 
     switch (scan.status) {
-      case 'Checked-In':
+      case 'valid':
         statusColor = AppColors.success;
-        statusBgColor = const Color.fromARGB(255, 179, 236, 182);
+        statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
-      case 'Already Checked-In':
-        statusColor = AppColors.warning;
-        statusBgColor = const Color.fromARGB(255, 255, 225, 172);
-        statusIcon = Icons.warning;
-        break;
-      case 'Invalid':
-        statusColor = AppColors.error;
-        statusBgColor = const Color.fromARGB(255, 255, 190, 200);
-        statusIcon = Icons.cancel;
-        break;
       default:
-        statusColor = AppColors.border;
-        statusBgColor = Colors.grey.shade50;
-        statusIcon = Icons.info;
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.cancel;
     }
 
     return GestureDetector(
@@ -567,7 +557,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 4,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: statusBgColor,
@@ -582,7 +572,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                             scan.status,
                             style: Theme.of(context).textTheme.labelMedium!
                                 .copyWith(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   color: statusColor,
                                   fontFamily: GoogleFonts.inter().fontFamily,
                                 ),

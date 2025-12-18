@@ -138,21 +138,13 @@ class TicketDetailsBottomSheet extends StatelessWidget {
     Color statusBgColor;
 
     switch (value) {
-      case 'Checked-In':
+      case 'valid':
         statusColor = Colors.green;
         statusBgColor = Colors.green.shade50;
         break;
-      case 'Already Checked-In':
-        statusColor = Colors.orange;
-        statusBgColor = Colors.orange.shade50;
-        break;
-      case 'Invalid':
+      default:
         statusColor = Colors.red;
         statusBgColor = Colors.red.shade50;
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusBgColor = Colors.grey.shade50;
     }
 
     return Padding(
