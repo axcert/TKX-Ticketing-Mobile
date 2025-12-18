@@ -264,7 +264,7 @@ void showScanHistoryBottomSheet(
 ) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true,
+    isScrollControlled: false,
     backgroundColor: Colors.transparent,
     builder: (context) => ScanHistoryBottomSheet(scanHistory: scanHistory),
   );
