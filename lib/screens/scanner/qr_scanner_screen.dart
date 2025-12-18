@@ -296,9 +296,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                         GestureDetector(
                           onLongPress: () {
                             context.read<EventProvider>().addTestScan();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Test scan added!')),
-                            );
                           },
                           child: const Text(
                             'Scan Tickets',
