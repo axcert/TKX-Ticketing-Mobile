@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class ValidTicketScreen extends StatefulWidget {
@@ -64,6 +66,13 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
     if (!mounted) return;
 
     if (result['success'] == true) {
+      if (mounted) {
+        await context.read<EventProvider>().addPendingCheckIn(
+          ticketId,
+          widget.eventId,
+        );
+      }
+
       ToastMessage.show(
         context,
         message: 'Check-in successful',

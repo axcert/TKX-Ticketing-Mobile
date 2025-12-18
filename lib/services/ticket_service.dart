@@ -175,9 +175,9 @@ class TicketService {
         ticketType: ticket.ticketType,
         seatNumber: ticket.seatNumber,
         seatUuid: ticket.seatUuid,
-        status: 'checked-in',
+        status: ticket.status,
         orderShortId: ticket.orderShortId,
-        isCheckedIn: true,
+        checkInStatus: 'check-in',
         checkedInAt: DateTime.now(),
       );
 

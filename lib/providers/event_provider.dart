@@ -9,6 +9,10 @@ class EventProvider extends ChangeNotifier {
   final EventService _eventService = EventService();
   final ConnectivityService _connectivityService = ConnectivityService();
 
+  EventProvider() {
+    _initSync();
+  }
+
   static const String _eventsCacheKey = 'cached_events_data';
 
   List<Event> _todayEvents = [];
@@ -303,5 +307,128 @@ class EventProvider extends ChangeNotifier {
     _scanHistory = [];
     _unseenScanCount = 0;
     notifyListeners();
+  }
+  // --- Offline Check-in Sync Logic ---
+
+  static const String _pendingCheckInsKey = 'pending_checkins';
+  List<Map<String, dynamic>> _pendingCheckIns = [];
+
+  List<Map<String, dynamic>> get pendingCheckIns => _pendingCheckIns;
+
+  /// Initialize sync logic
+  Future<void> _initSync() async {
+    await _loadPendingCheckIns();
+
+    // Listen to connectivity changes
+    _connectivityService.addListener(() {
+      if (_connectivityService.isOnline) {
+        _syncPendingCheckIns();
+      }
+    });
+  }
+
+  /// Load pending check-ins from storage
+  Future<void> _loadPendingCheckIns() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_pendingCheckInsKey);
+      if (jsonString != null) {
+        _pendingCheckIns = List<Map<String, dynamic>>.from(
+          json.decode(jsonString),
+        );
+        notifyListeners();
+        debugPrint(
+          '📥 [EventProvider] Loaded ${_pendingCheckIns.length} pending check-ins',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Error loading pending check-ins: $e');
+    }
+  }
+
+  /// Add a check-in to the pending queue
+  Future<void> addPendingCheckIn(
+    String publicId,
+    String eventId, {
+    String action = 'check-in',
+  }) async {
+    final checkIn = {
+      'public_id': publicId,
+      'action': action,
+      'event_id': eventId,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    _pendingCheckIns.add(checkIn);
+    await _savePendingCheckIns();
+    notifyListeners();
+
+    debugPrint('➕ [EventProvider] Added pending check-in: $publicId');
+
+    // Attempt sync immediately if online
+    if (_connectivityService.isOnline) {
+      _syncPendingCheckIns();
+    }
+  }
+
+  /// Save pending check-ins to storage
+  Future<void> _savePendingCheckIns() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_pendingCheckInsKey, json.encode(_pendingCheckIns));
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Failed to save pending check-ins: $e');
+    }
+  }
+
+  /// Sync pending check-ins with backend
+  Future<void> _syncPendingCheckIns() async {
+    if (_connectivityService.isOffline || _pendingCheckIns.isEmpty) return;
+
+    debugPrint(
+      '🔄 [EventProvider] Attempting to sync ${_pendingCheckIns.length} pending check-ins...',
+    );
+
+    // Group by event_id to batch requests per event
+    final Map<String, List<Map<String, dynamic>>> byEvent = {};
+    for (var item in _pendingCheckIns) {
+      final eventId = item['event_id'] as String;
+      byEvent.putIfAbsent(eventId, () => []).add(item);
+    }
+
+    List<Map<String, dynamic>> remaining = [];
+    bool anySuccess = false;
+
+    for (var entry in byEvent.entries) {
+      final eventId = entry.key;
+      final items = entry.value;
+
+      // Prepare payload (only public_id and action)
+      final apiPayload = items
+          .map((e) => {'public_id': e['public_id'], 'action': e['action']})
+          .toList();
+
+      final response = await _eventService.syncCheckIns(eventId, apiPayload);
+
+      if (response.success) {
+        anySuccess = true;
+        debugPrint(
+          '✅ [EventProvider] Synced ${items.length} check-ins for event $eventId',
+        );
+      } else {
+        // If failed, keep these items in the queue
+        remaining.addAll(items);
+        debugPrint('❌ [EventProvider] Sync failed for event $eventId');
+      }
+    }
+
+    if (anySuccess || remaining.length != _pendingCheckIns.length) {
+      _pendingCheckIns = remaining;
+      await _savePendingCheckIns();
+      notifyListeners();
+
+      // If we synced successfully, we should probably invalidate/refresh events
+      // or scan history if needed, but tickets are local.
+    }
   }
 }

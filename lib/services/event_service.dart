@@ -469,4 +469,45 @@ class EventService {
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
+
+  /// Sync bulk check-ins with backend
+  Future<ApiResponse<bool>> syncCheckIns(
+    String eventId,
+    List<Map<String, dynamic>> checkIns,
+  ) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final endpoint = AppConfig.validateTicketEndpoint.replaceAll(
+        '{event_id}',
+        eventId,
+      );
+
+      print('🔄 [Sync] Syncing ${checkIns.length} check-ins for $eventId...');
+
+      final body = {'attendees': checkIns};
+
+      print('🔄 [Sync] Body: $body');
+
+      final response = await _dio.post(
+        endpoint,
+        data: body,
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse.success(true, message: 'Sync successful');
+      } else {
+        return ApiResponse.error(
+          'Sync failed',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      print('❌ [Sync] DioException: ${e.message}');
+      return ApiResponse.error('Sync failed: ${e.message}');
+    } catch (e) {
+      print('❌ [Sync] Unexpected error: $e');
+      return ApiResponse.error('An unexpected error occurred: $e');
+    }
+  }
 }
