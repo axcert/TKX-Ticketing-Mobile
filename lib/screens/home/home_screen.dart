@@ -177,19 +177,27 @@ class _HomeScreenState extends State<HomeScreen>
                             if (todayEvents.isNotEmpty)
                               Positioned(
                                 top: 140,
-                                left: 16,
-                                right: 16,
-                                child: Column(
-                                  children: todayEvents
-                                      .map(
-                                        (event) => Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 8,
-                                          ),
-                                          child: _buildTodayEventCard(event),
+                                left: 0,
+                                right: 0,
+                                child: SizedBox(
+                                  height: 110,
+                                  child: PageView.builder(
+                                    physics: const BouncingScrollPhysics(),
+                                    controller: PageController(
+                                      viewportFraction: 1.0,
+                                    ),
+                                    itemCount: todayEvents.length,
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
                                         ),
-                                      )
-                                      .toList(),
+                                        child: _buildTodayEventCard(
+                                          todayEvents[index],
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
 
@@ -228,11 +236,8 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
 
                         // Space for cards that extend beyond blue background
-                        SizedBox(
-                          height: todayEvents.isEmpty
-                              ? 120
-                              : (todayEvents.length * 100).toDouble(),
-                        ),
+                        // Fixed height: 120 (card container) - 60 (overlap) = 60. Using 70 for safety.
+                        SizedBox(height: todayEvents.isEmpty ? 100 : 70),
 
                         // Events Section Header with Tabs
                         Container(
