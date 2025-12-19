@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
-import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+
 import 'package:tkx_ticketing/services/connectivity_service.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
@@ -30,6 +30,7 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
   @override
   void initState() {
     super.initState();
+
     _startDownload();
   }
 
@@ -192,12 +193,13 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
                   // Ticket Icon
                   Center(
                     child: Image.asset(
-                      'assets/online-ticket 2.png',
+                      'assets/gif/offlineGIF.gif',
                       width: 100,
                       height: 100,
                       fit: BoxFit.contain,
+                      gaplessPlayback: true,
                       errorBuilder: (context, error, stackTrace) {
-                        // Fallback to icon if image fails to load
+                        debugPrint('❌ GIF Load Error: $error');
                         return const Icon(
                           Icons.confirmation_number_outlined,
                           size: 48,
@@ -245,7 +247,7 @@ class _OfflineCheckInScreenState extends State<OfflineCheckInScreen> {
                             minHeight: 8,
                             backgroundColor: Colors.grey[200],
                             valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF6366F1),
+                              AppColors.primary,
                             ),
                           ),
                         ),

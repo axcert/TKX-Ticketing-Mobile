@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
+import 'package:intl/intl.dart';
 
 class TicketDetailsBottomSheet extends StatelessWidget {
   final Map<String, dynamic> ticketData;
 
   const TicketDetailsBottomSheet({super.key, required this.ticketData});
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr == 'N/A' || dateStr.isEmpty) return 'N/A';
+    try {
+      final dateTime = DateTime.parse(dateStr);
+      return DateFormat('h:mm a, MMM dd, yyyy').format(dateTime);
+    } catch (e) {
+      return dateStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +82,10 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 Divider(color: Colors.grey.shade300, height: 1),
                 const SizedBox(height: 16),
                 _buildDetailRow('Record ID', ticketData['recordId'] ?? 'N/A'),
-                _buildDetailRow('Scan Time', ticketData['scanTime'] ?? 'N/A'),
+                _buildDetailRow(
+                  'Scan Time',
+                  _formatDate(ticketData['scanTime']),
+                ),
                 _buildDetailRow('Scan Type', ticketData['scanType'] ?? 'N/A'),
                 _buildDetailRow('Scanned By', ticketData['scannedBy'] ?? 'N/A'),
                 _buildDetailRowWithStatus(
@@ -124,21 +138,13 @@ class TicketDetailsBottomSheet extends StatelessWidget {
     Color statusBgColor;
 
     switch (value) {
-      case 'Checked-In':
+      case 'valid':
         statusColor = Colors.green;
         statusBgColor = Colors.green.shade50;
         break;
-      case 'Already Checked-In':
-        statusColor = Colors.orange;
-        statusBgColor = Colors.orange.shade50;
-        break;
-      case 'Invalid':
+      default:
         statusColor = Colors.red;
         statusBgColor = Colors.red.shade50;
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusBgColor = Colors.grey.shade50;
     }
 
     return Padding(

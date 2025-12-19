@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
 import 'package:tkx_ticketing/widgets/event_card.dart';
@@ -13,6 +14,7 @@ import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
 import 'package:tkx_ticketing/screens/scanner/bluetooth_scanner_setup_screen.dart';
 import 'package:tkx_ticketing/screens/scanner/qr_scanner_screen.dart';
 import 'package:tkx_ticketing/widgets/offline_indicator.dart';
+import 'package:tkx_ticketing/widgets/bluetooth_scanner_status_widget.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final Event event;
@@ -256,7 +258,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               else if (_eventStatistics != null)
                                 EventStatisticWidget(
                                   checkInCount: _eventStatistics!.checkInCount,
-                                  invalidCount: _eventStatistics!.invalidCount,
+
                                   registerCount:
                                       _eventStatistics!.registeredCount,
                                   remainingCount:
@@ -265,7 +267,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               else
                                 EventStatisticWidget(
                                   checkInCount: 0,
-                                  invalidCount: 0,
                                   registerCount: 0,
                                   remainingCount: 0,
                                 ),
@@ -277,6 +278,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     ),
                   ],
                 ),
+
+                // Bluetooth Scanner Status (shows when connected)
+                const BluetoothScannerStatusWidget(),
 
                 // Scan History Header
                 Padding(
@@ -387,7 +391,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                 'External Scanner',
                                 false,
                                 onTap: () {
-                                  showBluetoothScannerBottomSheet(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          BluetoothScannerSetupScreen(
+                                            eventId: widget.event.id,
+                                          ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -474,25 +486,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     IconData statusIcon;
 
     switch (scan.status) {
-      case 'Checked-In':
+      case 'valid':
         statusColor = AppColors.success;
-        statusBgColor = const Color.fromARGB(255, 179, 236, 182);
+        statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
-      case 'Already Checked-In':
-        statusColor = AppColors.warning;
-        statusBgColor = const Color.fromARGB(255, 255, 225, 172);
-        statusIcon = Icons.warning;
-        break;
-      case 'Invalid':
-        statusColor = AppColors.error;
-        statusBgColor = const Color.fromARGB(255, 255, 190, 200);
-        statusIcon = Icons.cancel;
-        break;
       default:
-        statusColor = AppColors.border;
-        statusBgColor = Colors.grey.shade50;
-        statusIcon = Icons.info;
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.cancel;
     }
 
     return GestureDetector(
@@ -530,12 +532,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     children: [
                       Text(
                         scan.ticketId,
-                        style: Theme.of(context).textTheme.labelLarge,
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: GoogleFonts.inter().fontFamily,
+                            ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         scan.name,
-                        style: Theme.of(context).textTheme.labelMedium,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                        ),
                       ),
                     ],
                   ),
@@ -546,7 +557,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 4,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: statusBgColor,
@@ -560,17 +571,23 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           Text(
                             scan.status,
                             style: Theme.of(context).textTheme.labelMedium!
-                                .copyWith(fontSize: 11, color: statusColor),
+                                .copyWith(
+                                  fontSize: 12,
+                                  color: statusColor,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      scan.time,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.copyWith(fontSize: 11),
+                      scan.timeFormat(),
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: GoogleFonts.inter().fontFamily,
+                      ),
                     ),
                   ],
                 ),

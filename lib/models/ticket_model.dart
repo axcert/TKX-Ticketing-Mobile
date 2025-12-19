@@ -8,7 +8,7 @@ class Ticket {
   final String? seatUuid;
   final String status;
   final String orderShortId;
-  final bool isCheckedIn;
+  final String checkInStatus;
   final DateTime? checkedInAt;
 
   Ticket({
@@ -21,7 +21,7 @@ class Ticket {
     this.seatUuid,
     required this.status,
     required this.orderShortId,
-    required this.isCheckedIn,
+    required this.checkInStatus,
     this.checkedInAt,
   });
 
@@ -37,7 +37,7 @@ class Ticket {
       seatUuid: json['seat_uuid'],
       status: json['status'] ?? 'valid',
       orderShortId: json['order_short_id'] ?? '',
-      isCheckedIn: json['is_checked_in'] ?? false,
+      checkInStatus: json['check_in_status'] ?? 'check-out',
       checkedInAt: json['checked_in_at'] != null
           ? DateTime.parse(json['checked_in_at'])
           : null,
@@ -56,13 +56,16 @@ class Ticket {
       'seat_uuid': seatUuid,
       'status': status,
       'order_short_id': orderShortId,
-      'is_checked_in': isCheckedIn,
+      'check_in_status': checkInStatus,
       'checked_in_at': checkedInAt?.toIso8601String(),
     };
   }
 
   // Check if ticket is valid
   bool get isValid => status == 'valid';
+
+  // Helper getter for check-in status
+  bool get isCheckedIn => checkInStatus == 'check-in';
 }
 
 // Response model for the ticket bundle API

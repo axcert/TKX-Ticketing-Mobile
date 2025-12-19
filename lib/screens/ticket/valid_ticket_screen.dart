@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
+import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
+import 'package:tkx_ticketing/providers/auth_provider.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
 class ValidTicketScreen extends StatefulWidget {
   final Map<String, dynamic> ticketData;
   final String eventId;
+  final bool isCheckedIn;
 
   const ValidTicketScreen({
     super.key,
     required this.ticketData,
     required this.eventId,
+    this.isCheckedIn = false,
   });
 
   @override
@@ -21,9 +26,41 @@ class ValidTicketScreen extends StatefulWidget {
 class _ValidTicketScreenState extends State<ValidTicketScreen> {
   final TicketService _ticketService = TicketService();
   bool _isProcessing = false;
+  bool _isAutoCheckInEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // If passed as checked in, we don't need to process
+    if (widget.isCheckedIn) {
+      _isProcessing = false;
+    } else {
+      // Check for auto check-in preference
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final authProvider = context.read<AuthProvider>();
+        if (authProvider.user?.isAutoCheckIn == true) {
+          setState(() {
+            _isAutoCheckInEnabled = true;
+          });
+          // Auto check-in after 2 seconds
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              _handleCheckIn();
+            }
+          });
+        }
+      });
+    }
+  }
 
   Future<void> _handleCheckIn() async {
     if (_isProcessing) return;
+
+    // If already checked in mode, just close
+    if (widget.isCheckedIn) {
+      Navigator.pop(context, true);
+      return;
+    }
 
     setState(() {
       _isProcessing = true;
@@ -47,6 +84,13 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
     if (!mounted) return;
 
     if (result['success'] == true) {
+      if (mounted) {
+        await context.read<EventProvider>().addPendingCheckIn(
+          ticketId,
+          widget.eventId,
+        );
+      }
+
       ToastMessage.show(
         context,
         message: 'Check-in successful',
@@ -60,7 +104,7 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
     } else {
       ToastMessage.show(
         context,
-        message: 'Check-in failed',
+        message: 'Check-in failed: ${result['message']}',
         type: ToastType.error,
       );
       setState(() => _isProcessing = false);
@@ -139,13 +183,14 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
                   child: Column(
                     children: [
                       Text(
-                        "Valid Ticket",
+                        widget.isCheckedIn ? "Checked In" : "Valid Ticket",
                         style: Theme.of(context).textTheme.displayLarge!
                             .copyWith(
                               fontSize: 40,
                               color: AppColors.background,
                               fontWeight: FontWeight.w700,
                             ),
+                        textAlign: TextAlign.center,
                       ),
                       Text(
                         widget.ticketData['ticketId'] ?? 'N/A',
@@ -185,15 +230,37 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
                   ),
                 ),
 
-                CustomElevatedButton(
-                  backgroundColor: _isProcessing
-                      ? Colors.grey
-                      : AppColors.background,
-                  textColor: AppColors.textPrimary,
-                  text: _isProcessing ? "Checking in..." : "Check-in",
-                  isLoading: _isProcessing,
-                  onPressed: () => _handleCheckIn(),
-                ),
+                if (_isAutoCheckInEnabled && !widget.isCheckedIn)
+                  Column(
+                    children: [
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.background,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Checking in automatically...",
+                        style: TextStyle(
+                          color: AppColors.background,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  CustomElevatedButton(
+                    backgroundColor: _isProcessing
+                        ? Colors.grey
+                        : AppColors.background,
+                    textColor: AppColors.textPrimary,
+                    text: widget.isCheckedIn
+                        ? "Next"
+                        : (_isProcessing ? "Checking in..." : "Check-in"),
+                    isLoading: _isProcessing,
+                    onPressed: () => _handleCheckIn(),
+                  ),
               ],
             ),
           ),

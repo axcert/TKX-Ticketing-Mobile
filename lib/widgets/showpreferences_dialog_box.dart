@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 
 import 'package:tkx_ticketing/providers/auth_provider.dart';
 
@@ -56,7 +58,7 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.divider,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -67,12 +69,10 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Scanner Preferences',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
                 IconButton(
@@ -94,6 +94,8 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
             ),
 
             const SizedBox(height: 20),
+            Divider(color: AppColors.textHint.withOpacity(0.3)),
+            const SizedBox(height: 16),
 
             // Vibrate option
             _buildPreferenceOption(
@@ -108,6 +110,8 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
             ),
 
             const SizedBox(height: 16),
+            Divider(color: AppColors.textHint.withOpacity(0.3)),
+            const SizedBox(height: 16),
 
             // Beep option
             _buildPreferenceOption(
@@ -121,6 +125,8 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
               },
             ),
 
+            const SizedBox(height: 16),
+            Divider(color: AppColors.textHint.withOpacity(0.3)),
             const SizedBox(height: 16),
 
             // Auto Check-in option
@@ -157,16 +163,19 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: GoogleFonts.inter().fontFamily,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                  fontFamily: GoogleFonts.inter().fontFamily,
+                ),
               ),
             ],
           ),
@@ -174,8 +183,10 @@ class _ShowPreferencesDialogBoxState extends State<ShowPreferencesDialogBox> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-          thumbColor: const WidgetStatePropertyAll(Color(0xFF6366F1)),
+          activeTrackColor: AppColors.primary,
+          inactiveThumbColor: AppColors.background,
+          inactiveTrackColor: AppColors.border,
+          trackOutlineColor: WidgetStatePropertyAll(AppColors.divider),
         ),
       ],
     );

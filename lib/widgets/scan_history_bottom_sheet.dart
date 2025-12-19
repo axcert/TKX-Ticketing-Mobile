@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/models/scan_history_model.dart';
 
@@ -144,16 +145,18 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
     }
 
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.background,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey.shade200),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // VIP Badge or Icon
               Container(
@@ -175,18 +178,19 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                   children: [
                     Text(
                       scan.ticketId,
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: GoogleFonts.inter().fontFamily,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       scan.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
+                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: GoogleFonts.inter().fontFamily,
                       ),
                     ),
                   ],
@@ -194,12 +198,13 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
               ),
               // Status and Time
               Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 10,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: statusBgColor,
@@ -212,19 +217,24 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
                         const SizedBox(width: 4),
                         Text(
                           scan.status,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: statusColor,
-                          ),
+                          style: Theme.of(context).textTheme.labelMedium!
+                              .copyWith(
+                                fontSize: 14,
+                                color: statusColor,
+                                fontFamily: GoogleFonts.inter().fontFamily,
+                              ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    scan.time,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    scan.timeFormat(),
+                    style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: GoogleFonts.inter().fontFamily,
+                    ),
                   ),
                 ],
               ),
@@ -254,7 +264,7 @@ void showScanHistoryBottomSheet(
 ) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true,
+    isScrollControlled: false,
     backgroundColor: Colors.transparent,
     builder: (context) => ScanHistoryBottomSheet(scanHistory: scanHistory),
   );
