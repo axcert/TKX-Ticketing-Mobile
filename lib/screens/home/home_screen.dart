@@ -115,11 +115,6 @@ class _HomeScreenState extends State<HomeScreen>
                         clipBehavior: Clip.none,
                         alignment: Alignment.topCenter,
 
-                        // ... (cutting out middle part to avoid finding issues, I will target specific blocks if possible)
-                        // Wait, replace_file_content handles a contiguous block.
-                        // I have two calls to _buildAppBar separated by lines.
-                        // And the definition is further down.
-                        // I should use MULTI_REPLACE.
                         children: [
                           // Blue Background
                           Container(
@@ -292,38 +287,30 @@ class _HomeScreenState extends State<HomeScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(color: AppColors.primary),
-      child: Stack(
+      child: Row(
         children: [
-          // Menu Icon on the left
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  icon: const Icon(
-                    Icons.menu,
-                    color: AppColors.textWhite,
-                    size: 24,
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                );
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.menu, color: AppColors.textWhite, size: 24),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
           ),
 
           // Organization Name - Centered
-          Center(
+          Expanded(
             child: Text(
               organizerName ?? '',
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium!.copyWith(color: AppColors.textWhite),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+
+          // Balance the left menu icon to keep title centered
+          const SizedBox(width: 48),
         ],
       ),
     );
