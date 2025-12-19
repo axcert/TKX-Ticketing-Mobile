@@ -15,6 +15,8 @@ import 'package:tkx_ticketing/screens/scanner/bluetooth_scanner_setup_screen.dar
 import 'package:tkx_ticketing/screens/scanner/qr_scanner_screen.dart';
 import 'package:tkx_ticketing/widgets/offline_indicator.dart';
 import 'package:tkx_ticketing/widgets/bluetooth_scanner_status_widget.dart';
+import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final Event event;
@@ -31,15 +33,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   bool _isLoadingStatistics = false;
   String? _statisticsError;
 
-  List<ScanHistory> _scanHistory = [];
-  bool _isLoadingScanHistory = false;
-  String? _scanHistoryError;
-
   @override
   void initState() {
     super.initState();
     _fetchEventStatistics();
-    _fetchScanHistory();
+    // Fetch scan history via provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<EventProvider>().fetchScanHistory(widget.event.id);
+    });
   }
 
   /// Fetch event statistics from the API
@@ -67,35 +68,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       setState(() {
         _statisticsError = 'An error occurred: $e';
         _isLoadingStatistics = false;
-      });
-    }
-  }
-
-  /// Fetch scan history from the API
-  Future<void> _fetchScanHistory() async {
-    setState(() {
-      _isLoadingScanHistory = true;
-      _scanHistoryError = null;
-    });
-
-    try {
-      final response = await _eventService.getScanHistory(widget.event.id);
-
-      if (response.success && response.data != null) {
-        setState(() {
-          _scanHistory = response.data!;
-          _isLoadingScanHistory = false;
-        });
-      } else {
-        setState(() {
-          _scanHistoryError = response.message ?? 'Failed to load scan history';
-          _isLoadingScanHistory = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _scanHistoryError = 'An error occurred: $e';
-        _isLoadingScanHistory = false;
       });
     }
   }
@@ -300,12 +272,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
                 // Expanded Scan History List
                 Expanded(
-                  child: _isLoadingScanHistory
-                      ? const Center(child: CircularProgressIndicator())
-                      : _scanHistoryError != null
-                      ? Center(child: Text(_scanHistoryError!))
-                      : _scanHistory.isEmpty
-                      ? Padding(
+                  child: Consumer<EventProvider>(
+                    builder: (context, provider, child) {
+                      if (provider.isLoading && provider.scanHistory.isEmpty) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (provider.scanHistory.isEmpty) {
+                        return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Container(
                             width: double.infinity,
@@ -334,18 +308,29 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ],
                             ),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          itemCount: _scanHistory.length,
-                          itemBuilder: (context, index) {
-                            final scan = _scanHistory[index];
-                            return _buildScanHistoryItem(scan);
-                          },
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
+                        itemCount: provider.scanHistory.length,
+                        itemBuilder: (context, index) {
+                          // Convert Map to ScanHistory object
+                          // Warning: Ensuring type safety
+                          try {
+                            final scanMap = provider.scanHistory[index];
+                            final scan = ScanHistory.fromJson(scanMap);
+                            return _buildScanHistoryItem(scan);
+                          } catch (e) {
+                            return const SizedBox.shrink();
+                          }
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

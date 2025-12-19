@@ -44,9 +44,8 @@ class ScanHistory {
       status: json['status'] ?? 'Unknown',
       isVip:
           (json['ticket_type']?.toString().toLowerCase().contains('vip') ??
-              json['ticketType']?.toString().toLowerCase().contains('vip') ??
-              json['isVip'] == true) ??
-          false,
+          json['ticketType']?.toString().toLowerCase().contains('vip') ??
+          json['isVip'] == true),
       ticketType: json['ticket_type'] ?? json['ticketType'] ?? 'N/A',
       seatNo: json['seat_number'] ?? json['seatNumber'] ?? 'N/A',
       row: json['row'] ?? 'N/A',
