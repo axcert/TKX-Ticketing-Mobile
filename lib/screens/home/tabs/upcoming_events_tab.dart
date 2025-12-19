@@ -17,18 +17,13 @@ class UpcomingEventsTab extends StatelessWidget {
       return const EmptyStateWidget(message: 'No events available');
     }
 
-    return Padding(
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        children: events
-            .map(
-              (event) => EventCard(
-                event: event,
-                onTap: () => _handleTap(context, event),
-              ),
-            )
-            .toList(),
-      ),
+      itemCount: events.length,
+      itemBuilder: (context, index) {
+        final event = events[index];
+        return EventCard(event: event, onTap: () => _handleTap(context, event));
+      },
     );
   }
 
