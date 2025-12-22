@@ -225,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen>
 
                       // Space for cards that extend beyond blue background
                       // Fixed height: 120 (card container) - 60 (overlap) = 60. Using 70 for safety.
-                      SizedBox(height: todayEvents.isEmpty ? 100 : 70),
+                      SizedBox(height: todayEvents.isEmpty ? 100 : 45),
 
                       // Events Section Header with Tabs
                       Container(
