@@ -24,6 +24,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late PageController _pageController;
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -31,6 +33,16 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       setState(() {}); // Rebuild when tab changes
+    });
+
+    _pageController = PageController(viewportFraction: 1.0);
+    _pageController.addListener(() {
+      final page = _pageController.page?.round() ?? 0;
+      if (_currentPage != page) {
+        setState(() {
+          _currentPage = page;
+        });
+      }
     });
 
     // Fetch events when screen loads
@@ -44,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -167,25 +180,62 @@ class _HomeScreenState extends State<HomeScreen>
                               top: 140,
                               left: 0,
                               right: 0,
-                              child: SizedBox(
-                                height: 110,
-                                child: PageView.builder(
-                                  physics: const BouncingScrollPhysics(),
-                                  controller: PageController(
-                                    viewportFraction: 1.0,
+                              child: Column(
+                                children: [
+                                  // Event Cards
+                                  SizedBox(
+                                    height: 110,
+                                    child: PageView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      controller: _pageController,
+                                      itemCount: todayEvents.length,
+                                      itemBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                          ),
+                                          child: _buildTodayEventCard(
+                                            todayEvents[index],
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                  itemCount: todayEvents.length,
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
+
+                                  // Dot Indicator
+                                  if (todayEvents.length > 1)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 5),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(
+                                          todayEvents.length,
+                                          (index) => AnimatedContainer(
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                            ),
+                                            width: _currentPage == index
+                                                ? 15
+                                                : 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: _currentPage == index
+                                                  ? AppColors.textPrimary!
+                                                        .withOpacity(0.6)
+                                                  : AppColors.textPrimary
+                                                        .withValues(alpha: 0.4),
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      child: _buildTodayEventCard(
-                                        todayEvents[index],
-                                      ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                ],
                               ),
                             ),
 
@@ -224,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
 
                       // Space for cards that extend beyond blue background
-                      // Fixed height: 120 (card container) - 60 (overlap) = 60. Using 70 for safety.
-                      SizedBox(height: todayEvents.isEmpty ? 100 : 45),
+                      // Fixed height accounts for card overlap + dot indicators
+                      SizedBox(height: todayEvents.isEmpty ? 100 : 75),
 
                       // Events Section Header with Tabs
                       Container(
