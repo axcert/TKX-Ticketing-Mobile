@@ -147,9 +147,13 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    child: SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 50),
                   _buildTitle(),
                   const SizedBox(height: 8),
                   _buildSubtitle(),
@@ -179,14 +183,20 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
   Widget _buildTitle() {
     return Text(
       'Forgot Password',
-      style: Theme.of(context).textTheme.headlineLarge,
+      style: Theme.of(
+        context,
+      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
       'Enter the email you used to register',
-      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 13),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 

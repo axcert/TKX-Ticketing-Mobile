@@ -20,7 +20,7 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  bool _obscurePassword = false;
 
   @override
   void dispose() {
@@ -86,9 +86,13 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    child: SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 50),
                   _buildTitle(),
                   const SizedBox(height: 8),
                   _buildSubtitle(),
@@ -96,9 +100,9 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
                   _buildEmailField(),
                   const SizedBox(height: 18),
                   _buildPasswordField(),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 25),
                   _buildForgotPasswordButton(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, child) {
                       return CustomElevatedButton(
@@ -118,13 +122,22 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
   }
 
   Widget _buildTitle() {
-    return Text('Welcome!', style: Theme.of(context).textTheme.headlineLarge);
+    return Text(
+      'Welcome!',
+      style: Theme.of(
+        context,
+      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
+    );
   }
 
   Widget _buildSubtitle() {
     return Text(
-      'Sign in to manage tickets and ticket\nhappening.',
-      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14),
+      'Log in to manage event check-ins and ticket scanning.',
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
@@ -155,7 +168,7 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
           icon: Icon(
             color: AppColors.textSecondary,
             size: 20,
-            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            _obscurePassword ? Icons.visibility : Icons.visibility_off,
           ),
           onPressed: () {
             setState(() {
@@ -188,6 +201,7 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
           style: Theme.of(context).textTheme.labelMedium!.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.w700,
+            fontSize: 14,
             fontFamily: GoogleFonts.inter().fontFamily,
           ),
         ),

@@ -187,8 +187,12 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SvgPicture.asset('assets/tkx_logo.svg'),
-                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: 300,
+                    height: 100,
+                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+                  ),
+                  const SizedBox(height: 50),
                   _buildTitle(),
                   const SizedBox(height: 8),
                   _buildSubtitle(),

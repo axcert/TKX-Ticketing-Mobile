@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'set_new_password_bottom_sheet.dart';
@@ -160,9 +161,13 @@ class _OtpVerificationBottomSheetState
               children: [
                 Align(
                   alignment: Alignment.center,
-                  child: SvgPicture.asset('assets/tkx_logo.svg'),
+                  child: SizedBox(
+                    width: 300,
+                    height: 100,
+                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+                  ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 50),
                 _buildTitle(),
                 const SizedBox(height: 8),
                 _buildSubtitle(),
@@ -193,14 +198,20 @@ class _OtpVerificationBottomSheetState
   Widget _buildTitle() {
     return Text(
       'Verify Your Identity',
-      style: Theme.of(context).textTheme.headlineLarge,
+      style: Theme.of(
+        context,
+      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
       'Enter the verification code we send to\n${widget.email}',
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
