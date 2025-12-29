@@ -36,24 +36,70 @@ class ScanHistory {
   });
 
   factory ScanHistory.fromJson(Map<String, dynamic> json) {
+    // Some APIs might nest the ticket/attendee info
+    final nested = json['ticket'] ?? json['attendee'] ?? json['check_in'] ?? {};
+    final Map<String, dynamic> data = nested is Map<String, dynamic>
+        ? nested
+        : {};
+
     return ScanHistory(
-      ticketId: json['attendee_public_id'] ?? json['ticketId'] ?? 'N/A',
-      name: json['attendee_name'] ?? json['name'] ?? 'N/A',
-      email: json['attendee_email'] ?? json['email'] ?? 'N/A',
+      ticketId:
+          json['attendee_public_id'] ??
+          data['attendee_public_id'] ??
+          json['ticketId'] ??
+          data['id']?.toString() ??
+          'N/A',
+      name:
+          json['attendee_name'] ??
+          data['attendee_name'] ??
+          json['name'] ??
+          data['name'] ??
+          'N/A',
+      email:
+          json['attendee_email'] ??
+          data['attendee_email'] ??
+          json['email'] ??
+          data['email'] ??
+          'N/A',
       time: json['time'] ?? 'N/A',
-      status: json['status'] ?? 'Unknown',
+      status:
+          json['status'] ??
+          json['check_in_status'] ??
+          data['status'] ??
+          data['check_in_status'] ??
+          'Unknown',
       isVip:
           (json['ticket_type']?.toString().toLowerCase().contains('vip') ??
+          data['ticket_type']?.toString().toLowerCase().contains('vip') ??
           json['ticketType']?.toString().toLowerCase().contains('vip') ??
-          json['isVip'] == true),
-      ticketType: json['ticket_type'] ?? json['ticketType'] ?? 'N/A',
-      seatNo: json['seat_number'] ?? json['seatNumber'] ?? 'N/A',
-      row: json['row'] ?? 'N/A',
-      column: json['column'] ?? 'N/A',
-      recordId: (json['ticket_id'] ?? json['recordId'] ?? 'N/A').toString(),
-      scanTime: json['scan_time'] ?? json['scanTime'] ?? 'N/A',
+          json['isVip'] == true || data['is_vip'] == true),
+      ticketType:
+          json['ticket_type'] ??
+          data['ticket_type'] ??
+          json['ticketType'] ??
+          'N/A',
+      seatNo:
+          json['seat_number'] ??
+          data['seat_number'] ??
+          json['seatNumber'] ??
+          'N/A',
+      row: json['row'] ?? data['row'] ?? 'N/A',
+      column: json['column'] ?? data['column'] ?? 'N/A',
+      recordId:
+          (json['ticket_id'] ?? data['ticket_id'] ?? json['recordId'] ?? 'N/A')
+              .toString(),
+      scanTime:
+          json['scan_time'] ??
+          json['scanned_at'] ??
+          data['scan_time'] ??
+          json['scanTime'] ??
+          'N/A',
       scanType: json['scan_type'] ?? json['scanType'] ?? 'N/A',
-      scannedBy: json['scanned_by'] ?? json['scannedBy'] ?? 'N/A',
+      scannedBy:
+          json['scanned_by'] ??
+          json['scannedBy'] ??
+          json['gatekeeper_name'] ??
+          'N/A',
     );
   }
 

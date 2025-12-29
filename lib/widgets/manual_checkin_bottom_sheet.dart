@@ -273,7 +273,7 @@ class _ManualCheckInBottomSheetState extends State<ManualCheckInBottomSheet> {
                               // Calculate counts
                               final totalCount = _allTickets.length;
                               final checkedCount = _allTickets
-                                  .where((t) => t.status == 'checked-in')
+                                  .where((t) => t.isCheckedIn)
                                   .length;
 
                               final ticketData = {

@@ -470,16 +470,29 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     Color statusBgColor;
     IconData statusIcon;
 
-    switch (scan.status) {
+    switch (scan.status.toLowerCase().trim()) {
       case 'valid':
+      case 'checked-in':
         statusColor = AppColors.success;
         statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
-      default:
+      case 'invalid':
+      case 'duplicate':
+      case 'failed':
         statusColor = AppColors.error;
         statusBgColor = Colors.red.shade50;
         statusIcon = Icons.cancel;
+        break;
+      case 'cancelled':
+        statusColor = AppColors.warning;
+        statusBgColor = Colors.yellow.shade50;
+        statusIcon = Icons.info_outline;
+        break;
+      default:
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.help_outline;
     }
 
     return GestureDetector(
