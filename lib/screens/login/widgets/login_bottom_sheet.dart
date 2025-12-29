@@ -20,7 +20,7 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -168,7 +168,9 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
           icon: Icon(
             color: AppColors.textSecondary,
             size: 20,
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
           ),
           onPressed: () {
             setState(() {
