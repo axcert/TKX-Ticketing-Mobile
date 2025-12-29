@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:intl/intl.dart';
 
@@ -52,7 +53,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 'Ticket Details',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                   color: Colors.black87,
                 ),
               ),
@@ -67,28 +68,56 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             child: Column(
               children: [
                 _buildDetailRow(
+                  context,
                   'Ticket ID / Code',
                   ticketData['ticketId'] ?? 'N/A',
                 ),
-                _buildDetailRow('Attendee Name', ticketData['name'] ?? 'N/A'),
                 _buildDetailRow(
+                  context,
+                  'Attendee Name',
+                  ticketData['name'] ?? 'N/A',
+                ),
+                _buildDetailRow(
+                  context,
                   'Ticket Type',
                   ticketData['ticketType'] ?? 'N/A',
                 ),
-                _buildDetailRow('Seat No.', ticketData['seatNo'] ?? 'N/A'),
-                _buildDetailRow('Row', ticketData['row'] ?? 'N/A'),
-                _buildDetailRow('Column', ticketData['column'] ?? 'N/A'),
+                _buildDetailRow(
+                  context,
+                  'Seat No.',
+                  ticketData['seatNo'] ?? 'N/A',
+                ),
+                _buildDetailRow(context, 'Row', ticketData['row'] ?? 'N/A'),
+                _buildDetailRow(
+                  context,
+                  'Column',
+                  ticketData['column'] ?? 'N/A',
+                ),
                 const SizedBox(height: 16),
                 Divider(color: Colors.grey.shade300, height: 1),
                 const SizedBox(height: 16),
-                _buildDetailRow('Record ID', ticketData['recordId'] ?? 'N/A'),
                 _buildDetailRow(
+                  context,
+                  'Record ID',
+                  ticketData['recordId'] ?? 'N/A',
+                ),
+                _buildDetailRow(
+                  context,
                   'Scan Time',
                   _formatDate(ticketData['scanTime']),
                 ),
-                _buildDetailRow('Scan Type', ticketData['scanType'] ?? 'N/A'),
-                _buildDetailRow('Scanned By', ticketData['scannedBy'] ?? 'N/A'),
+                _buildDetailRow(
+                  context,
+                  'Scan Type',
+                  ticketData['scanType'] ?? 'N/A',
+                ),
+                _buildDetailRow(
+                  context,
+                  'Scanned By',
+                  ticketData['scannedBy'] ?? 'N/A',
+                ),
                 _buildDetailRowWithStatus(
+                  context,
                   'Status',
                   ticketData['status'] ?? 'N/A',
                 ),
@@ -102,7 +131,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -112,7 +141,11 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.w900,
+                color: AppColors.textSecondary,
+                fontFamily: GoogleFonts.inter().fontFamily,
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -120,10 +153,9 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.w900,
+                fontFamily: GoogleFonts.inter().fontFamily,
               ),
               textAlign: TextAlign.right,
             ),
@@ -133,18 +165,45 @@ class TicketDetailsBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRowWithStatus(String label, String value) {
+  Widget _buildDetailRowWithStatus(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
     Color statusColor;
     Color statusBgColor;
+    IconData statusIcon;
 
-    switch (value) {
+    switch (value.toLowerCase().trim()) {
       case 'valid':
-        statusColor = Colors.green;
+      case 'active':
+      case 'checked-in':
+      case 'checked in':
+      case 'success':
+        statusColor = AppColors.success;
         statusBgColor = Colors.green.shade50;
+        statusIcon = Icons.check_circle;
+        break;
+      case 'invalid':
+      case 'used':
+      case 'already checked in':
+      case 'already checked-in':
+      case 'duplicate':
+      case 'failed':
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.cancel;
+        break;
+      case 'cancelled':
+      case 'canceled':
+        statusColor = AppColors.warning;
+        statusBgColor = Colors.yellow.shade50;
+        statusIcon = Icons.info_outline;
         break;
       default:
-        statusColor = Colors.red;
+        statusColor = AppColors.error;
         statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.help_outline;
     }
 
     return Padding(
@@ -156,31 +215,35 @@ class TicketDetailsBottomSheet extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.w900,
+                color: AppColors.textSecondary,
+                fontFamily: GoogleFonts.inter().fontFamily,
+              ),
             ),
           ),
           const SizedBox(width: 16),
-          Expanded(
-            flex: 3,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: statusBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: statusBgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(statusIcon, color: statusColor, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

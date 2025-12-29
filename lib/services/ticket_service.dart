@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tkx_ticketing/config/app_config.dart';
 import 'package:tkx_ticketing/models/ticket_model.dart';
 
@@ -141,25 +142,100 @@ class TicketService {
     }
   }
 
-  // Check in a ticket locally
+  // Check in a ticket locally (with online sync if available)
   Future<Map<String, dynamic>> checkInTicket(
     String eventId,
     String ticketPublicId,
   ) async {
     try {
+      // 1. Check for internet connectivity
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final bool isOnline = connectivityResult.any(
+        (result) =>
+            result == ConnectivityResult.mobile ||
+            result == ConnectivityResult.wifi ||
+            result == ConnectivityResult.ethernet,
+      );
+
+      Map<String, dynamic>? onlineResult;
+
+      if (isOnline) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('auth_token');
+
+          if (token != null) {
+            final url = Uri.parse(
+              '${AppConfig.baseUrl}${AppConfig.validateTicketEndpoint.replaceAll('{event_id}', eventId)}',
+            );
+
+            final response = await http
+                .post(
+                  url,
+                  headers: {
+                    'Authorization': 'Bearer $token',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                  },
+                  body: json.encode({
+                    'attendees': [
+                      {'public_id': ticketPublicId, "action": "check-in"},
+                    ],
+                  }),
+                )
+                .timeout(AppConfig.connectionTimeout);
+
+            if (response.statusCode == 200 || response.statusCode == 201) {
+              final data = json.decode(response.body);
+              final results = data['results'] as List<dynamic>?;
+
+              if (results != null && results.isNotEmpty) {
+                final result = results[0];
+                final status =
+                    result['status']; // 'success', 'duplicate', 'failed'
+                final message = result['message'];
+
+                if (status == 'success' || status == 'duplicate') {
+                  onlineResult = {
+                    'success': true,
+                    'message': message ?? 'Check-in successful',
+                    'status': status,
+                  };
+                } else {
+                  return {
+                    'success': false,
+                    'message': message ?? 'Check-in failed on server',
+                  };
+                }
+              }
+            } else {
+              print(
+                'Online check-in failed with status: ${response.statusCode}',
+              );
+              // If server is unreachable or returns error, we fallback to local check-in
+            }
+          }
+        } catch (e) {
+          print('Error syncing check-in online: $e');
+          // Fallback to local check-in on network error
+        }
+      }
+
+      // 2. Perform local check-in
       final tickets = await loadTicketsLocally(eventId);
       final index = tickets.indexWhere(
         (t) => t.attendeePublicId == ticketPublicId,
       );
 
       if (index == -1) {
-        return {'success': false, 'message': 'Ticket not found'};
+        if (onlineResult != null) return onlineResult;
+        return {'success': false, 'message': 'Ticket not found locally'};
       }
 
       final ticket = tickets[index];
 
-      // Check if already checked in
-      if (ticket.isCheckedIn) {
+      // If we didn't get an online result (offline or error), check if already checked in locally
+      if (onlineResult == null && ticket.isCheckedIn) {
         return {
           'success': false,
           'message': 'Ticket already checked in at ${ticket.checkedInAt}',
@@ -187,10 +263,14 @@ class TicketService {
       // Save back to storage
       await saveTicketsLocally(eventId, tickets);
 
-      return {'success': true, 'message': 'Check-in successful'};
+      if (onlineResult != null) {
+        return onlineResult;
+      }
+
+      return {'success': true, 'message': 'Check-in successful (Offline)'};
     } catch (e) {
       print('Error checking in ticket: $e');
-      return {'success': false, 'message': 'An error occurred'};
+      return {'success': false, 'message': 'An error occurred during check-in'};
     }
   }
 }

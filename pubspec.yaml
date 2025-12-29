@@ -88,6 +88,7 @@ flutter:
     - assets/icons/manual_check-in.svg
     - assets/icons/tickets.svg
     - assets/icons/VIP Badge.svg
+    - assets/gif/offlineGIF.gif
     
     
   

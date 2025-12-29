@@ -85,10 +85,20 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
 
     if (result['success'] == true) {
       if (mounted) {
-        await context.read<EventProvider>().addPendingCheckIn(
-          ticketId,
-          widget.eventId,
-        );
+        final provider = context.read<EventProvider>();
+        await provider.addPendingCheckIn(ticketId, widget.eventId);
+
+        // Add to scan history for immediate UI update
+        await provider.addScanToHistory({
+          'ticketId': ticketId,
+          'name': widget.ticketData['name'] ?? 'Unknown',
+          'status': 'valid',
+          'scanTime': DateTime.now().toIso8601String(),
+          'isVip': widget.ticketData['isVip'] ?? false,
+          'recordId': widget.ticketData['recordId'],
+          'seatNo': widget.ticketData['seatNo'],
+          'scanType': 'QR Scan',
+        }, widget.eventId);
       }
 
       ToastMessage.show(

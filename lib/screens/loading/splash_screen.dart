@@ -98,13 +98,6 @@ class _SplashScreenState extends State<SplashScreen>
               height: double.infinity,
             ),
 
-            // Layer 2: White color overlay with low opacity to lighten the background
-            Container(
-              color: const Color(
-                0xFFFFFFFF,
-              ).withValues(alpha: 0.9), // 30% white overlay to lighten
-            ),
-
             // Layer 3: Linear gradient overlay with some transparency
             // Colors from your Figma: Primary (#1F5CBF) to Logo color (#27AAE1)
             Container(

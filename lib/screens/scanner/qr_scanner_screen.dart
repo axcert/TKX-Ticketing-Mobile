@@ -1,8 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:tkx_ticketing/models/user_model.dart';
 import 'package:tkx_ticketing/providers/auth_provider.dart';
+import 'package:tkx_ticketing/models/ticket_model.dart';
 import 'package:tkx_ticketing/providers/event_provider.dart';
 import '../../widgets/scan_history_bottom_sheet.dart';
 import '../../widgets/showpreferences_dialog_box.dart';
@@ -71,7 +73,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     setState(() {
       _isScanning = false;
     });
-
     final eventId = widget.eventId;
     if (eventId == null) {
       if (mounted) {
@@ -84,72 +85,139 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       }
       return;
     }
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final bool isOnline = connectivityResult.any(
+      (result) =>
+          result == ConnectivityResult.mobile ||
+          result == ConnectivityResult.wifi,
+    );
+    Map<String, dynamic> ticketData;
+    Widget nextScreen;
 
     try {
-      // 1. Load tickets locally
-      final tickets = await _ticketService.loadTicketsLocally(eventId);
+      if (isOnline) {
+        final onlineResult = await _ticketService.checkInTicket(eventId, code);
 
-      // 2. Find matching ticket
-      // Matching rawValue from QR code to attendeePublicId
-      final ticket = tickets.firstWhere(
-        (t) => t.attendeePublicId == code,
-        orElse: () => throw Exception('Ticket not found'),
-      );
+        if (onlineResult['success'] == true) {
+          await _ticketService.downloadTicketsForOffline(eventId);
 
-      // 3. Check stats
-      final totalCount = tickets.length;
-      final checkedCount = tickets.where((t) => t.isCheckedIn).length;
+          final tickets = await _ticketService.loadTicketsLocally(eventId);
+          final ticket = tickets.cast<Ticket?>().firstWhere(
+            (t) => t?.attendeePublicId == code,
+            orElse: () => null,
+          );
 
-      // 4. Prepare data
-      final ticketData = {
-        'ticketId': ticket.attendeePublicId,
-        'name': ticket.attendeeName,
-        'isVip': ticket.ticketType.toLowerCase().contains('vip'),
-        'seatNo': ticket.seatNumber ?? 'N/A',
-        'row': '',
-        'column': '',
-        'recordId': '${ticket.ticketId}',
-        'checkedCount': checkedCount.toString(),
-        'totalCount': totalCount.toString(),
-        'status': ticket.status,
-      };
+          if (ticket != null) {
+            final totalCount = tickets.length;
+            final checkedCount = tickets.where((t) => t.isCheckedIn).length;
 
-      // Add to local history
-      final historyMap = {
-        'attendee_public_id': ticket.attendeePublicId,
-        'attendee_name': ticket.attendeeName,
-        'attendee_email': ticket.attendeeEmail,
-        'ticket_type': ticket.ticketType,
-        'ticket_id': ticket.ticketId,
-        'seat_number': ticket.seatNumber ?? 'N/A',
-        'status': ticket.isCheckedIn ? 'Already Checked-In' : 'Checked-In',
-        'scan_time': DateTime.now().toIso8601String(),
-        'scan_type': 'QR',
-        'scanned_by': 'Device',
-      };
+            ticketData = {
+              'ticketId': ticket.attendeePublicId,
+              'name': ticket.attendeeName,
+              'isVip': ticket.ticketType.toLowerCase().contains('vip'),
+              'seatNo': ticket.seatNumber ?? 'N/A',
+              'row': '',
+              'column': '',
+              'recordId': ticket.ticketId.toString(),
+              'checkedCount': checkedCount.toString(),
+              'totalCount': totalCount.toString(),
+              'status': ticket.status,
+            };
+          } else {
+            ticketData = {
+              'ticketId': code,
+              'name': 'Unknown',
+              'isVip': false,
+              'seatNo': 'N/A',
+              'row': '',
+              'column': '',
+              'recordId': code,
+              'checkedCount': '0',
+              'totalCount': '0',
+              'status': 'Unknown',
+            };
+          }
 
-      if (mounted) {
-        context.read<EventProvider>().addScanToHistory(historyMap, eventId);
-      }
-
-      if (!mounted) return;
-
-      // 5. Navigate based on status
-      Widget nextScreen;
-
-      if (ticket.isCheckedIn) {
-        nextScreen = AlreadyCheckedInScreen(ticketData: ticketData);
+          if (onlineResult['status'] == 'success') {
+            nextScreen = ValidTicketScreen(
+              ticketData: ticketData,
+              eventId: eventId,
+            );
+          } else if (onlineResult['status'] == 'duplicate' ||
+              (ticket?.isCheckedIn ?? false)) {
+            nextScreen = AlreadyCheckedInScreen(ticketData: ticketData);
+          } else {
+            nextScreen = InvalidTicketScreen(ticketData: ticketData);
+          }
+          if (mounted) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => nextScreen),
+            );
+          }
+        } else {
+          // Handle online check-in failure (e.g. invalid ticket)
+          throw Exception(onlineResult['message'] ?? 'Invalid Ticket');
+        }
       } else {
-        nextScreen = ValidTicketScreen(
-          ticketData: ticketData,
-          eventId: eventId,
-        );
-      }
+        final tickets = await _ticketService.loadTicketsLocally(eventId);
 
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => nextScreen),
-      );
+        final ticket = tickets.firstWhere(
+          (t) => t.attendeePublicId == code,
+          orElse: () => throw Exception('Ticket not found'),
+        );
+
+        final totalCount = tickets.length;
+        final checkedCount = tickets.where((t) => t.isCheckedIn).length;
+
+        ticketData = {
+          'ticketId': ticket.attendeePublicId,
+          'name': ticket.attendeeName,
+          'isVip': ticket.ticketType.toLowerCase().contains('vip'),
+          'seatNo': ticket.seatNumber ?? 'N/A',
+          'row': '',
+          'column': '',
+          'recordId': '${ticket.ticketId}',
+          'checkedCount': checkedCount.toString(),
+          'totalCount': totalCount.toString(),
+          'status': ticket.status,
+        };
+
+        final historyMap = {
+          'attendee_public_id': ticket.attendeePublicId,
+          'attendee_name': ticket.attendeeName,
+          'attendee_email': ticket.attendeeEmail,
+          'ticket_type': ticket.ticketType,
+          'ticket_id': ticket.ticketId,
+          'seat_number': ticket.seatNumber ?? 'N/A',
+          'status': ticket.isCheckedIn ? 'Already Checked-In' : 'Checked-In',
+          'scan_time': DateTime.now().toIso8601String(),
+          'scan_type': 'QR',
+          'scanned_by': 'Device',
+        };
+
+        if (mounted) {
+          context.read<EventProvider>().addScanToHistory(historyMap, eventId);
+        }
+
+        if (!mounted) return;
+
+        if (ticket.isCheckedIn) {
+          nextScreen = AlreadyCheckedInScreen(ticketData: ticketData);
+        } else {
+          nextScreen = ValidTicketScreen(
+            ticketData: ticketData,
+            eventId: eventId,
+          );
+        }
+
+        if (mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => nextScreen),
+          );
+        }
+      }
 
       // 6. Handle return
       if (mounted) {

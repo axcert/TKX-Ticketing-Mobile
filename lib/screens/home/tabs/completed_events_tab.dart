@@ -21,18 +21,13 @@ class CompletedEventsTab extends StatelessWidget {
     final sortedEvents = List<Event>.from(events)
       ..sort((a, b) => b.endDate.compareTo(a.endDate));
 
-    return Padding(
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        children: sortedEvents
-            .map(
-              (event) => EventCard(
-                event: event,
-                onTap: () => _handleTap(context, event),
-              ),
-            )
-            .toList(),
-      ),
+      itemCount: sortedEvents.length,
+      itemBuilder: (context, index) {
+        final event = sortedEvents[index];
+        return EventCard(event: event, onTap: () => _handleTap(context, event));
+      },
     );
   }
 
