@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import 'login_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
 import '../../../widgets/toast_message.dart';
@@ -225,8 +227,6 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
-                  _buildBackToLoginButton(),
                 ],
               ),
             ),
@@ -237,20 +237,23 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
   }
 
   Widget _buildTitle() {
-    return const Text(
+    return Text(
       'Set a New Password',
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
       ),
     );
   }
 
   Widget _buildSubtitle() {
-    return const Text(
+    return Text(
       'Create a strong password to protect your account.',
-      style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
@@ -266,29 +269,10 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
       obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
-        filled: true,
-        fillColor: const Color(0xFFF9FAFB),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF1F5CBF), width: 1.5),
-        ),
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: const Color(0xFF9CA3AF),
+            color: AppColors.textSecondary,
             size: 20,
           ),
           onPressed: toggle,
@@ -306,22 +290,6 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
         }
         return null;
       },
-    );
-  }
-
-  Widget _buildBackToLoginButton() {
-    return Center(
-      child: TextButton(
-        onPressed: _handleBackToLogin,
-        child: const Text(
-          'Back to Login',
-          style: TextStyle(
-            color: Color(0xFF1F5CBF),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -183,9 +183,10 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
   Widget _buildTitle() {
     return Text(
       'Forgot Password',
-      style: Theme.of(
-        context,
-      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
     );
   }
 

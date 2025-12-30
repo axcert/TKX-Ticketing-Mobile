@@ -124,9 +124,10 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
   Widget _buildTitle() {
     return Text(
       'Welcome!',
-      style: Theme.of(
-        context,
-      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
     );
   }
 

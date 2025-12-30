@@ -185,8 +185,6 @@ class _OtpVerificationBottomSheetState
                     );
                   },
                 ),
-                const SizedBox(height: 16),
-                _buildBackButton(),
               ],
             ),
           ),
@@ -195,20 +193,38 @@ class _OtpVerificationBottomSheetState
     );
   }
 
+  String maskEmail(String email) {
+    final parts = email.split('@');
+
+    if (parts.length != 2) return email;
+
+    final name = parts[0];
+    final domain = parts[1];
+
+    if (name.length <= 2) {
+      return '${name[0]}*@${domain}';
+    }
+
+    final masked = name[0] + '*' * (name.length - 1);
+
+    return '$masked@$domain';
+  }
+
   Widget _buildTitle() {
     return Text(
       'Verify Your Identity',
-      style: Theme.of(
-        context,
-      ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
-      'Enter the verification code we send to\n${widget.email}',
+      'Enter the verification code we send to\n${maskEmail(widget.email)}',
       style: Theme.of(context).textTheme.bodySmall!.copyWith(
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: FontWeight.w700,
         fontFamily: GoogleFonts.inter().fontFamily,
       ),
@@ -279,20 +295,6 @@ class _OtpVerificationBottomSheetState
             ).textTheme.bodySmall!.copyWith(fontSize: 13),
           ),
       ],
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Center(
-      child: TextButton(
-        onPressed: _handleBackToForgotPassword,
-        child: Text(
-          'Back to Login',
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge!.copyWith(color: AppColors.primary),
-        ),
-      ),
     );
   }
 }
