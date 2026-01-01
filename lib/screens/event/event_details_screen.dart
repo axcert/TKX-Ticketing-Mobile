@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/screens/event/scan_not_available_screen.dart';
+import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import 'package:tkx_ticketing/widgets/event_card.dart';
 import 'package:tkx_ticketing/widgets/event_statistic.dart';
 import 'package:tkx_ticketing/models/event_model.dart';
@@ -128,45 +129,59 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                     'Event Statistics',
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodyLarge!
-                                        .copyWith(fontWeight: FontWeight.w700),
+                                        .titleMedium!
+                                        .copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20,
+                                        ),
                                   ),
-                                  TextButton.icon(
-                                    onPressed: _isLoadingStatistics
-                                        ? null
-                                        : _fetchEventStatistics,
-                                    icon: Icon(
-                                      Icons.refresh,
-                                      size: 18,
-                                      color: _isLoadingStatistics
-                                          ? Colors.grey
-                                          : AppColors.primary,
-                                    ),
-                                    label: Text(
-                                      _isLoadingStatistics
-                                          ? 'Loading...'
-                                          : 'Refresh',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge!
-                                          .copyWith(
-                                            color: _isLoadingStatistics
-                                                ? Colors.grey
-                                                : AppColors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: const Size(0, 0),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
+                                  GestureDetector(
+                                    onTap: () {
+                                      _fetchEventStatistics();
+                                    },
+                                    child: Container(
+                                      width: 110,
+                                      height: 35,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _isLoadingStatistics
+                                            ? Colors.grey
+                                            : AppColors.primary,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          spacing: 5,
+                                          children: [
+                                            Icon(
+                                              Icons.cached,
+                                              color: AppColors.background,
+                                              size: 18,
+                                            ),
+                                            Text(
+                                              _isLoadingStatistics
+                                                  ? "Loading..."
+                                                  : "Refresh",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelLarge!
+                                                  .copyWith(
+                                                    color: AppColors.background,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 16),
-
                               // Statistics Card
                               if (_isLoadingStatistics)
                                 Container(
@@ -263,7 +278,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       Text(
                         'Scan History',
                         style: Theme.of(context).textTheme.titleMedium!
-                            .copyWith(fontWeight: FontWeight.w600),
+                            .copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
                       ),
                     ],
                   ),
@@ -359,7 +377,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                             Expanded(
                               child: _buildBottomNavItem(
                                 "manual_check-in.svg",
-                                'Manual Lookup',
+                                'Manual Check-in',
                                 false,
                                 onTap: () {
                                   showManualCheckInBottomSheet(
