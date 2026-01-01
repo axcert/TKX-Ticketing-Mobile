@@ -42,6 +42,8 @@ class AppConfig {
       '/public/events/{event_id}/ticket-bundle';
   static const String validateTicketEndpoint =
       '/public/events/{event_id}/check-ins/bulk';
+  static const String manualCheckInEndpoint =
+      "/public/events/{event_id}/attendees/search?query={ticket_code}";
 
   // Timeout Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);
