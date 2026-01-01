@@ -59,60 +59,66 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        // We stay on login screen to prevent getting stuck on splash screen
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: SizedBox(
-                      width: 300,
-                      height: 100,
-                      child: SvgPicture.asset('assets/tkx_logo.svg'),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: 300,
+                        height: 100,
+                        child: SvgPicture.asset('assets/tkx_logo.svg'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildSubtitle(),
-                  const SizedBox(height: 24),
-                  _buildEmailField(),
-                  const SizedBox(height: 18),
-                  _buildPasswordField(),
-                  const SizedBox(height: 25),
-                  _buildForgotPasswordButton(),
-                  const SizedBox(height: 40),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return CustomElevatedButton(
-                        text: 'Login',
-                        onPressed: _handleLogin,
-                        isLoading: authProvider.isLoading,
-                      );
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 50),
+                    _buildTitle(),
+                    const SizedBox(height: 8),
+                    _buildSubtitle(),
+                    const SizedBox(height: 24),
+                    _buildEmailField(),
+                    const SizedBox(height: 18),
+                    _buildPasswordField(),
+                    const SizedBox(height: 25),
+                    _buildForgotPasswordButton(),
+                    const SizedBox(height: 40),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return CustomElevatedButton(
+                          text: 'Login',
+                          onPressed: _handleLogin,
+                          isLoading: authProvider.isLoading,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

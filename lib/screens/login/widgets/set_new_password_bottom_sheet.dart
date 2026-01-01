@@ -164,70 +164,93 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackToLogin();
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 300,
-                    height: 100,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
-                  ),
-                  const SizedBox(height: 50),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildSubtitle(),
-                  const SizedBox(height: 24),
-                  _buildPasswordField(
-                    'New Password',
-                    _newPasswordController,
-                    _obscureNewPassword,
-                    () => setState(
-                      () => _obscureNewPassword = !_obscureNewPassword,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  _buildPasswordField(
-                    'Confirm Password',
-                    _confirmPasswordController,
-                    _obscureConfirmPassword,
-                    () => setState(
-                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    const SizedBox(height: 50),
+                    _buildTitle(),
+                    const SizedBox(height: 8),
+                    _buildSubtitle(),
+                    const SizedBox(height: 24),
+                    _buildPasswordField(
+                      'New Password',
+                      _newPasswordController,
+                      _obscureNewPassword,
+                      () => setState(
+                        () => _obscureNewPassword = !_obscureNewPassword,
+                      ),
                     ),
-                    isConfirmPassword: true,
-                  ),
-                  const SizedBox(height: 20),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return CustomElevatedButton(
-                        text: 'Update Password',
-                        onPressed: _handleUpdatePassword,
-                        isLoading: authProvider.isLoading,
-                      );
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 18),
+                    _buildPasswordField(
+                      'Confirm Password',
+                      _confirmPasswordController,
+                      _obscureConfirmPassword,
+                      () => setState(
+                        () =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword,
+                      ),
+                      isConfirmPassword: true,
+                    ),
+                    const SizedBox(height: 20),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return CustomElevatedButton(
+                          text: 'Update Password',
+                          onPressed: _handleUpdatePassword,
+                          isLoading: authProvider.isLoading,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton(
+                        onPressed: _handleBackToLogin,
+                        child: Text(
+                          'Back to Login',
+                          style: Theme.of(context).textTheme.bodyMedium!
+                              .copyWith(
+                                fontFamily: GoogleFonts.inter().fontFamily,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

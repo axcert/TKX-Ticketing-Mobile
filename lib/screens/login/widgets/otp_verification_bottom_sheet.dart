@@ -136,56 +136,77 @@ class _OtpVerificationBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackToForgotPassword();
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 300,
-                    height: 100,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 50),
-                _buildTitle(),
-                const SizedBox(height: 8),
-                _buildSubtitle(),
-                const SizedBox(height: 24),
-                _buildOtpFields(),
-                const SizedBox(height: 20),
-                _buildResendTimer(),
-                const SizedBox(height: 20),
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    return CustomElevatedButton(
-                      text: 'Verify Code',
-                      onPressed: _handleVerifyCode,
-                      isLoading: authProvider.isLoading,
-                    );
-                  },
-                ),
-              ],
+                  const SizedBox(height: 50),
+                  _buildTitle(),
+                  const SizedBox(height: 8),
+                  _buildSubtitle(),
+                  const SizedBox(height: 24),
+                  _buildOtpFields(),
+                  const SizedBox(height: 20),
+                  _buildResendTimer(),
+                  const SizedBox(height: 20),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomElevatedButton(
+                        text: 'Verify Code',
+                        onPressed: _handleVerifyCode,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: TextButton(
+                      onPressed: _handleBackToForgotPassword,
+                      child: Text(
+                        'Back',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
