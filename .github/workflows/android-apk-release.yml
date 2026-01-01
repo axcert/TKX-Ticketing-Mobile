@@ -36,6 +36,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: build/app/outputs/flutter-apk/standalone_app-${{ github.ref_name }}.apk
+          files: build/app/outputs/flutter-apk/tkx_event_mobile-${{ github.ref_name }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
