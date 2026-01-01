@@ -59,56 +59,66 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        // We stay on login screen to prevent getting stuck on splash screen
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildSubtitle(),
-                  const SizedBox(height: 24),
-                  _buildEmailField(),
-                  const SizedBox(height: 18),
-                  _buildPasswordField(),
-                  const SizedBox(height: 8),
-                  _buildForgotPasswordButton(),
-                  const SizedBox(height: 20),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return CustomElevatedButton(
-                        text: 'Login',
-                        onPressed: _handleLogin,
-                        isLoading: authProvider.isLoading,
-                      );
-                    },
-                  ),
-                ],
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: 300,
+                        height: 100,
+                        child: SvgPicture.asset('assets/tkx_logo.svg'),
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+                    _buildTitle(),
+                    const SizedBox(height: 8),
+                    _buildSubtitle(),
+                    const SizedBox(height: 24),
+                    _buildEmailField(),
+                    const SizedBox(height: 18),
+                    _buildPasswordField(),
+                    const SizedBox(height: 25),
+                    _buildForgotPasswordButton(),
+                    const SizedBox(height: 40),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return CustomElevatedButton(
+                          text: 'Login',
+                          onPressed: _handleLogin,
+                          isLoading: authProvider.isLoading,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -118,13 +128,23 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
   }
 
   Widget _buildTitle() {
-    return Text('Welcome!', style: Theme.of(context).textTheme.headlineLarge);
+    return Text(
+      'Welcome!',
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
+    );
   }
 
   Widget _buildSubtitle() {
     return Text(
-      'Sign in to manage tickets and ticket\nhappening.',
-      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14),
+      'Log in to manage event check-ins and ticket scanning.',
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
@@ -155,7 +175,9 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
           icon: Icon(
             color: AppColors.textSecondary,
             size: 20,
-            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            _obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           onPressed: () {
             setState(() {
@@ -188,6 +210,7 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
           style: Theme.of(context).textTheme.labelMedium!.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.w700,
+            fontSize: 14,
             fontFamily: GoogleFonts.inter().fontFamily,
           ),
         ),

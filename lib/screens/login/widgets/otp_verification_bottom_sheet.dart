@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'set_new_password_bottom_sheet.dart';
@@ -135,54 +136,77 @@ class _OtpVerificationBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackToForgotPassword();
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: SvgPicture.asset('assets/tkx_logo.svg'),
-                ),
-                const SizedBox(height: 32),
-                _buildTitle(),
-                const SizedBox(height: 8),
-                _buildSubtitle(),
-                const SizedBox(height: 24),
-                _buildOtpFields(),
-                const SizedBox(height: 20),
-                _buildResendTimer(),
-                const SizedBox(height: 20),
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    return CustomElevatedButton(
-                      text: 'Verify Code',
-                      onPressed: _handleVerifyCode,
-                      isLoading: authProvider.isLoading,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildBackButton(),
-              ],
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  _buildTitle(),
+                  const SizedBox(height: 8),
+                  _buildSubtitle(),
+                  const SizedBox(height: 24),
+                  _buildOtpFields(),
+                  const SizedBox(height: 20),
+                  _buildResendTimer(),
+                  const SizedBox(height: 20),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomElevatedButton(
+                        text: 'Verify Code',
+                        onPressed: _handleVerifyCode,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: TextButton(
+                      onPressed: _handleBackToForgotPassword,
+                      child: Text(
+                        'Back',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -190,17 +214,41 @@ class _OtpVerificationBottomSheetState
     );
   }
 
+  String maskEmail(String email) {
+    final parts = email.split('@');
+
+    if (parts.length != 2) return email;
+
+    final name = parts[0];
+    final domain = parts[1];
+
+    if (name.length <= 2) {
+      return '${name[0]}*@${domain}';
+    }
+
+    final masked = name[0] + '*' * (name.length - 1);
+
+    return '$masked@$domain';
+  }
+
   Widget _buildTitle() {
     return Text(
       'Verify Your Identity',
-      style: Theme.of(context).textTheme.headlineLarge,
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
-      'Enter the verification code we send to\n${widget.email}',
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13),
+      'Enter the verification code we send to\n${maskEmail(widget.email)}',
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
@@ -268,20 +316,6 @@ class _OtpVerificationBottomSheetState
             ).textTheme.bodySmall!.copyWith(fontSize: 13),
           ),
       ],
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Center(
-      child: TextButton(
-        onPressed: _handleBackToForgotPassword,
-        child: Text(
-          'Back to Login',
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge!.copyWith(color: AppColors.primary),
-        ),
-      ),
     );
   }
 }

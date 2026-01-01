@@ -120,54 +120,65 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackToLogin();
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: SvgPicture.asset('assets/tkx_logo.svg'),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildSubtitle(),
-                  const SizedBox(height: 24),
-                  _buildEmailField(),
-                  const SizedBox(height: 20),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return CustomElevatedButton(
-                        text: 'Send Reset Code',
-                        onPressed: _handleSendCode,
-                        isLoading: authProvider.isLoading,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBackToLoginButton(),
-                ],
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: 300,
+                        height: 100,
+                        child: SvgPicture.asset('assets/tkx_logo.svg'),
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+                    _buildTitle(),
+                    const SizedBox(height: 8),
+                    _buildSubtitle(),
+                    const SizedBox(height: 24),
+                    _buildEmailField(),
+                    const SizedBox(height: 20),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return CustomElevatedButton(
+                          text: 'Send Reset Code',
+                          onPressed: _handleSendCode,
+                          isLoading: authProvider.isLoading,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildBackToLoginButton(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -179,14 +190,21 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
   Widget _buildTitle() {
     return Text(
       'Forgot Password',
-      style: Theme.of(context).textTheme.headlineLarge,
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
+      ),
     );
   }
 
   Widget _buildSubtitle() {
     return Text(
       'Enter the email you used to register',
-      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 13),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
