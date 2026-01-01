@@ -176,8 +176,8 @@ class _LoginBottomSheetState extends State<LoginBottomSheet> {
             color: AppColors.textSecondary,
             size: 20,
             _obscurePassword
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           onPressed: () {
             setState(() {

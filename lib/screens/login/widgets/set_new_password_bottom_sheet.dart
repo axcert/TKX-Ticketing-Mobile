@@ -294,7 +294,7 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
         labelText: label,
         suffixIcon: IconButton(
           icon: Icon(
-            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             color: AppColors.textSecondary,
             size: 20,
           ),
