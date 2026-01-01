@@ -45,16 +45,15 @@ class TicketDetailsBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Title
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Ticket Details',
-                style: TextStyle(
-                  fontSize: 20,
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.w900,
-                  color: Colors.black87,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -144,7 +143,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 fontWeight: FontWeight.w900,
                 color: AppColors.textSecondary,
-                fontFamily: GoogleFonts.inter().fontFamily,
+                fontFamily: GoogleFonts.roboto().fontFamily,
               ),
             ),
           ),
@@ -157,7 +156,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 fontWeight: FontWeight.w900,
                 fontFamily: GoogleFonts.inter().fontFamily,
               ),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.left,
             ),
           ),
         ],
@@ -218,32 +217,40 @@ class TicketDetailsBottomSheet extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 fontWeight: FontWeight.w900,
                 color: AppColors.textSecondary,
-                fontFamily: GoogleFonts.inter().fontFamily,
+                fontFamily: GoogleFonts.roboto().fontFamily,
               ),
             ),
           ),
           const SizedBox(width: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: statusBgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(statusIcon, color: statusColor, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
+          Expanded(
+            flex: 3,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusBgColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      value,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textSecondary,
+                        fontFamily: GoogleFonts.inter().fontFamily,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
