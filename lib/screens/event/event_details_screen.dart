@@ -158,11 +158,22 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                               MainAxisAlignment.center,
                                           spacing: 5,
                                           children: [
-                                            Icon(
-                                              Icons.cached,
-                                              color: AppColors.background,
-                                              size: 18,
-                                            ),
+                                            _isLoadingStatistics
+                                                ? SizedBox(
+                                                    width: 15,
+                                                    height: 15,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: AppColors
+                                                              .background,
+                                                        ),
+                                                  )
+                                                : Icon(
+                                                    Icons.cached,
+                                                    color: AppColors.background,
+                                                    size: 18,
+                                                  ),
                                             Text(
                                               _isLoadingStatistics
                                                   ? "Loading..."
