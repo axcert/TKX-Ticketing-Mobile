@@ -7,8 +7,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_app/main.dart';
-import 'package:mobile_app/services/connectivity_service.dart';
+import 'package:tkx_ticketing/main.dart';
+import 'package:tkx_ticketing/services/connectivity_service.dart';
 
 // Mock ConnectivityService
 class MockConnectivityService implements ConnectivityService {
@@ -49,7 +49,9 @@ void main() {
     await mockConnectivityService.initialize();
 
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(connectivityService: mockConnectivityService));
+    await tester.pumpWidget(
+      MyApp(connectivityService: mockConnectivityService),
+    );
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
