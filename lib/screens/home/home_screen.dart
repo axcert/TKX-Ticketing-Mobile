@@ -112,8 +112,6 @@ class _HomeScreenState extends State<HomeScreen>
             onRefresh: () => eventProvider.refreshEvents(),
             child: Column(
               children: [
-                // Offline Indicator
-
                 // App Bar
                 SizedBox(height: MediaQuery.of(context).padding.top),
                 const OfflineIndicator(),
@@ -123,191 +121,215 @@ class _HomeScreenState extends State<HomeScreen>
                 Expanded(
                   child: Column(
                     children: [
-                      // Blue background with cards on top
-                      Stack(
+                      // Wrap top part in ScrollView to enable pull-to-refresh
+                      SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
                         clipBehavior: Clip.none,
-                        alignment: Alignment.topCenter,
-
-                        children: [
-                          // Blue Background
-                          Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(24),
-                                bottomRight: Radius.circular(24),
-                              ),
-                            ),
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                            child: Column(
+                        child: Column(
+                          children: [
+                            // Blue background with cards on top
+                            Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.topCenter,
                               children: [
-                                Text(
-                                  "Today's Events",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .displayMedium!
-                                      .copyWith(
-                                        color: AppColors.textWhite,
-                                        fontSize: 36,
-                                        fontFamily:
-                                            GoogleFonts.plusJakartaSans()
-                                                .fontFamily,
+                                // Blue Background
+                                Container(
+                                  width: double.infinity,
+                                  height: 200,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(24),
+                                      bottomRight: Radius.circular(24),
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    20,
+                                    20,
+                                    20,
+                                    20,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        "Today's Events",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .displayMedium!
+                                            .copyWith(
+                                              color: AppColors.textWhite,
+                                              fontSize: 36,
+                                              fontFamily:
+                                                  GoogleFonts.plusJakartaSans()
+                                                      .fontFamily,
+                                            ),
                                       ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _getTodayDate(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .displayMedium!
-                                      .copyWith(
-                                        color: AppColors.divider,
-                                        fontSize: 16,
-                                        fontFamily:
-                                            GoogleFonts.plusJakartaSans()
-                                                .fontFamily,
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _getTodayDate(),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .displayMedium!
+                                            .copyWith(
+                                              color: AppColors.divider,
+                                              fontSize: 16,
+                                              fontFamily:
+                                                  GoogleFonts.plusJakartaSans()
+                                                      .fontFamily,
+                                            ),
                                       ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
 
-                          // Today's Event Cards positioned on top
-                          if (todayEvents.isNotEmpty)
-                            Positioned(
-                              top: 140,
-                              left: 0,
-                              right: 0,
-                              child: Column(
-                                children: [
-                                  // Event Cards
-                                  SizedBox(
-                                    height: 110,
-                                    child: PageView.builder(
-                                      physics: const BouncingScrollPhysics(),
-                                      controller: _pageController,
-                                      itemCount: todayEvents.length,
-                                      itemBuilder: (context, index) {
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
+                                // Today's Event Cards positioned on top
+                                if (todayEvents.isNotEmpty)
+                                  Positioned(
+                                    top: 140,
+                                    left: 0,
+                                    right: 0,
+                                    child: Column(
+                                      children: [
+                                        // Event Cards
+                                        SizedBox(
+                                          height: 110,
+                                          child: PageView.builder(
+                                            physics:
+                                                const BouncingScrollPhysics(),
+                                            controller: _pageController,
+                                            itemCount: todayEvents.length,
+                                            itemBuilder: (context, index) {
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                    ),
+                                                child: _buildTodayEventCard(
+                                                  todayEvents[index],
+                                                ),
+                                              );
+                                            },
                                           ),
-                                          child: _buildTodayEventCard(
-                                            todayEvents[index],
+                                        ),
+
+                                        // Dot Indicator
+                                        if (todayEvents.length > 1)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 5,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: List.generate(
+                                                todayEvents.length,
+                                                (index) => AnimatedContainer(
+                                                  duration: const Duration(
+                                                    milliseconds: 300,
+                                                  ),
+                                                  margin:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 4,
+                                                      ),
+                                                  width: _currentPage == index
+                                                      ? 15
+                                                      : 8,
+                                                  height: 8,
+                                                  decoration: BoxDecoration(
+                                                    color: _currentPage == index
+                                                        ? AppColors.textPrimary!
+                                                              .withOpacity(0.6)
+                                                        : AppColors.textPrimary
+                                                              .withValues(
+                                                                alpha: 0.4,
+                                                              ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          100,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        );
-                                      },
+                                      ],
                                     ),
                                   ),
 
-                                  // Dot Indicator
-                                  if (todayEvents.length > 1)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 5),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: List.generate(
-                                          todayEvents.length,
-                                          (index) => AnimatedContainer(
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 4,
-                                            ),
-                                            width: _currentPage == index
-                                                ? 15
-                                                : 8,
-                                            height: 8,
-                                            decoration: BoxDecoration(
-                                              color: _currentPage == index
-                                                  ? AppColors.textPrimary!
-                                                        .withOpacity(0.6)
-                                                  : AppColors.textPrimary
-                                                        .withValues(alpha: 0.4),
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                            ),
-                                          ),
+                                // Loading indicator for today's events
+                                if (isLoading && todayEvents.isEmpty)
+                                  const Positioned(
+                                    top: 160,
+                                    left: 0,
+                                    right: 0,
+                                    child: SizedBox(
+                                      height: 150,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.textWhite,
                                         ),
                                       ),
                                     ),
+                                  ),
+
+                                // No Events message overlapping blue and white sections
+                                if (!isLoading && todayEvents.isEmpty)
+                                  Positioned(
+                                    top: 160,
+                                    left: 0,
+                                    right: 0,
+                                    child: SizedBox(
+                                      height: 150,
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          'assets/no_today_event.svg',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+
+                            // Space for cards that extend beyond blue background
+                            // Fixed height accounts for card overlap + dot indicators
+                            SizedBox(height: todayEvents.isEmpty ? 100 : 75),
+
+                            // Events Section Header with Tabs
+                            Container(
+                              color: AppColors.textWhite,
+                              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Events',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TabBar(
+                                    controller: _tabController,
+                                    labelColor: AppColors.primary,
+                                    unselectedLabelColor: AppColors.surfaceDark,
+                                    labelStyle: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    unselectedLabelStyle: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.surfaceDark,
+                                    ),
+                                    indicatorWeight: 2,
+                                    tabs: const [
+                                      Tab(text: 'Upcoming events'),
+                                      Tab(text: 'Completed events'),
+                                    ],
+                                  ),
                                 ],
                               ),
-                            ),
-
-                          // Loading indicator for today's events
-                          if (isLoading && todayEvents.isEmpty)
-                            const Positioned(
-                              top: 160,
-                              left: 0,
-                              right: 0,
-                              child: SizedBox(
-                                height: 150,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.textWhite,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          // No Events message overlapping blue and white sections
-                          if (!isLoading && todayEvents.isEmpty)
-                            Positioned(
-                              top: 160,
-                              left: 0,
-                              right: 0,
-                              child: SizedBox(
-                                height: 150,
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/no_today_event.svg',
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-
-                      // Space for cards that extend beyond blue background
-                      // Fixed height accounts for card overlap + dot indicators
-                      SizedBox(height: todayEvents.isEmpty ? 100 : 75),
-
-                      // Events Section Header with Tabs
-                      Container(
-                        color: AppColors.textWhite,
-                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Events',
-                              style: Theme.of(context).textTheme.titleLarge!
-                                  .copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 12),
-                            TabBar(
-                              controller: _tabController,
-                              labelColor: AppColors.primary,
-                              unselectedLabelColor: AppColors.surfaceDark,
-                              labelStyle: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              unselectedLabelStyle: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.surfaceDark,
-                              ),
-                              indicatorWeight: 2,
-                              tabs: const [
-                                Tab(text: 'Upcoming events'),
-                                Tab(text: 'Completed events'),
-                              ],
                             ),
                           ],
                         ),
