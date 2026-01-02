@@ -14,7 +14,10 @@ class CompletedEventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (events.isEmpty) {
-      return const EmptyStateWidget(message: 'No events available');
+      return const SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: EmptyStateWidget(message: 'No events available'),
+      );
     }
 
     // Sort events by endDate in descending order (most recently ended first)

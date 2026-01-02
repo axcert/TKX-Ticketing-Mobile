@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tkx_ticketing/config/app_theme.dart';
 import 'login_bottom_sheet.dart';
 import '../../../widgets/custom_elevated_button.dart';
 import '../../../widgets/toast_message.dart';
@@ -162,68 +164,93 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackToLogin();
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 32.0,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SvgPicture.asset('assets/tkx_logo.svg'),
-                  const SizedBox(height: 32),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildSubtitle(),
-                  const SizedBox(height: 24),
-                  _buildPasswordField(
-                    'New Password',
-                    _newPasswordController,
-                    _obscureNewPassword,
-                    () => setState(
-                      () => _obscureNewPassword = !_obscureNewPassword,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      height: 100,
+                      child: SvgPicture.asset('assets/tkx_logo.svg'),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  _buildPasswordField(
-                    'Confirm Password',
-                    _confirmPasswordController,
-                    _obscureConfirmPassword,
-                    () => setState(
-                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    const SizedBox(height: 50),
+                    _buildTitle(),
+                    const SizedBox(height: 8),
+                    _buildSubtitle(),
+                    const SizedBox(height: 24),
+                    _buildPasswordField(
+                      'New Password',
+                      _newPasswordController,
+                      _obscureNewPassword,
+                      () => setState(
+                        () => _obscureNewPassword = !_obscureNewPassword,
+                      ),
                     ),
-                    isConfirmPassword: true,
-                  ),
-                  const SizedBox(height: 20),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return CustomElevatedButton(
-                        text: 'Update Password',
-                        onPressed: _handleUpdatePassword,
-                        isLoading: authProvider.isLoading,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBackToLoginButton(),
-                ],
+                    const SizedBox(height: 18),
+                    _buildPasswordField(
+                      'Confirm Password',
+                      _confirmPasswordController,
+                      _obscureConfirmPassword,
+                      () => setState(
+                        () =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword,
+                      ),
+                      isConfirmPassword: true,
+                    ),
+                    const SizedBox(height: 20),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return CustomElevatedButton(
+                          text: 'Update Password',
+                          onPressed: _handleUpdatePassword,
+                          isLoading: authProvider.isLoading,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton(
+                        onPressed: _handleBackToLogin,
+                        child: Text(
+                          'Back to Login',
+                          style: Theme.of(context).textTheme.bodyMedium!
+                              .copyWith(
+                                fontFamily: GoogleFonts.inter().fontFamily,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -233,20 +260,23 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
   }
 
   Widget _buildTitle() {
-    return const Text(
+    return Text(
       'Set a New Password',
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
+      style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+        fontWeight: FontWeight.w900,
+        fontSize: 25,
       ),
     );
   }
 
   Widget _buildSubtitle() {
-    return const Text(
+    return Text(
       'Create a strong password to protect your account.',
-      style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        fontFamily: GoogleFonts.inter().fontFamily,
+      ),
     );
   }
 
@@ -262,29 +292,10 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
       obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
-        filled: true,
-        fillColor: const Color(0xFFF9FAFB),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF1F5CBF), width: 1.5),
-        ),
         suffixIcon: IconButton(
           icon: Icon(
-            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: const Color(0xFF9CA3AF),
+            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            color: AppColors.textSecondary,
             size: 20,
           ),
           onPressed: toggle,
@@ -302,22 +313,6 @@ class _SetNewPasswordBottomSheetState extends State<SetNewPasswordBottomSheet> {
         }
         return null;
       },
-    );
-  }
-
-  Widget _buildBackToLoginButton() {
-    return Center(
-      child: TextButton(
-        onPressed: _handleBackToLogin,
-        child: const Text(
-          'Back to Login',
-          style: TextStyle(
-            color: Color(0xFF1F5CBF),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
     );
   }
 }

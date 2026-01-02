@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/models/scan_history_model.dart';
+import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
 
 class ScanHistoryBottomSheet extends StatefulWidget {
   final List<Map<String, dynamic>> scanHistory;
@@ -122,137 +123,153 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
     Color statusBgColor;
     IconData statusIcon;
 
-    switch (scan.status) {
-      case 'Checked-In':
+    switch (scan.status.toLowerCase().trim()) {
+      case 'checked-in':
+      case 'checked in':
+      case 'valid':
+      case 'active':
+      case 'success':
         statusColor = AppColors.success;
-        statusBgColor = const Color.fromARGB(255, 179, 236, 182);
+        statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
-      case 'Already Checked-In':
-        statusColor = Colors.orange;
-        statusBgColor = const Color.fromARGB(255, 255, 225, 172);
-        statusIcon = Icons.warning;
-        break;
-      case 'Invalid':
-        statusColor = Colors.red;
-        statusBgColor = const Color.fromARGB(255, 255, 190, 200);
+      case 'already checked-in':
+      case 'already checked in':
+      case 'invalid':
+      case 'used':
+      case 'duplicate':
+      case 'failed':
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
         statusIcon = Icons.cancel;
         break;
+      case 'cancelled':
+      case 'canceled':
+        statusColor = AppColors.warning;
+        statusBgColor = Colors.yellow.shade50;
+        statusIcon = Icons.info_outline;
+        break;
       default:
-        statusColor = Colors.grey;
-        statusBgColor = Colors.grey.shade50;
-        statusIcon = Icons.info;
+        statusColor = AppColors.error;
+        statusBgColor = Colors.red.shade50;
+        statusIcon = Icons.help_outline;
     }
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // VIP Badge or Icon
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: () {
+        showTicketDetailsBottomSheet(context, scan.toJson());
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // VIP Badge or Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset('assets/icons/tickets.svg'),
+                  ),
                 ),
-                child: Center(
-                  child: SvgPicture.asset('assets/icons/tickets.svg'),
+                const SizedBox(width: 12),
+                // Ticket Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        scan.ticketId,
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: GoogleFonts.inter().fontFamily,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        scan.name,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Ticket Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Status and Time
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      scan.ticketId,
-                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: GoogleFonts.inter().fontFamily,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusBgColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 14, color: statusColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            scan.status,
+                            style: Theme.of(context).textTheme.labelMedium!
+                                .copyWith(
+                                  fontSize: 14,
+                                  color: statusColor,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      scan.name,
-                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                      scan.timeFormat(),
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         fontFamily: GoogleFonts.inter().fontFamily,
                       ),
                     ),
                   ],
                 ),
-              ),
-              // Status and Time
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusBgColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(statusIcon, size: 14, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          scan.status,
-                          style: Theme.of(context).textTheme.labelMedium!
-                              .copyWith(
-                                fontSize: 14,
-                                color: statusColor,
-                                fontFamily: GoogleFonts.inter().fontFamily,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    scan.timeFormat(),
-                    style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: GoogleFonts.inter().fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        scan.isVip
-            ? Positioned(
-                top: -9,
-                left: 25,
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  child: SvgPicture.asset('assets/icons/VIP Badge.svg'),
-                ),
-              )
-            : SizedBox.shrink(),
-      ],
+          scan.isVip
+              ? Positioned(
+                  top: -9,
+                  left: 25,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    child: SvgPicture.asset('assets/icons/VIP Badge.svg'),
+                  ),
+                )
+              : SizedBox.shrink(),
+        ],
+      ),
     );
   }
 }
