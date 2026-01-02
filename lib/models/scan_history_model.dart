@@ -81,6 +81,8 @@ class ScanHistory {
       seatNo:
           json['seat_number'] ??
           data['seat_number'] ??
+          json['seat_label'] ??
+          data['seat_label'] ??
           json['seatNumber'] ??
           'N/A',
       row: json['row'] ?? data['row'] ?? 'N/A',

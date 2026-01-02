@@ -111,25 +111,43 @@ class EventCard extends StatelessWidget {
   }
 
   Widget _buildEventImage() {
+    final imageUrl = event.imageUrl.trim();
+    final isNetworkImage = imageUrl.startsWith('http://') ||
+        imageUrl.startsWith('https://');
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        event.imageUrl,
-        width: 60,
-        height: 60,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+      child: isNetworkImage
+          ? Image.network(
+              imageUrl,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageFallback();
+              },
+            )
+          : Image.asset(
+              imageUrl.isNotEmpty ? imageUrl : 'assets/event_placeholder.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageFallback();
+              },
             ),
-            child: const Icon(Icons.event, size: 30, color: Color(0xFF1F5CBF)),
-          );
-        },
+    );
+  }
+
+  Widget _buildImageFallback() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F5CBF).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
       ),
+      child: const Icon(Icons.event, size: 30, color: Color(0xFF1F5CBF)),
     );
   }
 

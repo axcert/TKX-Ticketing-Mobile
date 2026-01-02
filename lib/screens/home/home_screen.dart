@@ -65,6 +65,51 @@ class _HomeScreenState extends State<HomeScreen>
     return DateFormat('EEEE, MMM d, yyyy').format(now);
   }
 
+  Widget _buildEventImage(Event event) {
+    final imageUrl = event.imageUrl.trim();
+    final isNetworkImage = imageUrl.startsWith('http://') ||
+        imageUrl.startsWith('https://');
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: isNetworkImage
+          ? Image.network(
+              imageUrl,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageFallback();
+              },
+            )
+          : Image.asset(
+              imageUrl.isNotEmpty ? imageUrl : 'assets/event_placeholder.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageFallback();
+              },
+            ),
+    );
+  }
+
+  Widget _buildImageFallback() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(
+        Icons.event,
+        size: 30,
+        color: AppColors.primary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -445,30 +490,7 @@ class _HomeScreenState extends State<HomeScreen>
           child: Row(
             children: [
               // Event Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  event.imageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.event,
-                        size: 30,
-                        color: AppColors.primary,
-                      ),
-                    );
-                  },
-                ),
-              ),
+              _buildEventImage(event),
 
               const SizedBox(width: 12),
 

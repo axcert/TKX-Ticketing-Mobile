@@ -33,7 +33,7 @@ class Ticket {
       attendeeName: json['attendee_name'] ?? '',
       attendeeEmail: json['attendee_email'] ?? '',
       ticketType: json['ticket_type'] ?? 'normal',
-      seatNumber: json['seat_number'],
+      seatNumber: json['seat_number'] ?? json['seat_label'],
       seatUuid: json['seat_uuid'],
       status: json['status'] ?? 'valid',
       orderShortId: json['order_short_id'] ?? '',

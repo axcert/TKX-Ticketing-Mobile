@@ -294,10 +294,12 @@ class EventService {
       '📍 Parsed Location - ID: ${json['id']}, Venue: "$venue", Location: "$location"',
     );
 
+    final imageUrl = _resolveEventImageUrl(json);
+
     return Event(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? 'Untitled Event',
-      imageUrl: json['image_url'] ?? 'assets/event_placeholder.png',
+      imageUrl: imageUrl,
       startDate: _parseDateTime(json['start_date']),
       endDate: _parseDateTime(json['end_date']),
       venue: venue ?? 'N/A',
@@ -306,6 +308,55 @@ class EventService {
       description: json['description'] ?? 'No description available',
       organizerName: organizerName,
     );
+  }
+
+  String _resolveEventImageUrl(Map<String, dynamic> json) {
+    final rawImageUrl = json['image_url']?.toString().trim();
+    if (rawImageUrl != null && rawImageUrl.isNotEmpty && rawImageUrl != 'null') {
+      return _normalizeImageUrl(rawImageUrl);
+    }
+
+    final images = json['images'];
+    if (images is List && images.isNotEmpty) {
+      Map<String, dynamic>? coverImage;
+      for (final image in images) {
+        if (image is Map && image['type']?.toString() == 'EVENT_COVER') {
+          coverImage = Map<String, dynamic>.from(image);
+          break;
+        }
+      }
+
+      final selectedImage =
+          coverImage ?? (images.first is Map ? Map<String, dynamic>.from(images.first) : null);
+      if (selectedImage != null) {
+        final url = selectedImage['url']?.toString().trim();
+        if (url != null && url.isNotEmpty && url != 'null') {
+          return _normalizeImageUrl(url);
+        }
+        final path = selectedImage['path']?.toString().trim();
+        if (path != null && path.isNotEmpty && path != 'null') {
+          return _normalizeImageUrl(path);
+        }
+      }
+    }
+
+    return 'assets/event_placeholder.png';
+  }
+
+  String _normalizeImageUrl(String? rawUrl) {
+    if (rawUrl == null || rawUrl.isEmpty || rawUrl.toLowerCase() == 'null') {
+      return 'assets/event_placeholder.png';
+    }
+
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      return rawUrl;
+    }
+
+    if (rawUrl.startsWith('/')) {
+      return '${AppConfig.baseUrl}$rawUrl';
+    }
+
+    return rawUrl;
   }
 
   /// Parse DateTime from various formats
