@@ -66,7 +66,7 @@ class EventCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  _buildEventImage(),
+                  _buildEventImage(event.imageUrl),
                   const SizedBox(width: 12),
                   Expanded(child: _buildEventDetails()),
                   onTap != null ? _buildArrowIcon() : const SizedBox.shrink(),
@@ -110,16 +110,16 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventImage() {
-    final imageUrl = event.imageUrl.trim();
-    final isNetworkImage = imageUrl.startsWith('http://') ||
-        imageUrl.startsWith('https://');
+  Widget _buildEventImage(String imageUrl) {
+    final trimmedUrl = imageUrl.trim();
+    final isNetworkImage =
+        trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: isNetworkImage
+      child: trimmedUrl.isNotEmpty && isNetworkImage
           ? Image.network(
-              imageUrl,
+              trimmedUrl,
               width: 60,
               height: 60,
               fit: BoxFit.cover,
@@ -128,7 +128,7 @@ class EventCard extends StatelessWidget {
               },
             )
           : Image.asset(
-              imageUrl.isNotEmpty ? imageUrl : 'assets/event_placeholder.png',
+              'assets/event_placeholder.png',
               width: 60,
               height: 60,
               fit: BoxFit.cover,

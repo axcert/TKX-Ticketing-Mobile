@@ -36,21 +36,12 @@ class EventService {
     try {
       final headers = await _getAuthHeaders();
 
-      // Step 1: Get assigned events from gatekeeper
-      print('📡 [GateKeeper] Fetching assigned events...');
-      print(
-        '📡 [GateKeeper] Endpoint: ${AppConfig.baseUrl}${AppConfig.gateKeeperEndpoint}',
-      );
-
       final gateKeeperResponse = await _dio.get(
         AppConfig.gateKeeperEndpoint,
         options: Options(headers: headers),
       );
 
       if (gateKeeperResponse.statusCode != 200) {
-        print(
-          '❌ [GateKeeper] Failed with status: ${gateKeeperResponse.statusCode}',
-        );
         return ApiResponse.error(
           'Failed to fetch assigned events',
           statusCode: gateKeeperResponse.statusCode,
@@ -80,12 +71,6 @@ class EventService {
             }
           }
         }
-      }
-
-      print('📋 [GateKeeper] Assigned Event IDs: $assignedEventIds');
-      print('📋 [GateKeeper] Organizer IDs: $organizerIds');
-      if (organizerName != null) {
-        print('📋 [GateKeeper] Organizer Name: $organizerName');
       }
 
       if (assignedEventIds.isEmpty) {
@@ -123,9 +108,7 @@ class EventService {
                 .toList();
             todayEvents.addAll(filteredEvents);
           }
-        } catch (e) {
-          print('⚠️ Error fetching today events: $e');
-        }
+        } catch (e) {}
 
         // Fetch upcoming events
         try {
@@ -146,9 +129,7 @@ class EventService {
                 .toList();
             upcomingEvents.addAll(filteredEvents);
           }
-        } catch (e) {
-          print('⚠️ Error fetching upcoming events: $e');
-        }
+        } catch (e) {}
 
         // Fetch completed events
         try {
@@ -167,9 +148,7 @@ class EventService {
                 .toList();
             completedEvents.addAll(filteredEvents);
           }
-        } catch (e) {
-          print('⚠️ Error fetching completed events: $e');
-        }
+        } catch (e) {}
       }
 
       final categorizedEvents = {
@@ -184,10 +163,6 @@ class EventService {
         message: 'Events fetched successfully',
       );
     } on DioException catch (e) {
-      // print('❌ [Events API] DioException: ${e.type}');
-      // print('❌ [Events API] Message: ${e.message}');
-      // print('❌ [Events API] Response: ${e.response?.data}');
-
       if (e.type == DioExceptionType.connectionTimeout) {
         return ApiResponse.error('Connection timeout');
       } else if (e.type == DioExceptionType.receiveTimeout) {
@@ -199,7 +174,6 @@ class EventService {
         return ApiResponse.error('Network error occurred');
       }
     } catch (e) {
-      // print('❌ [Events API] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
@@ -290,10 +264,6 @@ class EventService {
       }
     }
 
-    print(
-      '📍 Parsed Location - ID: ${json['id']}, Venue: "$venue", Location: "$location"',
-    );
-
     final imageUrl = _resolveEventImageUrl(json);
 
     return Event(
@@ -312,7 +282,9 @@ class EventService {
 
   String _resolveEventImageUrl(Map<String, dynamic> json) {
     final rawImageUrl = json['image_url']?.toString().trim();
-    if (rawImageUrl != null && rawImageUrl.isNotEmpty && rawImageUrl != 'null') {
+    if (rawImageUrl != null &&
+        rawImageUrl.isNotEmpty &&
+        rawImageUrl != 'null') {
       return _normalizeImageUrl(rawImageUrl);
     }
 
@@ -327,7 +299,10 @@ class EventService {
       }
 
       final selectedImage =
-          coverImage ?? (images.first is Map ? Map<String, dynamic>.from(images.first) : null);
+          coverImage ??
+          (images.first is Map
+              ? Map<String, dynamic>.from(images.first)
+              : null);
       if (selectedImage != null) {
         final url = selectedImage['url']?.toString().trim();
         if (url != null && url.isNotEmpty && url != 'null') {
@@ -392,21 +367,12 @@ class EventService {
         eventId,
       );
 
-      print('📊 [Event Statistics] Fetching statistics for event $eventId...');
-      print('📊 [Event Statistics] Endpoint: ${AppConfig.baseUrl}$endpoint');
-
       final response = await _dio.get(
         endpoint,
         options: Options(headers: headers),
       );
 
-      print('📊 [Event Statistics] Status Code: ${response.statusCode}');
-      print('📊 [Event Statistics] Response Data: ${response.data}');
-
       if (response.statusCode != 200) {
-        print(
-          '❌ [Event Statistics] Failed with status: ${response.statusCode}',
-        );
         return ApiResponse.error(
           'Failed to fetch event statistics',
           statusCode: response.statusCode,
@@ -426,10 +392,6 @@ class EventService {
         return ApiResponse.error('Invalid response format');
       }
     } on DioException catch (e) {
-      print('❌ [Event Statistics] DioException: ${e.type}');
-      print('❌ [Event Statistics] Message: ${e.message}');
-      print('❌ [Event Statistics] Response: ${e.response?.data}');
-
       if (e.type == DioExceptionType.connectionTimeout) {
         return ApiResponse.error('Connection timeout');
       } else if (e.type == DioExceptionType.receiveTimeout) {
@@ -442,7 +404,6 @@ class EventService {
         return ApiResponse.error('Network error occurred');
       }
     } catch (e) {
-      print('❌ [Event Statistics] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
@@ -455,19 +416,12 @@ class EventService {
       // Build the endpoint with event_id
       final endpoint = AppConfig.scanhistory.replaceAll('{event_id}', eventId);
 
-      print('📜 [Scan History] Fetching scan history for event $eventId...');
-      print('📜 [Scan History] Endpoint: ${AppConfig.baseUrl}$endpoint');
-
       final response = await _dio.get(
         endpoint,
         options: Options(headers: headers),
       );
 
-      print('📜 [Scan History] Status Code: ${response.statusCode}');
-      print('📜 [Scan History] Response Data: ${response.data}');
-
       if (response.statusCode != 200) {
-        print('❌ [Scan History] Failed with status: ${response.statusCode}');
         return ApiResponse.error(
           'Failed to fetch scan history',
           statusCode: response.statusCode,
@@ -500,10 +454,6 @@ class EventService {
         return ApiResponse.error('Invalid response format');
       }
     } on DioException catch (e) {
-      print('❌ [Scan History] DioException: ${e.type}');
-      print('❌ [Scan History] Message: ${e.message}');
-      print('❌ [Scan History] Response: ${e.response?.data}');
-
       if (e.type == DioExceptionType.connectionTimeout) {
         return ApiResponse.error('Connection timeout');
       } else if (e.type == DioExceptionType.receiveTimeout) {
@@ -516,7 +466,6 @@ class EventService {
         return ApiResponse.error('Network error occurred');
       }
     } catch (e) {
-      print('❌ [Scan History] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
@@ -533,11 +482,7 @@ class EventService {
         eventId,
       );
 
-      print('🔄 [Sync] Syncing ${checkIns.length} check-ins for $eventId...');
-
       final body = {'attendees': checkIns};
-
-      print('🔄 [Sync] Body: $body');
 
       final response = await _dio.post(
         endpoint,
@@ -554,10 +499,8 @@ class EventService {
         );
       }
     } on DioException catch (e) {
-      print('❌ [Sync] DioException: ${e.message}');
       return ApiResponse.error('Sync failed: ${e.message}');
     } catch (e) {
-      print('❌ [Sync] Unexpected error: $e');
       return ApiResponse.error('An unexpected error occurred: $e');
     }
   }
