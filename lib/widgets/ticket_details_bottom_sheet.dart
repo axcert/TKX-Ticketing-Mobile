@@ -20,12 +20,6 @@ class TicketDetailsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final seatNo =
-        ticketData['seatNo'] ??
-        ticketData['seatNumber'] ??
-        ticketData['seat_number'] ??
-        'N/A';
-
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.background,
@@ -90,7 +84,7 @@ class TicketDetailsBottomSheet extends StatelessWidget {
                 _buildDetailRow(
                   context,
                   'Seat No.',
-                  seatNo,
+                  ticketData['seatNumber'] ?? 'N/A',
                 ),
                 const SizedBox(height: 16),
                 Divider(color: Colors.grey.shade300, height: 1),
