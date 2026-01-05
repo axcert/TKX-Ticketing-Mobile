@@ -90,14 +90,17 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
 
         // Add to scan history for immediate UI update
         await provider.addScanToHistory({
-          'ticketId': ticketId,
-          'name': widget.ticketData['name'] ?? 'Unknown',
-          'status': 'valid',
-          'scanTime': DateTime.now().toIso8601String(),
-          'isVip': widget.ticketData['isVip'] ?? false,
-          'recordId': widget.ticketData['recordId'],
-          'seatNo': widget.ticketData['seatNo'],
-          'scanType': 'QR Scan',
+          'attendee_public_id': ticketId,
+          'attendee_name': widget.ticketData['name'] ?? 'Unknown',
+          'attendee_email': widget.ticketData['email'] ?? 'N/A',
+          'ticket_type': widget.ticketData['ticketType'] ?? 'Standard',
+          'ticket_id': widget.ticketData['recordId'],
+          'seat_number': widget.ticketData['seatNo'] ?? 'N/A',
+          'status': 'Checked-In',
+          'scan_time': DateTime.now().toIso8601String(),
+          'scan_type': 'QR Scan',
+          'scanned_by': 'Device',
+          'is_vip': widget.ticketData['isVip'] ?? false,
         }, widget.eventId);
       }
 

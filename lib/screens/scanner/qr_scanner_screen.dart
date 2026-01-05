@@ -114,6 +114,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             ticketData = {
               'ticketId': ticket.attendeePublicId,
               'name': ticket.attendeeName,
+              'email': ticket.attendeeEmail,
+              'ticketType': ticket.ticketType,
               'isVip': ticket.ticketType.toLowerCase().contains('vip'),
               'seatNo': ticket.seatNumber ?? 'N/A',
               'row': '',
@@ -149,6 +151,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           } else {
             nextScreen = InvalidTicketScreen(ticketData: ticketData);
           }
+
+          // Add to scan history for real-time UI update
+          final historyMap = {
+            'attendee_public_id': ticket?.attendeePublicId ?? code,
+            'attendee_name': ticket?.attendeeName ?? 'Unknown',
+            'attendee_email': ticket?.attendeeEmail ?? 'N/A',
+            'ticket_type': ticket?.ticketType ?? 'N/A',
+            'ticket_id': ticket?.ticketId.toString() ?? 'N/A',
+            'seat_number': ticket?.seatNumber ?? 'N/A',
+            'status': onlineResult['status'] == 'success'
+                ? 'Checked-In'
+                : (onlineResult['status'] == 'duplicate' ? 'Valid' : 'Invalid'),
+            'scan_time': DateTime.now().toIso8601String(),
+            'scan_type': 'QR',
+            'scanned_by': 'Device',
+            'is_vip': ticket?.ticketType.toLowerCase().contains('vip') ?? false,
+          };
+
+          if (mounted) {
+            context.read<EventProvider>().addScanToHistory(historyMap, eventId);
+          }
+
           if (mounted) {
             await Navigator.push(
               context,
@@ -173,6 +197,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         ticketData = {
           'ticketId': ticket.attendeePublicId,
           'name': ticket.attendeeName,
+          'email': ticket.attendeeEmail,
+          'ticketType': ticket.ticketType,
           'isVip': ticket.ticketType.toLowerCase().contains('vip'),
           'seatNo': ticket.seatNumber ?? 'N/A',
           'row': '',
