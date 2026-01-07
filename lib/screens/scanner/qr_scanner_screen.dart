@@ -35,10 +35,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     super.initState();
     _player = AudioPlayer();
 
-    // Fetch scan history if eventId is available
+    // Fetch scan history and statistics if eventId is available
     if (widget.eventId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<EventProvider>().fetchScanHistory(widget.eventId!);
+        context.read<EventProvider>().fetchEventStatistics(widget.eventId!);
       });
     }
   }
@@ -171,6 +172,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
           if (mounted) {
             context.read<EventProvider>().addScanToHistory(historyMap, eventId);
+            context.read<EventProvider>().fetchEventStatistics(eventId);
           }
 
           if (mounted) {
@@ -224,6 +226,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
         if (mounted) {
           context.read<EventProvider>().addScanToHistory(historyMap, eventId);
+          context.read<EventProvider>().fetchEventStatistics(eventId);
         }
 
         if (!mounted) return;
@@ -273,6 +276,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           invalidHistoryMap,
           eventId,
         );
+        context.read<EventProvider>().fetchEventStatistics(eventId);
       }
 
       if (mounted) {

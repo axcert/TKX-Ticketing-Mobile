@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../models/event_model.dart';
 import '../services/event_service.dart';
 import '../services/connectivity_service.dart';
+import '../models/event_statistics_model.dart';
 
 class EventProvider extends ChangeNotifier {
   final EventService _eventService = EventService();
@@ -19,6 +20,7 @@ class EventProvider extends ChangeNotifier {
   List<Event> _upcomingEvents = [];
   List<Event> _completedEvents = [];
   String? _organizerName;
+  EventStatistics? _eventStatistics;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -28,6 +30,7 @@ class EventProvider extends ChangeNotifier {
   List<Event> get upcomingEvents => _upcomingEvents;
   List<Event> get completedEvents => _completedEvents;
   String? get organizerName => _organizerName;
+  EventStatistics? get eventStatistics => _eventStatistics;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -228,6 +231,20 @@ class EventProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Fetch event statistics for a specific event
+  Future<void> fetchEventStatistics(String eventId) async {
+    try {
+      final response = await _eventService.getEventStatistics(eventId);
+
+      if (response.success && response.data != null) {
+        _eventStatistics = response.data;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('❌ [EventProvider] Error fetching event statistics: $e');
     }
   }
 

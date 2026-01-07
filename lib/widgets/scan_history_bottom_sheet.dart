@@ -3,7 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/models/scan_history_model.dart';
+import 'package:tkx_ticketing/providers/event_provider.dart';
 import 'package:tkx_ticketing/widgets/ticket_details_bottom_sheet.dart';
+import 'package:provider/provider.dart';
 
 class ScanHistoryBottomSheet extends StatefulWidget {
   final List<Map<String, dynamic>> scanHistory;
@@ -26,93 +28,106 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      controller: _controller,
-      initialChildSize: 0.4,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.textSecondary,
-                  borderRadius: BorderRadius.circular(2),
+    return Consumer<EventProvider>(
+      builder: (context, eventProvider, child) {
+        final statistics = eventProvider.eventStatistics;
+        final scanHistory = eventProvider.scanHistory;
+
+        return DraggableScrollableSheet(
+          controller: _controller,
+          initialChildSize: 0.4,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Scan History',
-                      style: Theme.of(context).textTheme.titleLarge,
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.textSecondary,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    Text(
-                      '${widget.scanHistory.length}/${widget.scanHistory.length}',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              // Scan History List
-              Expanded(
-                child: widget.scanHistory.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.history,
-                              size: 64,
-                              color: AppColors.textSecondary.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No scan history yet',
-                              style: Theme.of(context).textTheme.titleMedium!
-                                  .copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Scan History',
+                          style: Theme.of(context).textTheme.titleLarge!
+                              .copyWith(fontWeight: FontWeight.w700),
                         ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: widget.scanHistory.length,
-                        itemBuilder: (context, index) {
-                          final scan = ScanHistory.fromJson(
-                            widget.scanHistory[index],
-                          );
-                          return _buildScanHistoryItem(scan);
-                        },
-                      ),
+                        Text(
+                          '${statistics?.checkInCount ?? 0}/${statistics?.registeredCount ?? 0}',
+                          style: Theme.of(context).textTheme.titleLarge!
+                              .copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Scan History List
+                  Expanded(
+                    child: scanHistory.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.history,
+                                  size: 64,
+                                  color: AppColors.textSecondary.withOpacity(
+                                    0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No scan history yet',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: scrollController,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: scanHistory.length,
+                            itemBuilder: (context, index) {
+                              final scan = ScanHistory.fromJson(
+                                scanHistory[index],
+                              );
+                              return _buildScanHistoryItem(scan);
+                            },
+                          ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
