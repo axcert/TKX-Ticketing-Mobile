@@ -139,21 +139,14 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
     IconData statusIcon;
 
     switch (scan.status.toLowerCase().trim()) {
-      case 'checked-in':
-      case 'checked in':
       case 'valid':
-      case 'active':
-      case 'success':
+      
         statusColor = AppColors.success;
         statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
         break;
-      case 'already checked-in':
-      case 'already checked in':
       case 'invalid':
       case 'used':
-      case 'duplicate':
-      case 'failed':
         statusColor = AppColors.error;
         statusBgColor = Colors.red.shade50;
         statusIcon = Icons.cancel;

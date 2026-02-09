@@ -3,7 +3,6 @@ import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 import 'package:provider/provider.dart';
-import 'package:tkx_ticketing/providers/event_provider.dart';
 import 'package:tkx_ticketing/providers/auth_provider.dart';
 import 'package:tkx_ticketing/widgets/toast_message.dart';
 
@@ -84,25 +83,8 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
     if (!mounted) return;
 
     if (result['success'] == true) {
-      if (mounted) {
-        final provider = context.read<EventProvider>();
-        await provider.addPendingCheckIn(ticketId, widget.eventId);
-
-        // Add to scan history for immediate UI update
-        await provider.addScanToHistory({
-          'attendee_public_id': ticketId,
-          'attendee_name': widget.ticketData['name'] ?? 'Unknown',
-          'attendee_email': widget.ticketData['email'] ?? 'N/A',
-          'ticket_type': widget.ticketData['ticketType'] ?? 'Standard',
-          'ticket_id': widget.ticketData['recordId'],
-          'seat_number': widget.ticketData['seatNo'] ?? 'N/A',
-          'status': 'Checked-In',
-          'scan_time': DateTime.now().toIso8601String(),
-          'scan_type': 'QR Scan',
-          'scanned_by': 'Device',
-          'is_vip': widget.ticketData['isVip'] ?? false,
-        }, widget.eventId);
-      }
+      // Scan history is already added in qr_scanner_screen.dart when the ticket is scanned
+      // No need to add it again here to avoid duplicates
 
       ToastMessage.show(
         context,

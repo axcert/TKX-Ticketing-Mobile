@@ -391,17 +391,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                         ),
 
                         // Title
-                        GestureDetector(
-                          onLongPress: () {
-                            context.read<EventProvider>().addTestScan();
-                          },
-                          child: const Text(
-                            'Scan Tickets',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        const Text(
+                          'Scan Tickets',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
 

@@ -295,30 +295,6 @@ class EventProvider extends ChangeNotifier {
     await _saveScanHistoryToCache(eventId);
   }
 
-  /// Add a test scan for UI testing
-  void addTestScan() {
-    final testScan = {
-      'ticketId': 'TEST-123',
-      'name': 'Test User',
-      'time': '12:00 PM',
-      'status': 'Checked-In',
-      'isVip': true,
-      'ticketType': 'VIP',
-      'seatNo': 'A1',
-      'row': 'A',
-      'column': '1',
-      'recordId': 'REC-001',
-      'scanTime': DateTime.now().toIso8601String(),
-      'scanType': 'Manual',
-      'scannedBy': 'Tester',
-    };
-    // Use an arbitrary event ID or handle caching separately if needed for tests
-    // For UI testing, we might not need persistence, but let's keep it simple.
-    _scanHistory.insert(0, testScan);
-    _unseenScanCount++;
-    notifyListeners();
-  }
-
   /// Clear scan history
   void clearScanHistory() {
     _scanHistory = [];
