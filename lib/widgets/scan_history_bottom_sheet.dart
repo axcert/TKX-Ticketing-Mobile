@@ -140,7 +140,7 @@ class _ScanHistoryBottomSheetState extends State<ScanHistoryBottomSheet> {
 
     switch (scan.status.toLowerCase().trim()) {
       case 'valid':
-      
+      case 'checked-in':
         statusColor = AppColors.success;
         statusBgColor = Colors.green.shade50;
         statusIcon = Icons.check_circle;
