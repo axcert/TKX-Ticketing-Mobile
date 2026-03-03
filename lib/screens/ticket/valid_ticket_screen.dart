@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/services/ticket_service.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
@@ -148,29 +149,13 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
                 ),
 
                 Container(
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: widget.ticketData['isVip']
-                                ? AssetImage('assets/vip.png')
-                                : AssetImage('assets/normal.png'),
-                            alignment: Alignment.center,
-                          ),
-                        ),
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        width: MediaQuery.of(context).size.width * 0.2,
-                      ),
-                      Text(
-                        widget.ticketData['name'] ?? 'N/A',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    widget.ticketData['name'] ?? 'N/A',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
 
@@ -197,6 +182,14 @@ class _ValidTicketScreenState extends State<ValidTicketScreen> {
                       ),
                     ],
                   ),
+                ),
+                Container(
+                  child: widget.ticketData['isVip']
+                      ? SvgPicture.asset(
+                          'assets/icons/VIP Badge.svg',
+                          height: MediaQuery.of(context).size.height * 0.04,
+                        )
+                      : null,
                 ),
 
                 Container(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tkx_ticketing/config/app_theme.dart';
 import 'package:tkx_ticketing/widgets/custom_elevated_button.dart';
 
@@ -49,29 +50,13 @@ class AlreadyCheckedInScreen extends StatelessWidget {
                 ),
 
                 Container(
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: ticketData['isVip']
-                                ? AssetImage('assets/vip.png')
-                                : AssetImage('assets/normal.png'),
-                            alignment: Alignment.center,
-                          ),
-                        ),
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        width: MediaQuery.of(context).size.width * 0.2,
-                      ),
-                      Text(
-                        ticketData['name'] ?? 'N/A',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    ticketData['name'] ?? 'N/A',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
 
@@ -98,6 +83,14 @@ class AlreadyCheckedInScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                Container(
+                  child: ticketData['isVip']
+                      ? SvgPicture.asset(
+                          'assets/icons/VIP Badge.svg',
+                          height: MediaQuery.of(context).size.height * 0.04,
+                        )
+                      : null,
                 ),
 
                 Container(
